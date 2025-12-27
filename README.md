@@ -23,7 +23,9 @@
   | `chore` | 설정, 빌드, 환경 작업 |
   | `docs` | 문서 작업 |
   | `style` | 코드 스타일 변경 |
-  **예시**
+
+**예시**
+
 - `feat/login`
 - `feat/router-setup`
 - `fix/header-bug`
