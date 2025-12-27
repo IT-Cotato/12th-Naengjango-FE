@@ -1,73 +1,54 @@
-# React + TypeScript + Vite
+# 냉잔고 프론트엔드 개발 컨벤션
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 Tech Stack
 
-Currently, two official plugins are available:
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🧭 깃 브랜치 전략
 
-## React Compiler
+- main 브랜치 : 배포용 브랜치
+- dev 브랜치 : 개발용 브랜치
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 브랜치 명명 규칙
 
-## Expanding the ESLint configuration
+- `type/description` 형식
+  | type | description |
+  |------|-------------|
+  | `feat` | 새로운 기능 추가 |
+  | `fix` | 버그 수정 |
+  | `refactor` | 리팩토링 (기능 변경 없음) |
+  | `chore` | 설정, 빌드, 환경 작업 |
+  | `docs` | 문서 작업 |
+  | `style` | 코드 스타일 변경 |
+  **예시**
+- `feat/login`
+- `feat/router-setup`
+- `fix/header-bug`
+- `refactor/api-structure`
+- `chore/eslint-prettier`
+- `docs/readme`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 커밋 메시지 규칙
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- `type: description` 형식
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| type       | description           |
+| ---------- | --------------------- |
+| `feat`     | 새로운 기능 추가      |
+| `fix`      | 버그 수정             |
+| `refactor` | 리팩토링              |
+| `chore`    | 설정, 빌드, 환경 작업 |
+| `docs`     | 문서 작업             |
+| `style`    | 코드 스타일 변경      |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**예시**
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `feat: add login page`
+- `feat: setup router structure`
+- `fix: resolve header layout issue`
+- `refactor: simplify api logic`
+- `chore: setup eslint and prettier`
+- `docs: update readme`
