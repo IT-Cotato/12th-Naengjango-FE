@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { TABS } from './constants/tabs';
-import { TAB_ICONS } from './icons/tabIcons';
+import { TABS } from '@/constants/tabs';
+import { TAB_ICONS } from '@/constants/tabIcons';
 
 export default function BottomTab() {
   return (

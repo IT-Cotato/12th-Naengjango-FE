@@ -1,4 +1,4 @@
-import type { TabKey } from '../icons/tabIcons';
+import type { TabKey } from '@/constants/tabIcons';
 
 export type TabItem = {
   key: TabKey;
