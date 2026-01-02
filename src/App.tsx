@@ -1,13 +1,11 @@
-// src/App.tsx
 import { Routes, Route, Navigate } from 'react-router-dom';
-
 import BottomTab from '@/components/BottomTab';
-
 import HomePage from '@/pages/HomePage';
 import LedgerPage from '@/pages/LedgerPage';
 import FreezePage from '@/pages/FreezePage';
 import ReportPage from '@/pages/ReportPage';
 import MyPage from '@/pages/MyPage';
+import SignupPage from './pages/signup/SignUpPage';
 
 const BOTTOM_TAB_HEIGHT = 80; // BottomTab 높이 (h-20)
 
@@ -23,6 +21,7 @@ export default function App() {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route path="/ledger" element={<LedgerPage />} />
           <Route path="/freeze" element={<FreezePage />} />
           <Route path="/report" element={<ReportPage />} />
