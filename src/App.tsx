@@ -7,6 +7,9 @@ import ReportPage from '@/pages/ReportPage';
 import MyPage from '@/pages/MyPage';
 import SignupPage from '@/pages/signup/SignUpPage';
 import AuthLayout from './layouts/AuthLayout';
+import LoginPage from '@/pages/login/LoginPage';
+import SetupPage from '@/pages/login/SetupPage';
+
 
 export default function App() {
   return (
@@ -21,6 +24,8 @@ export default function App() {
 
       <Route element={<AuthLayout />}>
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/setup" element={<SetupPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
