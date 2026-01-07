@@ -46,7 +46,7 @@ export default function LoginPage() {
         <div className="mt-6 flex flex-col gap-3">
           <Button onClick={handleLogin}>로그인</Button>
           <Button
-            onClick={handleGoogleLogin }
+            onClick={handleGoogleLogin}
             className="bg-white-600 text-gray-800  border-gray-400 border-[1.5px] "
           >
             <span className="flex items-center justify-center gap-2">

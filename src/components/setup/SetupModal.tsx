@@ -31,7 +31,10 @@ export default function Modal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onClose}>
-      <div className="w-full h-[359px] rounded-t-[30px] bg-white-800 p-6" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="w-full h-[359px] rounded-t-[30px] bg-white-800 p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 아이콘 */}
         {icon && (
           <div className="flex justify-center mb-1">
@@ -43,7 +46,7 @@ export default function Modal({
 
         {/* 카테고리명 */}
         <p className="text-center text-[15px] font-medium text-[#000000] mb-5">{title}</p>
- 
+
         <p className="text-[18px] font-weight-500 text-[#000000] mb-2">금액을 입력하세요</p>
 
         {/* 금액 입력 칸 */}
@@ -68,4 +71,3 @@ export default function Modal({
     </div>
   );
 }
-

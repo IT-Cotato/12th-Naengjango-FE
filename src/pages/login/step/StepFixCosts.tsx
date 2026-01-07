@@ -55,7 +55,11 @@ const CATEGORIES = {
 
 export default function StepFixCosts({ value, onChange, budget }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<{ id: string; label: string; icon: string } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{
+    id: string;
+    label: string;
+    icon: string;
+  } | null>(null);
   const [inputAmount, setInputAmount] = useState('');
 
   // 모달 열기
@@ -122,7 +126,7 @@ export default function StepFixCosts({ value, onChange, budget }: Props) {
 
       {/* 카테고리 목록 */}
       {Object.entries(CATEGORIES).map(([groupName, items]) => (
-        <div key={groupName} >
+        <div key={groupName}>
           <p className="mb-2 text-[20px] font-semibold text-[#000000] ml-2">{groupName}</p>
           <div className="grid grid-cols-4 gap-y-4">
             {items.map((item) => {
@@ -141,10 +145,10 @@ export default function StepFixCosts({ value, onChange, budget }: Props) {
                   >
                     <img src={item.icon} alt={item.label} className="h-7 w-7" />
                   </div>
-                  <span className="text-[14px] mt-1 font-medium text-[#000000]">
-                    {item.label}
-                  </span>
-                  <span className={`text-[15px] font-normal ${isSelected ? 'text-error' : 'invisible'}`}>
+                  <span className="text-[14px] mt-1 font-medium text-[#000000]">{item.label}</span>
+                  <span
+                    className={`text-[15px] font-normal ${isSelected ? 'text-error' : 'invisible'}`}
+                  >
                     {isSelected ? formatNumber(itemData.amount) : '0'}
                   </span>
                 </button>
@@ -176,4 +180,3 @@ export default function StepFixCosts({ value, onChange, budget }: Props) {
     </div>
   );
 }
-

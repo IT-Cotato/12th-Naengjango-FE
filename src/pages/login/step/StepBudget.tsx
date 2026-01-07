@@ -12,7 +12,7 @@ export default function StepBudget({ value, onChange }: Props) {
     onChange(v);
   };
 
-  // 천 단위 콤마 
+  // 천 단위 콤마
   const formatNumber = (num: string) => {
     if (!num) return '';
     return Number(num).toLocaleString();
@@ -30,4 +30,3 @@ export default function StepBudget({ value, onChange }: Props) {
     </div>
   );
 }
-

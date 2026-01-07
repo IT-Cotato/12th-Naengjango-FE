@@ -107,7 +107,9 @@ const Input = ({
   const bgClass = disabled
     ? 'bg-white-400 text-gray-200'
     : grayBg
-      ? (!isFocused && !hasValue ? 'bg-white-400' : 'bg-white-800 border-main-skyblue')
+      ? !isFocused && !hasValue
+        ? 'bg-white-400'
+        : 'bg-white-800 border-main-skyblue'
       : 'bg-white-800';
 
   return (

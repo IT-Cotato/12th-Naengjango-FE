@@ -30,9 +30,7 @@ export default function SetupPage() {
   const goBack = stepIndex > 0 ? () => setStep(STEP_ORDER[stepIndex - 1]) : undefined;
 
   // '다음' 버튼 활성화 조건
-  const canNext = step === 'budget' 
-    ? budget.trim().length > 0 
-    : fixCosts.length > 0;
+  const canNext = step === 'budget' ? budget.trim().length > 0 : fixCosts.length > 0;
 
   // 현재 step에 맞는 컨텐츠 렌더링
   const content = (() => {
@@ -69,4 +67,3 @@ export default function SetupPage() {
     </div>
   );
 }
-
