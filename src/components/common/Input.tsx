@@ -16,6 +16,7 @@ type Props = {
   inputClassName?: string;
   grayBg?: boolean; // 클릭 전 회색 배경, 클릭 시 흰색 배경
   showLastChar?: boolean; // 비밀번호 마지막 글자만 보이게
+  keepBlueBorder?: boolean; // 값이 있으면 파란 테두리 유지
 };
 
 const Input = ({
@@ -34,6 +35,7 @@ const Input = ({
   inputClassName,
   grayBg = false,
   showLastChar = false,
+  keepBlueBorder = false,
 }: Props) => {
   const [isFocused, setIsFocused] = useState(false);
   const [maskedValue, setMaskedValue] = useState('');
@@ -88,16 +90,20 @@ const Input = ({
       onChange?.(e);
     }
   };
+
+  const hasValue = value && value.length > 0;
+
   const borderClass = disabled
     ? 'border-0'
     : error
       ? 'border-red-500 border-[1.5px]'
       : success
         ? 'border-[#5e97d7] border-[1.5px]'
-        : 'border-gray-300 focus-within:border-[#5e97d7] border-[1.5px]';
+        : keepBlueBorder && hasValue
+          ? 'border-main-skyblue border-[1.5px]'
+          : 'border-gray-300 focus-within:border-main-skyblue border-[1.5px]';
 
   // 로그인 페이지 배경색: 값이 있거나 포커스 중이면 흰색, 아니면 회색
-  const hasValue = value && value.length > 0;
   const bgClass = disabled
     ? 'bg-white-400 text-gray-200'
     : grayBg
