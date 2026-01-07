@@ -80,11 +80,11 @@ export default function LedgerCalendar() {
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full p-[10px]">
       {/* 헤더 */}
       {/* 캘린더 헤더 (연 / 월 이동) */}
-      <div className="w-full h-16 px-6 py-3 flex items-center justify-center">
-        <div className="flex items-center gap-3">
+      <div className="w-full px-6 py-3">
+        <div className="w-full flex items-center justify-center gap-[13px] ">
           <button
             type="button"
             onClick={onPrev}
@@ -109,7 +109,7 @@ export default function LedgerCalendar() {
         </div>
       </div>
 
-      <div className="w-full px-6">
+      <div className="w-full px-0">
         <div>
           <div className="h-6 flex items-center">
             {/* Sun, Mon 부분 매핑*/}

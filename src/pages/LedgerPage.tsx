@@ -1,16 +1,16 @@
 import LedgerCalendar from '@/components/ledger/LedgerCalendar';
+import LedgerHeader from '@/components/ledger/LedgerHeader';
 
 export default function LedgerPage() {
   return (
     <div className="min-h-dvh bg-white flex flex-col items-center px-4 pt-24 pb-28">
       {/* '오늘 얼마 남았어요' 영역은 일단 제외 */}
+      <LedgerHeader />
       {/* <Header /> */}
 
       {/* 캘린더 카드 */}
       <div className="w-full max-w-[320px] bg-white rounded-[20px] shadow-[0_0_8px_rgba(0,0,0,0.20)] overflow-hidden">
-        <div className="p-2">
-          <LedgerCalendar />
-        </div>
+        <LedgerCalendar />
       </div>
 
       {/* 빈 상태 */}
