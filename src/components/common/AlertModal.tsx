@@ -36,7 +36,11 @@ export default function AlertModal({
       >
         <div className="flex-1 flex flex-col justify-center px-5 py-4">
           <p className="text-[16px] font-semibold text-gray-900">{title}</p>
-          {message && <p className="mt-1.5 text-[14px] text-regular text-gray-600">{message}</p>}
+          {message && (
+            <p className="mt-1.5 text-[14px] text-regular text-gray-600 whitespace-pre-line">
+              {message}
+            </p>
+          )}
         </div>
 
         {twoButtons ? (
