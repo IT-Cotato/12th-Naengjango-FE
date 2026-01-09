@@ -6,5 +6,5 @@ export { default as verified } from './verified.svg';
 
 // react icons
 
-export { default as chevronLeftIcon } from '@/assets/icons/calendar/ic-chevron-left.svg';
-export { default as chevronRightIcon } from '@/assets/icons/calendar/ic-chevron-right.svg';
+export { default as chevronLeftIcon } from './icons/calendar/ic-chevron-left.svg';
+export { default as chevronRightIcon } from './icons/calendar/ic-chevron-right.svg';
