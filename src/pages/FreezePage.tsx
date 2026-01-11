@@ -2,7 +2,7 @@ import Menu from '@/components/freeze/Menu';
 import { useState } from 'react';
 import ToggleCard from '@/components/freeze/freeze/ToggleCard';
 import FreezeList from '@/components/freeze/freeze/FreezeList';
-import right from '../assets/icons/right.svg';
+import chevron_gray_400 from '../assets/icons/chevron-gray-400.svg';
 import box from '../assets/icons/box.svg';
 import checkinbox from '../assets/icons/checkinbox.svg';
 
@@ -301,7 +301,7 @@ export default function FreezePage() {
                   최신순
                 </div>
 
-                <img src={right} alt="chevron" className="w-[16px] h-[16px] relative rotate-90" />
+                <img src={chevron_gray_400} alt="chevron" className="w-[16px] h-[16px] relative" />
               </div>
             </div>
 
