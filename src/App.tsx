@@ -7,6 +7,10 @@ import ReportPage from '@/pages/ReportPage';
 import MyPage from '@/pages/MyPage';
 import SignupPage from '@/pages/signup/SignUpPage';
 import AuthLayout from './layouts/AuthLayout';
+import LoginPage from '@/pages/login/LoginPage';
+import SetupPage from '@/pages/login/SetupPage';
+import FindIdPage from './pages/login/find/FindIdPage';
+import FindPwPage from './pages/login/find/FindPwPage';
 
 export default function App() {
   return (
@@ -21,6 +25,10 @@ export default function App() {
 
       <Route element={<AuthLayout />}>
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/setup" element={<SetupPage />} />
+        <Route path="/find-id" element={<FindIdPage />} />
+        <Route path="/find-pw" element={<FindPwPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

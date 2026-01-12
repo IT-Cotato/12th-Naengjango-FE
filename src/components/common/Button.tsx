@@ -13,8 +13,8 @@ export default function Button({ children, onClick, disabled, type = 'button', c
       onClick={onClick}
       disabled={disabled}
       className={[
-        'h-12 w-full rounded-[10px] text-sm font-semibold',
-        disabled ? 'bg-gray-300 text-white' : 'bg-[#5e97d7] text-white',
+        'h-14 w-full rounded-[10px] border-0 text-[16px] font-semibold outline-none ring-0 transform-gpu',
+        disabled ? 'bg-gray-300 text-white' : 'bg-main-skyblue text-white',
         className ?? '',
       ].join(' ')}
     >
