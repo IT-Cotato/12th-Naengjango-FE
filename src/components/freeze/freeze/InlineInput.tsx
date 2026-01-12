@@ -4,9 +4,26 @@ type InlineInputProps = {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  type?: 'price' | 'text';
+  maxLength?: number;
 };
 
-export default function InlineInput({ placeholder, value, onChange }: InlineInputProps) {
+const formatPrice = (value: string) => {
+  const numeric = value.replace(/[^0-9]/g, '');
+
+  if (!numeric) return '';
+
+  const number = Math.min(Number(numeric), 9_999_999);
+  return number.toLocaleString();
+};
+
+export default function InlineInput({
+  placeholder,
+  value,
+  onChange,
+  type = 'text',
+  maxLength,
+}: InlineInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const spanRef = useRef<HTMLSpanElement>(null);
   const [width, setWidth] = useState(0);
@@ -16,6 +33,20 @@ export default function InlineInput({ placeholder, value, onChange }: InlineInpu
       setWidth(spanRef.current.offsetWidth + 2);
     }
   }, [value, placeholder]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let next = e.target.value;
+
+    if (type === 'price') {
+      next = formatPrice(next);
+    }
+
+    if (type === 'text' && maxLength) {
+      next = next.slice(0, maxLength);
+    }
+
+    onChange(next);
+  };
 
   const getInputColor = () => {
     if (isFocused) return 'text-main-skyblue border-main-skyblue';
@@ -37,7 +68,7 @@ export default function InlineInput({ placeholder, value, onChange }: InlineInpu
         placeholder={placeholder}
         value={value}
         style={{ width }}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleChange}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         className={`
