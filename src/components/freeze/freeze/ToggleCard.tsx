@@ -87,7 +87,7 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
                 data-layer="금액 원의 품목 을 결제할지 고민이에요"
                 className="flex-1 justify-start"
               >
-                <InlineInput placeholder="금액" value={price} onChange={setPrice} />
+                <InlineInput placeholder="금액" value={price} onChange={setPrice} type="price" />
 
                 <span className="text-gray-800 text-xl font-medium font-sans leading-8 tracking-tight">
                   {' '}
@@ -95,7 +95,13 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
                   <br />
                 </span>
 
-                <InlineInput placeholder="품목" value={item} onChange={setItem} />
+                <InlineInput
+                  placeholder="품목"
+                  value={item}
+                  onChange={setItem}
+                  type="text"
+                  maxLength={10}
+                />
 
                 <span className="text-gray-800 text-xl font-medium font-sans leading-8 tracking-tight">
                   {' '}
