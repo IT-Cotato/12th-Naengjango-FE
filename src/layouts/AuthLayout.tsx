@@ -1,9 +1,12 @@
 import { Outlet } from 'react-router-dom';
+import AppShell from './AppShell';
 
 export default function AuthLayout() {
   return (
-    <div className="h-dvh overflow-hidden bg-white">
-      <Outlet />
-    </div>
+    <AppShell>
+      <div className="h-dvh overflow-hidden bg-white">
+        <Outlet />
+      </div>
+    </AppShell>
   );
 }
