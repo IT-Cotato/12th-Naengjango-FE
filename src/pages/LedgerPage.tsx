@@ -3,13 +3,17 @@ import LedgerHeader from '@/components/ledger/LedgerHeader';
 
 export default function LedgerPage() {
   return (
-    <div className="min-h-dvh bg-white flex flex-col items-center px-4 pt-24 pb-28">
-      {/* '오늘 얼마 남았어요' 영역은 일단 제외 */}
-      <LedgerHeader />
-      {/* <Header /> */}
+    <div className="min-h-dvh bg-white flex flex-col items-center px-4 pb-28 overflow-y-auto">
+      {/* 상단 탑바 자리  */}
+      <div className="h-[54px] w-full shrink-0" />
+
+      {/* 탑바 아래 헤더 시작 여백*/}
+      <div className="w-full">
+        <LedgerHeader />
+      </div>
 
       {/* 캘린더 카드 */}
-      <div className="w-full max-w-[320px] bg-white rounded-[20px] shadow-[0_0_8px_rgba(0,0,0,0.20)] overflow-hidden">
+      <div className="w-full max-w-[320px] mt-[30px] bg-white rounded-[20px] shadow-[0_0_8px_rgba(0,0,0,0.20)] overflow-hidden">
         <LedgerCalendar />
       </div>
 
@@ -22,9 +26,9 @@ export default function LedgerPage() {
       <button
         type="button"
         aria-label="추가"
-        className="fixed right-5 bottom-[92px] size-14 rounded-full bg-[color:var(--color-sub-skyblue)] flex items-center justify-center shadow-md"
+        className="fixed right-5 bottom-[92px] size-10 p-2 bg-[color:var(--color-sub-skyblue)] rounded-[20px] shadow-md inline-flex justify-center items-center"
       >
-        <span className="text-2xl leading-none text-[color:var(--color-main-skyblue)]">＋</span>
+        <span className="text-[color:var(--color-main-skyblue)] text-2xl leading-none">＋</span>
       </button>
     </div>
   );

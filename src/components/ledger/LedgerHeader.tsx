@@ -1,6 +1,6 @@
 export default function LedgerHeader() {
   return (
-    <header className="w-full h-28 flex flex-col justify-end mb-6">
+    <header className="w-full h-28 flex flex-col justify-end pt-[50px]">
       {/* 상단 문구 */}
       <div className="px-6 flex items-center">
         <div className="flex-1 text-xl font-bold leading-8 tracking-tight">
