@@ -36,7 +36,7 @@
 
 ### 커밋 메시지 규칙
 
-- `type: description` 형식
+- `type: description`  형식
 
 | type       | description           |
 | ---------- | --------------------- |
