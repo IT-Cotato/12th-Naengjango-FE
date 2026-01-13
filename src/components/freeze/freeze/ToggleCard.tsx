@@ -13,9 +13,9 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
     'w-32 h-9 px-2.5 py-[8px] px-[2px] left-[-2px] top-0 relative  rounded-[20px]';
 
   const activeText =
-    'flex-1 text-center justify-start text-gray-800 text-sm font-semibold font-sans leading-5 tracking-tight line-clamp-1';
+    'flex-1 text-center justify-start text-gray-800 SemiBold_14 font-sans leading-5 tracking-tight line-clamp-1';
   const inactiveText =
-    'flex-1 self-stretch text-center justify-center text-white-800 text-sm font-semibold font-sans leading-5 tracking-tight';
+    'flex-1 self-stretch text-center justify-center text-white-800 SemiBold_14 font-sans leading-5 tracking-tight';
 
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -89,7 +89,7 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
               >
                 <InlineInput placeholder="금액" value={price} onChange={setPrice} type="price" />
 
-                <span className="text-gray-800 text-xl font-medium font-sans leading-8 tracking-tight">
+                <span className="text-gray-800 Medium_20 font-sans leading-8 tracking-tight">
                   {' '}
                   원의
                   <br />
@@ -103,7 +103,7 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
                   maxLength={10}
                 />
 
-                <span className="text-gray-800 text-xl font-medium font-sans leading-8 tracking-tight">
+                <span className="text-gray-800 Medium_20 font-sans leading-8 tracking-tight">
                   {' '}
                   을<br />
                   결제할지 고민이에요
@@ -118,7 +118,7 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
             >
               <div
                 data-layer="냉동하기"
-                className="flex-1 self-stretch text-center justify-center text-gray-200 text-base font-bold font-sans leading-6 tracking-tight"
+                className="flex-1 self-stretch text-center justify-center text-gray-200 Bold_16 font-sans leading-6 tracking-tight"
               >
                 냉동하기
               </div>
@@ -134,10 +134,8 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
               onChange={(e) => setValue(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              className={`Frame15 w-64 h-32 px-4 py-2 left-[14px] top-[29px] absolute rounded-xl outline outline-1 outline-offset-[-1px]  inline-flex justify-start items-start gap-2.5
-                placeholder:font-medium
-                placeholder:font-sans
-                placeholder:leading-6
+              className={`Frame15 w-64 h-32 px-4 py-2 left-[14px] top-[29px] absolute rounded-xl outline outline-1 outline-offset-[-1px]  inline-flex justify-start items-start gap-2.5 resize-none
+                placeholder:Medium_15
                 ${getInputColor()}`}
             />
 
@@ -148,7 +146,7 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
             >
               <div
                 data-layer="링크 등록"
-                className="flex-1 self-stretch text-center justify-center text-gray-200 text-base font-bold font-sans leading-6 tracking-tight"
+                className="flex-1 self-stretch text-center justify-center text-gray-200 Bold_16 font-sans leading-6 tracking-tight"
               >
                 링크 등록
               </div>

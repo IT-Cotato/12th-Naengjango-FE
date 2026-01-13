@@ -1,4 +1,5 @@
 import chevron_gray_200 from '../../../assets/icons/chevron-gray-200.svg';
+import chevron_gray_400 from '../../../assets/icons/chevron-gray-400.svg';
 import AddApp from './AddApp';
 import * as images from '@/assets/images';
 import FreezeApp from './FreezeApp';
@@ -32,17 +33,31 @@ export default function FreezeList() {
       <div
         data-layer="ic"
         data-property-1="ic_left"
-        className="Ic w-6 h-6 left-[4px] top-[150px] absolute flex items-center justify-center"
+        className="group w-6 h-6 left-[4px] top-[150px] absolute flex items-center justify-center"
       >
-        <img src={chevron_gray_200} alt="왼쪽 화살표" className="w-6 h-6" />
+        <img src={chevron_gray_200} alt="왼쪽 화살표" className="w-6 h-6 group-hover:hidden" />
+        <img
+          src={chevron_gray_400}
+          alt="왼쪽 화살표 hover"
+          className="w-6 h-6 hidden rotate-90 group-hover:block"
+        />
       </div>
 
       <div
         data-layer="ic"
         data-property-1="ic_right"
-        className="Ic w-6 h-6 right-[4px] top-[150px] absolute flex items-center justify-center"
+        className="group w-6 h-6 right-[4px] top-[150px] absolute flex items-center justify-center"
       >
-        <img src={chevron_gray_200} alt="오른쪽 화살표" className="w-6 h-6 scale-x-[-1]" />
+        <img
+          src={chevron_gray_200}
+          alt="오른쪽 화살표"
+          className="w-6 h-6 scale-x-[-1] group-hover:hidden"
+        />
+        <img
+          src={chevron_gray_400}
+          alt="오른쪽 화살표 hover"
+          className="w-6 h-6 -rotate-90 hidden group-hover:block"
+        />
       </div>
     </>
   );

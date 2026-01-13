@@ -56,10 +56,7 @@ export default function InlineInput({
 
   return (
     <>
-      <span
-        ref={spanRef}
-        className="absolute invisible whitespace-pre text-xl font-medium font-sans"
-      >
+      <span ref={spanRef} className="absolute invisible whitespace-pre Medium_20 font-sans">
         {value || placeholder}
       </span>
 
@@ -77,8 +74,7 @@ export default function InlineInput({
         bg-transparent
         border-b
         outline-none
-        text-xl
-        font-medium
+        Medium_20
         font-sans
         leading-8
         tracking-tight

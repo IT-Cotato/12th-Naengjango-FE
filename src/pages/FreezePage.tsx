@@ -29,7 +29,7 @@ export default function FreezePage() {
               >
                 <div
                   data-layer="새로운 냉동하기"
-                  className="flex-1 text-center justify-center text-gray-800 text-2xl font-bold font-sans leading-9"
+                  className="flex-1 text-center justify-center text-gray-800 Bold_24 font-sans leading-9"
                 >
                   새로운 냉동하기
                 </div>
@@ -37,7 +37,7 @@ export default function FreezePage() {
 
               <div
                 data-layer="초기화"
-                className="left-[270px] top-[41px] absolute text-center justify-start text-gray-200 text-sm font-normal font-sans underline leading-5 tracking-tight"
+                className="left-[270px] top-[41px] absolute text-center justify-start text-gray-200 Regular_14 font-sans underline leading-5 tracking-tight"
               >
                 초기화
               </div>
@@ -88,21 +88,21 @@ export default function FreezePage() {
                         >
                           <div
                             data-layer="24H"
-                            className="H text-center justify-center text-white-800 text-xs font-medium font-sans leading-[18px] tracking-tight"
+                            className="H text-center justify-center text-white-800 Medium_12 font-sans leading-[18px] tracking-tight"
                           >
                             24H
                           </div>
                         </div>
                         <div
                           data-layer="바지"
-                          className="w-[118px] justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                          className="w-[118px] justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                         >
                           바지
                         </div>
                       </div>
                       <div
                         data-layer="57,000원"
-                        className="000 self-stretch justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                        className="000 self-stretch justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                       >
                         57,000원
                       </div>
@@ -142,21 +142,21 @@ export default function FreezePage() {
                         >
                           <div
                             data-layer="24H"
-                            className="H text-center justify-center text-white-800 text-xs font-medium font-sans leading-[18px] tracking-tight"
+                            className="H text-center justify-center text-white-800 Medium_12 font-sans leading-[18px] tracking-tight"
                           >
                             22H
                           </div>
                         </div>
                         <div
                           data-layer="바지"
-                          className="w-[118px] justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                          className="w-[118px] justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                         >
                           맨투맨
                         </div>
                       </div>
                       <div
                         data-layer="57,000원"
-                        className="000 self-stretch justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                        className="000 self-stretch justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                       >
                         115,000원
                       </div>
@@ -196,21 +196,21 @@ export default function FreezePage() {
                         >
                           <div
                             data-layer="24H"
-                            className="H text-center justify-center text-white-800 text-xs font-medium font-sans leading-[18px] tracking-tight"
+                            className="H text-center justify-center text-white-800 Medium_12 font-sans leading-[18px] tracking-tight"
                           >
                             22H
                           </div>
                         </div>
                         <div
                           data-layer="바지"
-                          className="w-[118px] justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                          className="w-[118px] justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                         >
                           후드티
                         </div>
                       </div>
                       <div
                         data-layer="57,000원"
-                        className="000 self-stretch justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                        className="000 self-stretch justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                       >
                         165,000원
                       </div>
@@ -250,21 +250,21 @@ export default function FreezePage() {
                         >
                           <div
                             data-layer="24H"
-                            className="H text-center justify-center text-white-800 text-xs font-medium font-sans leading-[18px] tracking-tight"
+                            className="H text-center justify-center text-white-800 Medium_12 font-sans leading-[18px] tracking-tight"
                           >
                             3H
                           </div>
                         </div>
                         <div
                           data-layer="바지"
-                          className="w-[118px] justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                          className="w-[118px] justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                         >
                           에어포스
                         </div>
                       </div>
                       <div
                         data-layer="57,000원"
-                        className="000 self-stretch justify-center text-black text-[15px] font-semibold font-sans leading-[22.50px] tracking-tight"
+                        className="000 self-stretch justify-center text-black SemiBold_14 font-sans leading-[22.50px] tracking-tight"
                       >
                         122,000원
                       </div>
@@ -284,23 +284,23 @@ export default function FreezePage() {
               >
                 <div
                   data-layer="전체 선택"
-                  className="text-center justify-start text-main-skyblue text-xs font-semibold font-sans leading-[17.40px] tracking-tight"
+                  className="text-center justify-start text-main-skyblue Medium_12 font-sans leading-[17.40px] tracking-tight"
                 >
                   전체 선택
                 </div>
                 <img src={box} alt="체크박스" className="w-[16px] h-[16px] relative" />
               </div>
+
               <div
                 data-layer="Frame 48096443"
-                className="Frame48096443 size- flex flex-row justify-start items-center"
+                className="Frame48096443 w-[58px] pl-[7px] py-0.5 rounded-md outline outline-[0.50px] outline-offset-[-0.50px] outline-gray-200 inline-flex justify-center items-center"
               >
                 <div
                   data-layer="최신순"
-                  className="justify-start text-gray-400 text-xs font-medium font-sans leading-[18px] tracking-tight"
+                  className="justify-start text-gray-400 Medium_12 font-sans leading-[18px] tracking-tight"
                 >
                   최신순
                 </div>
-
                 <img src={chevron_gray_400} alt="chevron" className="w-[16px] h-[16px] relative" />
               </div>
             </div>
@@ -319,7 +319,7 @@ export default function FreezePage() {
                 >
                   <div
                     data-layer="계속 냉동"
-                    className="text-center justify-start text-white-800 text-sm font-semibold font-sans leading-5 tracking-tight"
+                    className="text-center justify-start text-white-800 SemiBold_14 font-sans leading-5 tracking-tight"
                   >
                     계속 냉동
                   </div>
@@ -330,7 +330,7 @@ export default function FreezePage() {
                 >
                   <div
                     data-layer="냉동 실패"
-                    className="text-center justify-start text-white-800 text-sm font-semibold font-sans leading-5 tracking-tight"
+                    className="text-center justify-start text-white-800 SemiBold_14 font-sans leading-5 tracking-tight"
                   >
                     냉동 실패
                   </div>
@@ -341,7 +341,7 @@ export default function FreezePage() {
                 >
                   <div
                     data-layer="냉동 성공"
-                    className="text-center justify-start text-white-800 text-sm font-semibold font-sans leading-5 tracking-tight"
+                    className="text-center justify-start text-white-800 SemiBold_14 font-sans leading-5 tracking-tight"
                   >
                     냉동 성공
                   </div>
@@ -358,7 +358,7 @@ export default function FreezePage() {
               >
                 <div
                   data-layer="선택한 상품을 구매하면"
-                  className="flex-1 text-center justify-center text-gray-800 text-xl font-semibold font-sans leading-[30px] tracking-tight"
+                  className="flex-1 text-center justify-center text-gray-800 SemiBold_20 font-sans leading-[30px] tracking-tight"
                 >
                   선택한 상품을 구매하면
                 </div>
@@ -371,14 +371,14 @@ export default function FreezePage() {
                   data-layer="하루 4,000원 쓸 수 있게 돼요!"
                   className="4000 flex-1 text-center justify-center"
                 >
-                  <span className="text-gray-800 text-xl font-semibold font-sans leading-[30px] tracking-tight">
+                  <span className="text-gray-800 SemiBold_20 font-sans leading-[30px] tracking-tight">
                     하루
                   </span>
-                  <span className="text-error text-xl font-semibold font-sans leading-[30px] tracking-tight">
+                  <span className="text-error SemiBold_20 font-sans leading-[30px] tracking-tight">
                     {' '}
                     4,000원
                   </span>
-                  <span className="text-gray-800 text-xl font-semibold font-sans leading-[30px] tracking-tight">
+                  <span className="text-gray-800 SemiBold_20 font-sans leading-[30px] tracking-tight">
                     {' '}
                     쓸 수 있게 돼요!
                   </span>
@@ -391,7 +391,7 @@ export default function FreezePage() {
             >
               <div
                 data-layer="나의 냉동 기록"
-                className="flex-1 text-center justify-start text-gray-800 text-2xl font-bold font-sans leading-9"
+                className="flex-1 text-center justify-start text-gray-800 Bold_24 font-sans leading-9"
               >
                 나의 냉동 기록
               </div>
