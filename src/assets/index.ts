@@ -6,6 +6,12 @@ export { default as verified } from './verified.svg';
 
 // react icons
 
+export { default as blueManual } from './icons/calendar/ic-bluemanual.svg';
+export { default as bluePaste } from './icons/calendar/ic-bluepaste.svg';
+export { default as blueClose } from './icons/calendar/ic-blueclose.svg';
+export { default as bluePlus } from './icons/calendar/ic-blueplus.svg';
+export { default as blueCircle } from './icons/calendar/ic-bluecircle.svg';
+export { default as redCircle } from './icons/calendar/ic-redcircle.svg';
 export { default as chevronLeftIcon } from './icons/calendar/ic-chevron-left.svg';
 export { default as chevronRightIcon } from './icons/calendar/ic-chevron-right.svg';
 export { default as google } from './google.svg';
