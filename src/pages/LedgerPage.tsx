@@ -1,7 +1,26 @@
+import { blueClose, bluePlus } from '@/assets';
 import LedgerCalendar from '@/components/ledger/LedgerCalendar';
 import LedgerHeader from '@/components/ledger/LedgerHeader';
+import LedgerActionSheet from '@/components/ledger/LedgerActionSheet';
+import { useState } from 'react';
 
 export default function LedgerPage() {
+  const [isFabOpen, setIsFabOpen] = useState(false);
+
+  const onToggleFab = () => setIsFabOpen((v) => !v);
+  const onCloseFab = () => setIsFabOpen(false);
+
+  const onPaste = () => {
+    onCloseFab();
+    // TODO: 여기서 "문자 붙여넣기" 모달 띄우기
+    console.log('문자 붙여넣기');
+  };
+
+  const onManual = () => {
+    onCloseFab();
+    // TODO: 여기서 "수동 입력" 모달 띄우기
+    console.log('수동 입력하기');
+  };
   return (
     <div className="min-h-dvh bg-white flex flex-col items-center px-4 pb-28 overflow-y-auto">
       {/* 상단 탑바 자리  */}
@@ -22,13 +41,24 @@ export default function LedgerPage() {
         <div className="text-center text-gray-400">내역이 없습니다</div>
       </div>
 
+      {/* 액션시트 열렸을 때만: 바깥 클릭 영역(오버레이) */}
+      {isFabOpen && (
+        <div className="fixed inset-0 z-40" onClick={onCloseFab}>
+          {/* 액션시트(버튼 클릭해도 바깥클릭으로 닫히지 않게 stop) */}
+          <div className="fixed right-5 bottom-[160px] z-50" onClick={(e) => e.stopPropagation()}>
+            <LedgerActionSheet onPaste={onPaste} onManual={onManual} />
+          </div>
+        </div>
+      )}
+
       {/* 플로팅 + 버튼 */}
       <button
         type="button"
-        aria-label="추가"
-        className="fixed right-5 bottom-[92px] size-10 p-2 bg-[color:var(--color-sub-skyblue)] rounded-[20px] shadow-md inline-flex justify-center items-center"
+        aria-label={isFabOpen ? '닫기' : '추가'}
+        onClick={onToggleFab}
+        className="fixed right-5 bottom-[92px] z-50 size-14 rounded-full bg-[color:var(--color-sub-skyblue)] flex items-center justify-center shadow-md"
       >
-        <span className="text-[color:var(--color-main-skyblue)] text-2xl leading-none">＋</span>
+        {isFabOpen ? <img src={blueClose} alt="닫기" /> : <img src={bluePlus} alt="열기" />}
       </button>
     </div>
   );
