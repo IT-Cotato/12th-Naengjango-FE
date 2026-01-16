@@ -8,3 +8,18 @@ export { default as verified } from './verified.svg';
 
 export { default as chevronLeftIcon } from './icons/calendar/ic-chevron-left.svg';
 export { default as chevronRightIcon } from './icons/calendar/ic-chevron-right.svg';
+export { default as google } from './google.svg';
+export { default as house } from './setup/house.svg';
+export { default as manageFee } from './setup/manageFee.svg';
+export { default as internet } from './setup/internet.svg';
+export { default as utility } from './setup/utility.svg';
+export { default as ott } from './setup/ott.svg';
+export { default as music } from './setup/music.svg';
+export { default as cloud } from './setup/cloud.svg';
+export { default as delivery } from './setup/delivery.svg';
+export { default as transport } from './setup/transport.svg';
+export { default as phone } from './setup/phone.svg';
+export { default as exercise } from './setup/exercise.svg';
+export { default as familyoccasion } from './setup/familyoccasion.svg';
+export { default as insurance } from './setup/insurance.svg';
+export { default as etc } from './setup/etc.svg';

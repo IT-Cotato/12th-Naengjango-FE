@@ -50,10 +50,8 @@ export default function SignupPage() {
     }
   };
 
-  const goBack = () => {
-    const prev = STEP_ORDER[stepIndex - 1];
-    if (prev) setStep(prev);
-  };
+  // 첫 화면이면 undefined 반환 → SignupHeader에서 navigate(-1)
+  const goBack = stepIndex > 0 ? () => setStep(STEP_ORDER[stepIndex - 1]) : undefined;
 
   const onClose = () => {};
 
