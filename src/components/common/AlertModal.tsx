@@ -27,7 +27,7 @@ export default function AlertModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800/30"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-800/30"
       onClick={onClose}
     >
       <div
@@ -37,7 +37,7 @@ export default function AlertModal({
         <div className="flex-1 flex flex-col justify-center px-5 py-4">
           <p className="text-[16px] font-semibold text-gray-900">{title}</p>
           {message && (
-            <p className="mt-1.5 text-[14px] text-regular text-gray-600 whitespace-pre-line">
+            <p className="mt-1.5 text-[14px] text-regular text-gray-600 whitespace-pre-line text-center">
               {message}
             </p>
           )}
