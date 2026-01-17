@@ -43,7 +43,7 @@ function buildMonthCells(monthFirst: Date) {
 }
 
 export default function LedgerCalendar() {
-  const today = new Date();
+  const [today] = useState(() => new Date());
 
   // 현재 보고 있는 달(항상 1일로 고정)
   const [monthFirst, setMonthFirst] = useState(() => {
@@ -144,7 +144,7 @@ export default function LedgerCalendar() {
                         className={[
                           'flex-1 h-12 flex flex-col items-center gap-0.5',
                           'bg-transparent hover:bg-transparent active:bg-transparent',
-                          'focus:outline-none focus-visible:outline-none',
+                          'focus:outline-none focus-visible:ring',
                         ].join(' ')}
                       >
                         {/* 날짜 숫자 */}
