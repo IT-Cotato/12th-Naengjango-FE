@@ -1,37 +1,51 @@
 import chevron_gray_200 from '../../../assets/icons/chevron-gray-200.svg';
 import chevron_gray_400 from '../../../assets/icons/chevron-gray-400.svg';
 import AddApp from './AddApp';
-import * as images from '@/assets/images';
 import FreezeApp from './FreezeApp';
 import { useEffect, useState } from 'react';
+import AddModal from './AddModal';
+import { PRESET_APPS } from '@/data/presetApps';
+import AppNew from './AppNew';
 
 const ITEMS_PER_PAGE = 8;
 
-type App = {
-  id: string;
-  src: string;
-};
+type FreezeAppItem =
+  | { type: 'preset'; id: string; src: string }
+  | { type: 'custom'; id: string; name: string }
+  | { type: 'add' };
 
-const INITIAL_APPS: App[] = [
-  { id: 'ably', src: images.ably },
-  { id: 'musinsa', src: images.musinsa },
-  { id: 'kream', src: images.kream },
-  { id: 'coupang', src: images.coupang },
-  { id: 'todayhouse', src: images.todayhouse },
-  { id: 'todayhouse1', src: images.todayhouse },
-  { id: 'todayhouse2', src: images.todayhouse },
-  { id: 'todayhouse3', src: images.todayhouse },
-  { id: 'todayhouse4', src: images.todayhouse },
-  { id: 'todayhouse5', src: images.todayhouse },
-];
+type AddResult = { type: 'preset'; appId: string } | { type: 'custom'; name: string };
 
 export default function FreezeList() {
-  const [apps, setApps] = useState<App[]>(INITIAL_APPS);
-  const totalPages = Math.ceil(apps.length / ITEMS_PER_PAGE);
+  const [apps, setApps] = useState<FreezeAppItem[]>([]);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const totalItemCount = apps.length + 1;
+  const totalPages = Math.max(1, Math.ceil(totalItemCount / ITEMS_PER_PAGE));
 
-  const [page, setPage] = useState(Math.max(totalPages - 1, 0));
+  const [page, setPage] = useState(totalPages - 1);
+  const moveToAppPage = (appId: string) => {
+    const index = apps.findIndex((app) => app.type !== 'add' && app.id === appId);
 
-  const pageApps = apps.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+    if (index === -1) return;
+
+    const targetPage = Math.floor(index / ITEMS_PER_PAGE);
+    setPage(targetPage);
+  };
+
+  const startIndex = page * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const pageApps = apps.slice(startIndex, endIndex);
+
+  const addButtonIndex = apps.length; // Add 버튼의 전체 인덱스
+  const isAddInThisPage = addButtonIndex >= startIndex && addButtonIndex < endIndex;
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const renderItems: FreezeAppItem[] = [...pageApps];
+
+  if (isAddInThisPage) {
+    renderItems.push({ type: 'add' });
+  }
 
   // 앱 추가/삭제로 페이지 수 줄어들었을 때 생기기, 사라지기
   useEffect(() => {
@@ -44,20 +58,53 @@ export default function FreezeList() {
   const isLastPage = page === totalPages - 1;
   const isPageFull = pageApps.length === ITEMS_PER_PAGE;
 
-  const renderItems = isLastPage ? [...pageApps, { id: 'add', src: '' }] : pageApps;
+  const handleConfirmAdd = (result: AddResult) => {
+    if (result.type === 'preset') {
+      const preset = PRESET_APPS.find((a) => a.id === result.appId);
+      if (!preset) return;
 
-  const handleAddApp = () => {
-    setApps((prev) => [
-      ...prev,
-      {
-        id: `new-${Date.now()}`,
-        src: images.ably, // temp
-      },
-    ]);
+      const existingIndex = apps.findIndex((app) => app.type === 'preset' && app.id === preset.id);
+
+      // 이미 존재하는 앱을 선택한 경우
+      if (existingIndex !== -1) {
+        setSelectedAppId(preset.id);
+        moveToAppPage(preset.id);
+        setIsAddModalOpen(false);
+        return;
+      }
+
+      // 존재하지 않는 앱을 선택, 새로 추가
+      setApps((prev) => [...prev, { type: 'preset', id: preset.id, src: preset.src }]);
+      setSelectedAppId(preset.id);
+    }
+
+    if (result.type === 'custom') {
+      const id = `custom-${Date.now()}`;
+
+      setApps((prev) => [...prev, { type: 'custom', id, name: result.name }]);
+
+      setSelectedAppId(id);
+    }
+
+    setIsAddModalOpen(false);
   };
 
   return (
     <>
+      {apps.length === 0 && (
+        <div
+          data-layer="Frame 48096431"
+          className="Frame48096431 w-[327px] top-[166px] left-0 absolute inline-flex justify-center items-center gap-2.5"
+        >
+          <div
+            data-layer="자주 사용하는 어플을 추가하세요!"
+            className="flex-1 text-center justify-center text-gray-400 Regular_15 font-sans leading-[22.50px] tracking-tight"
+          >
+            자주 사용하는 어플을 추가하세요!
+          </div>
+        </div>
+      )}
+
       <div
         className="
           w-[327px]
@@ -73,9 +120,38 @@ export default function FreezeList() {
           gap-[17px]
         "
       >
-        {renderItems.map((item) =>
-          item.id === 'add' ? <AddApp key="add" /> : <FreezeApp key={item.id} src={item.src} />,
-        )}
+        {renderItems.map((item) => {
+          if (item.type === 'add') {
+            return <AddApp key="add" onClick={() => setIsAddModalOpen(true)} />;
+          }
+
+          if (item.type === 'preset') {
+            return (
+              <FreezeApp
+                key={item.id}
+                src={item.src}
+                isSelected={item.id === selectedAppId}
+                onClick={() => {
+                  setSelectedAppId(item.id);
+                  moveToAppPage(item.id);
+                }}
+              />
+            );
+          }
+
+          // custom
+          return (
+            <AppNew
+              key={item.id}
+              name={item.name}
+              isSelected={item.id === selectedAppId}
+              onClick={() => {
+                setSelectedAppId(item.id);
+                moveToAppPage(item.id);
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* 왼쪽 화살표 */}
@@ -100,6 +176,10 @@ export default function FreezeList() {
           <img src={chevron_gray_200} className="group-hover:hidden scale-x-[-1]" />
           <img src={chevron_gray_400} className="hidden group-hover:block" />
         </button>
+      )}
+
+      {isAddModalOpen && (
+        <AddModal onClose={() => setIsAddModalOpen(false)} onConfirm={handleConfirmAdd} />
       )}
     </>
   );

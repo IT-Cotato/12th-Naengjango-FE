@@ -1,12 +1,17 @@
 import plus from '../../../assets/icons/plus.svg';
 
-export default function AddApp() {
+type AddAppProps = {
+  onClick?: () => void;
+};
+
+export default function AddApp({ onClick }: AddAppProps) {
   return (
     <>
       <div
         data-layer="application"
         data-property-1="plus"
-        className="Application w-14 h-14 relative bg-white-400 rounded-lg flex items-center justify-center overflow-hidden"
+        className="Application w-[54px] h-[54px] relative bg-white-400 rounded-lg flex items-center justify-center overflow-hidden"
+        onClick={onClick}
       >
         <div
           data-layer="ic"
