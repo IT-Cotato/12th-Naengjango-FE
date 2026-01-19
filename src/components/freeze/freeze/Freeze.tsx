@@ -4,6 +4,17 @@ import ToggleCard from './ToggleCard';
 
 export default function Freeze() {
   const [activeToggle, setActiveToggle] = useState<'manual' | 'link'>('manual');
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const [toggleInputValid, setToggleInputValid] = useState(false);
+  const canFreeze = Boolean(selectedAppId && toggleInputValid);
+  const [resetKey, setResetKey] = useState(0);
+
+  const handleToggleChange = (mode: 'manual' | 'link') => {
+    setActiveToggle(mode);
+
+    // 탭 바뀔 때 이전 입력은 무효 처리
+    setToggleInputValid(false);
+  };
   return (
     <>
       <div className="justify-center items-center">
@@ -26,12 +37,30 @@ export default function Freeze() {
           <div
             data-layer="초기화"
             className="left-[270px] top-[41px] absolute text-center justify-start text-gray-200 Regular_14 font-sans underline leading-5 tracking-tight"
+            onClick={() => {
+              setSelectedAppId(null); // 앱 선택 해제
+              setActiveToggle('manual'); // 탭 초기화
+              setToggleInputValid(false); // 입력 무효화
+              setResetKey((k) => k + 1); // 하위 컴포넌트 초기화 트리거
+            }}
           >
             초기화
           </div>
 
-          <FreezeList />
-          <ToggleCard activeToggle={activeToggle} onToggleChange={setActiveToggle} />
+          <FreezeList
+            selectedAppId={selectedAppId}
+            onSelectApp={setSelectedAppId}
+            resetKey={resetKey}
+          />
+          <ToggleCard
+            activeToggle={activeToggle}
+            onToggleChange={handleToggleChange}
+            onInputStateChange={(state) => {
+              setToggleInputValid(state.isValid);
+            }}
+            canFreeze={canFreeze}
+            resetKey={resetKey}
+          />
         </div>
       </div>
     </>

@@ -16,9 +16,15 @@ type FreezeAppItem =
 
 type AddResult = { type: 'preset'; appId: string } | { type: 'custom'; name: string };
 
-export default function FreezeList() {
+type FreezeListProps = {
+  selectedAppId: string | null;
+  onSelectApp: (id: string | null) => void;
+  resetKey: number;
+};
+
+export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: FreezeListProps) {
   const [apps, setApps] = useState<FreezeAppItem[]>([]);
-  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  //const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const totalItemCount = apps.length + 1;
   const totalPages = Math.max(1, Math.ceil(totalItemCount / ITEMS_PER_PAGE));
 
@@ -67,7 +73,7 @@ export default function FreezeList() {
 
       // 이미 존재하는 앱을 선택한 경우
       if (existingIndex !== -1) {
-        setSelectedAppId(preset.id);
+        onSelectApp(preset.id);
         moveToAppPage(preset.id);
         setIsAddModalOpen(false);
         return;
@@ -75,7 +81,7 @@ export default function FreezeList() {
 
       // 존재하지 않는 앱을 선택, 새로 추가
       setApps((prev) => [...prev, { type: 'preset', id: preset.id, src: preset.src }]);
-      setSelectedAppId(preset.id);
+      onSelectApp(preset.id);
     }
 
     if (result.type === 'custom') {
@@ -83,11 +89,16 @@ export default function FreezeList() {
 
       setApps((prev) => [...prev, { type: 'custom', id, name: result.name }]);
 
-      setSelectedAppId(id);
+      onSelectApp(id);
     }
 
     setIsAddModalOpen(false);
   };
+
+  useEffect(() => {
+    // 초기화 시 선택 해제
+    onSelectApp(null);
+  }, [resetKey]);
 
   return (
     <>
@@ -132,7 +143,7 @@ export default function FreezeList() {
                 src={item.src}
                 isSelected={item.id === selectedAppId}
                 onClick={() => {
-                  setSelectedAppId(item.id);
+                  onSelectApp(selectedAppId === item.id ? null : item.id);
                   moveToAppPage(item.id);
                 }}
               />
@@ -146,7 +157,7 @@ export default function FreezeList() {
               name={item.name}
               isSelected={item.id === selectedAppId}
               onClick={() => {
-                setSelectedAppId(item.id);
+                onSelectApp(selectedAppId === item.id ? null : item.id);
                 moveToAppPage(item.id);
               }}
             />

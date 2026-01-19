@@ -1,12 +1,22 @@
 import { useState } from 'react';
 import InlineInput from './InlineInput';
+import { useEffect } from 'react';
 
 type ToggleProps = {
   activeToggle: 'manual' | 'link';
   onToggleChange: (Toggle: 'manual' | 'link') => void;
+  onInputStateChange: (state: { mode: 'manual' | 'link'; isValid: boolean }) => void;
+  canFreeze: boolean;
+  resetKey: number;
 };
 
-export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps) {
+export default function ToggleCard({
+  activeToggle,
+  onToggleChange,
+  onInputStateChange,
+  canFreeze,
+  resetKey,
+}: ToggleProps) {
   const activeStyle =
     'w-32 h-9 px-2.5 py-[8px] px-[2px] left-[-2px] top-0 relative bg-white-800 rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.06)]';
   const inactiveStyle =
@@ -17,6 +27,7 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
   const inactiveText =
     'flex-1 self-stretch text-center justify-center text-white-800 SemiBold_14 font-sans leading-5 tracking-tight';
 
+  //링크 입력 상태
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const getInputColor = () => {
@@ -27,8 +38,42 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
     return 'bg-white-400 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] outline-gray-200 placeholder:text-gray-400 ';
   };
 
+  //수동입력 상태
   const [price, setPrice] = useState('');
   const [item, setItem] = useState('');
+
+  useEffect(() => {
+    //냉동하기 버튼 유효성 검사
+    const isManualValid = price.trim() !== '' && item.trim() !== '';
+    const isLinkValid = value.trim() !== '';
+    onInputStateChange({
+      mode: activeToggle,
+      isValid: activeToggle === 'manual' ? isManualValid : isLinkValid,
+    });
+  }, [activeToggle, price, item, value]);
+
+  useEffect(() => {
+    if (activeToggle === 'manual') {
+      setValue('');
+    }
+
+    if (activeToggle === 'link') {
+      setPrice('');
+      setItem('');
+    }
+  }, [activeToggle]);
+  useEffect(() => {
+    setPrice('');
+    setItem('');
+    setValue('');
+    setIsFocused(false);
+
+    // 부모에 "입력 무효" 다시 알려주기
+    onInputStateChange({
+      mode: activeToggle,
+      isValid: false,
+    });
+  }, [resetKey]);
 
   return (
     <>
@@ -111,18 +156,22 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
               </div>
             </div>
 
-            <div
+            <button
               data-layer="button"
               data-property-1="freeze_basic"
-              className="Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute bg-white-400 rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5"
+              className={[
+                'Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5',
+                !canFreeze ? 'bg-white-400 text-gray-200 ' : 'bg-main-skyblue text-white-800',
+              ].join(' ')}
+              disabled={!canFreeze}
             >
               <div
                 data-layer="냉동하기"
-                className="flex-1 self-stretch text-center justify-center text-gray-200 Bold_16 font-sans leading-6 tracking-tight"
+                className="flex-1 self-stretch text-center justify-center Bold_16 font-sans leading-6 tracking-tight"
               >
                 냉동하기
               </div>
-            </div>
+            </button>
           </div>
         )}
 
@@ -139,18 +188,22 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
                 ${getInputColor()}`}
             />
 
-            <div
+            <button
               data-layer="button"
               data-property-1="freeze_basic"
-              className="Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute bg-white-400 rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5"
+              className={[
+                'Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5',
+                !canFreeze ? 'bg-white-400 text-gray-200 ' : 'bg-main-skyblue text-white-800',
+              ].join(' ')}
+              disabled={!canFreeze}
             >
               <div
                 data-layer="링크 등록"
-                className="flex-1 self-stretch text-center justify-center text-gray-200 Bold_16 font-sans leading-6 tracking-tight"
+                className="flex-1 self-stretch text-center justify-center Bold_16 font-sans leading-6 tracking-tight"
               >
                 링크 등록
               </div>
-            </div>
+            </button>
           </div>
         )}
       </div>
