@@ -1,5 +1,5 @@
-import { useRef } from 'react';
 import deleteIcon from '../../../assets/icons/delete.svg';
+import { useAppInteraction } from '../../../hooks/useAppInteractions';
 
 type FreezeAppProps = {
   src: string;
@@ -20,29 +20,14 @@ export default function FreezeApp({
   onLongPress,
   onDeleteClick,
 }: FreezeAppProps) {
-  const pressTimerRef = useRef<number | null>(null);
-
-  const startPress = () => {
-    pressTimerRef.current = window.setTimeout(() => {
-      onLongPress?.();
-    }, 500);
-  };
-
-  const cancelPress = () => {
-    if (pressTimerRef.current) {
-      clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
-  };
+  const interactionHandlers = useAppInteraction({
+    onClick,
+    onLongPress,
+  });
 
   return (
     <div
-      onClick={onClick}
-      onMouseDown={startPress}
-      onMouseUp={cancelPress}
-      onMouseLeave={cancelPress}
-      onTouchStart={startPress}
-      onTouchEnd={cancelPress}
+      {...interactionHandlers}
       className={[
         'relative w-[54px] rounded-lg',
         isSelected

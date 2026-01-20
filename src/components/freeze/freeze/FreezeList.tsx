@@ -86,6 +86,7 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
       // 존재하지 않는 앱을 선택, 새로 추가
       setApps((prev) => [...prev, { type: 'preset', id: preset.id, src: preset.src }]);
       onSelectApp(preset.id);
+      moveToAppPage(preset.id);
     }
 
     if (result.type === 'custom') {
@@ -94,6 +95,7 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
       setApps((prev) => [...prev, { type: 'custom', id, name: result.name }]);
 
       onSelectApp(id);
+      moveToAppPage(id);
     }
 
     setIsAddModalOpen(false);

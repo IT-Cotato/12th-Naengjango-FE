@@ -1,5 +1,5 @@
-import { useRef } from 'react';
 import deleteIcon from '../../../assets/icons/delete.svg';
+import { useAppInteraction } from '../../../hooks/useAppInteractions';
 type AppNewProps = {
   name: string;
   isSelected?: boolean;
@@ -17,29 +17,13 @@ export default function AppNew({
   onLongPress,
   onDeleteClick,
 }: AppNewProps) {
-  const pressTimerRef = useRef<number | null>(null);
-
-  const startPress = () => {
-    pressTimerRef.current = window.setTimeout(() => {
-      onLongPress?.();
-    }, 500);
-  };
-
-  const cancelPress = () => {
-    if (pressTimerRef.current) {
-      clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
-  };
+  const interactionHandlers = useAppInteraction({
+    onClick,
+    onLongPress,
+  });
   return (
     <div
-      onClick={onClick}
-      onMouseDown={startPress}
-      onMouseUp={cancelPress}
-      onMouseLeave={cancelPress}
-      onTouchStart={startPress}
-      onTouchEnd={cancelPress}
-      data-layer="application"
+      {...interactionHandlers}
       className={[
         'relative size-[54px] px-3.5 py-[7px] bg-sub-skyblue rounded-lg inline-flex flex-col items-center justify-center overflow-hidden',
         isSelected
@@ -52,7 +36,7 @@ export default function AppNew({
     >
       <div
         data-layer="name"
-        className="w-full text-center text-gray-800 Bold_14 font-sans leading-5 tracking-tight line-clamp-2 word-break: break-all"
+        className="w-full text-center text-gray-800 Bold_14 font-sans leading-5 tracking-tight line-clamp-2 break-all"
       >
         {name}
       </div>
