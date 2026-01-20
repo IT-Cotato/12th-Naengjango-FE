@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import AddModal from './AddModal';
 import { PRESET_APPS } from '@/data/presetApps';
 import AppNew from './AppNew';
+import AlertModal from '@/components/common/AlertModal';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -30,13 +31,16 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
 
   const [page, setPage] = useState(totalPages - 1);
   const moveToAppPage = (appId: string) => {
-    const index = apps.findIndex((app) => app.type !== 'add' && app.id === appId);
+    const index = apps.filter((app) => app.type !== 'add').findIndex((app) => app.id === appId);
 
     if (index === -1) return;
 
     const targetPage = Math.floor(index / ITEMS_PER_PAGE);
     setPage(targetPage);
   };
+
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const startIndex = page * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -130,6 +134,11 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
           content-start
           gap-[17px]
         "
+        onClick={() => {
+          if (isDeleteMode) {
+            setIsDeleteMode(false);
+          }
+        }}
       >
         {renderItems.map((item) => {
           if (item.type === 'add') {
@@ -142,9 +151,18 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
                 key={item.id}
                 src={item.src}
                 isSelected={item.id === selectedAppId}
+                showDelete={isDeleteMode}
                 onClick={() => {
-                  onSelectApp(selectedAppId === item.id ? null : item.id);
-                  moveToAppPage(item.id);
+                  if (!isDeleteMode) {
+                    onSelectApp(selectedAppId === item.id ? null : item.id);
+                    moveToAppPage(item.id);
+                  }
+                }}
+                onLongPress={() => {
+                  setIsDeleteMode(true);
+                }}
+                onDeleteClick={() => {
+                  setDeleteTargetId(item.id);
                 }}
               />
             );
@@ -157,8 +175,17 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
               name={item.name}
               isSelected={item.id === selectedAppId}
               onClick={() => {
-                onSelectApp(selectedAppId === item.id ? null : item.id);
-                moveToAppPage(item.id);
+                if (!isDeleteMode) {
+                  onSelectApp(selectedAppId === item.id ? null : item.id);
+                  moveToAppPage(item.id);
+                }
+              }}
+              showDelete={isDeleteMode}
+              onLongPress={() => {
+                setIsDeleteMode(true);
+              }}
+              onDeleteClick={() => {
+                setDeleteTargetId(item.id);
               }}
             />
           );
@@ -192,6 +219,30 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
       {isAddModalOpen && (
         <AddModal onClose={() => setIsAddModalOpen(false)} onConfirm={handleConfirmAdd} />
       )}
+
+      <AlertModal
+        isOpen={deleteTargetId !== null}
+        onClose={() => {
+          setDeleteTargetId(null);
+          setIsDeleteMode(false);
+        }}
+        title="어플을 삭제하시겠습니까"
+        message="다시 추가할 수 있어요."
+        twoButtons={{
+          leftText: '취소',
+          rightText: '삭제',
+          onRight: () => {
+            if (!deleteTargetId) return;
+
+            setApps((prev) =>
+              prev.filter((app) => app.type === 'add' || app.id !== deleteTargetId),
+            );
+
+            setDeleteTargetId(null);
+            setIsDeleteMode(false);
+          },
+        }}
+      />
     </>
   );
 }

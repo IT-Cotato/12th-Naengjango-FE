@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import InlineInput from './InlineInput';
 import { useEffect } from 'react';
+import AlertModal from '@/components/common/AlertModal';
 
 type ToggleProps = {
   activeToggle: 'manual' | 'link';
@@ -52,6 +53,9 @@ export default function ToggleCard({
     });
   }, [activeToggle, price, item, value]);
 
+  //모달창 연결 버튼 클릭 상태
+  const [confirmModal, setConfirmModal] = useState(false);
+
   useEffect(() => {
     if (activeToggle === 'manual') {
       setValue('');
@@ -62,6 +66,7 @@ export default function ToggleCard({
       setItem('');
     }
   }, [activeToggle]);
+
   useEffect(() => {
     setPrice('');
     setItem('');
@@ -164,6 +169,7 @@ export default function ToggleCard({
                 !canFreeze ? 'bg-white-400 text-gray-200 ' : 'bg-main-skyblue text-white-800',
               ].join(' ')}
               disabled={!canFreeze}
+              onClick={() => setConfirmModal(true)}
             >
               <div
                 data-layer="냉동하기"
@@ -174,6 +180,28 @@ export default function ToggleCard({
             </button>
           </div>
         )}
+
+        <AlertModal
+          isOpen={confirmModal}
+          onClose={() => {
+            console.log('freeze canceled!');
+            setConfirmModal(false);
+          }}
+          title="냉동하시겠습니까"
+          message="24시간 후 알림을 전송해요"
+          twoButtons={{
+            leftText: '취소',
+            rightText: '냉동하기',
+            onRight: () => {
+              console.log('freeze success!');
+              setConfirmModal(false);
+              setPrice('');
+              setItem('');
+              setValue('');
+              setIsFocused(false);
+            },
+          }}
+        />
 
         {activeToggle === 'link' && (
           <div>

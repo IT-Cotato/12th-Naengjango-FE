@@ -34,25 +34,35 @@ export default function DropDown({ value, onChange }: DropDownProps) {
       {/* 활성화 후 */}
       {isOpen && (
         <div className="absolute -top-1 right-0 w-[58px] mt-1 inline-flex flex-col z-10">
-          {sortedOptions.map((option, index) => (
-            <div
-              key={option}
-              onClick={() => {
-                onChange(option);
-                setIsOpen(false);
-              }}
-              className={`
-                pl-[7px] py-0.5 bg-white-800 outline outline-[0.5px] outline-gray-200
-                inline-flex justify-center items-center cursor-pointer
-                ${index === 0 ? 'rounded-t-md' : ''}
-                ${index === sortedOptions.length - 1 ? 'rounded-b-md' : ''}
-              `}
-            >
-              <div className="text-gray-400 Medium_12 font-sans leading-[18px] tracking-tight">
-                {option}
+          {sortedOptions.map((option, index) => {
+            const isCurrent = index === 0;
+
+            return (
+              <div
+                key={option}
+                onClick={() => {
+                  if (!isCurrent) {
+                    onChange(option);
+                  }
+                  setIsOpen(false);
+                }}
+                className={`
+        pl-[7px] pr-[4px] py-0.5 bg-white-800
+        outline outline-[0.5px] outline-gray-200
+        inline-flex justify-between items-center cursor-pointer
+        ${index === 0 ? 'rounded-t-md' : ''}
+        ${index === sortedOptions.length - 1 ? 'rounded-b-md' : ''}
+      `}
+              >
+                <div className="text-gray-400 Medium_12 font-sans leading-[18px] tracking-tight">
+                  {option}
+                </div>
+
+                {/* 첫번째는 chevron 추가 */}
+                {isCurrent && <img src={dropdown} alt="chevron" className="w-4 h-4 rotate-180" />}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </>
