@@ -26,7 +26,7 @@ export default function Menu({ activeTab, onTabChange }: MenuProps) {
         >
           <div
             data-layer="냉동하기"
-            className={`text-lg font-medium font-sans
+            className={`Medium_18 font-sans
             ${activeTab === 'freeze' ? activeText : inactiveText}`}
           >
             냉동하기
@@ -41,7 +41,7 @@ export default function Menu({ activeTab, onTabChange }: MenuProps) {
         >
           <div
             data-layer="냉동 기록"
-            className={`text-lg font-medium font-sans
+            className={`Medium_18 font-sans
             ${activeTab === 'history' ? activeText : inactiveText}`}
           >
             냉동 기록
