@@ -12,7 +12,7 @@ export default function FAQModal({ isOpen, onClose, questionNumber, question, an
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30" onClick={onClose}>
       <div
-        className="w-full h-[287px] rounded-t-[30px] bg-white-800 p-6"
+        className="w-full max-h-[287px] rounded-t-[30px] bg-white-800 p-6 overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-center mb-6">

@@ -12,10 +12,10 @@ import LoginPage from '@/pages/login/LoginPage';
 import SetupPage from '@/pages/login/SetupPage';
 import FindIdPage from './pages/login/find/FindIdPage';
 import FindPwPage from './pages/login/find/FindPwPage';
-import ChangePwPage from './pages/my/ChangePwPage';
-import ChangeBudgetPage from './pages/my/ChangeBudgetPage';
-import InquiryPage from './pages/my/InquiryPage';
-import FAQPage from './pages/my/FAQPage';
+import ChangePwPage from '@/pages/my/ChangePwPage';
+import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
+import InquiryPage from '@/pages/my/InquiryPage';
+import FAQPage from '@/pages/my/FAQPage';
 
 export default function App() {
   return (

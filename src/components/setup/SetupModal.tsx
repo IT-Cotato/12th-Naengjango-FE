@@ -54,7 +54,6 @@ export default function Modal({
 
         {/* 금액 입력 칸 */}
         <div className="mb-18">{children}</div>
-      
         {/* 버튼 */}
         <div className="flex gap-2 mt-8">
           {onDelete && (

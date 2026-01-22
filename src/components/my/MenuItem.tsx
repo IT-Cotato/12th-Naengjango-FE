@@ -26,7 +26,7 @@ export default function MenuItem({ label, onClick, icon, showChevron = true }: P
         )}
         <span className="Medium_18 text-gray-800">{label}</span>
       </div>
-      {showChevron && <img src={go} alt="이동" className="w-6 h-6 ml-3" aria-hidden="true" />}
+      {showChevron && <img src={go} alt="" className="w-6 h-6 ml-3" aria-hidden="true" />}
     </button>
   );
 }
