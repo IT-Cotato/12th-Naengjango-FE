@@ -1,22 +1,34 @@
 import { useState } from 'react';
 import InlineInput from './InlineInput';
+import { useEffect } from 'react';
+import AlertModal from '@/components/common/AlertModal';
 
 type ToggleProps = {
   activeToggle: 'manual' | 'link';
   onToggleChange: (Toggle: 'manual' | 'link') => void;
+  onInputStateChange: (state: { mode: 'manual' | 'link'; isValid: boolean }) => void;
+  canFreeze: boolean;
+  resetKey: number;
 };
 
-export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps) {
+export default function ToggleCard({
+  activeToggle,
+  onToggleChange,
+  onInputStateChange,
+  canFreeze,
+  resetKey,
+}: ToggleProps) {
   const activeStyle =
     'w-32 h-9 px-2.5 py-[8px] px-[2px] left-[-2px] top-0 relative bg-white-800 rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.06)]';
   const inactiveStyle =
     'w-32 h-9 px-2.5 py-[8px] px-[2px] left-[-2px] top-0 relative  rounded-[20px]';
 
   const activeText =
-    'flex-1 text-center justify-start text-gray-800 text-sm font-semibold font-sans leading-5 tracking-tight line-clamp-1';
+    'flex-1 text-center justify-start text-gray-800 SemiBold_14 font-sans leading-5 tracking-tight line-clamp-1';
   const inactiveText =
-    'flex-1 self-stretch text-center justify-center text-white-800 text-sm font-semibold font-sans leading-5 tracking-tight';
+    'flex-1 self-stretch text-center justify-center text-white-800 SemiBold_14 font-sans leading-5 tracking-tight';
 
+  //링크 입력 상태
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const getInputColor = () => {
@@ -27,8 +39,46 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
     return 'bg-white-400 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] outline-gray-200 placeholder:text-gray-400 ';
   };
 
+  //수동입력 상태
   const [price, setPrice] = useState('');
   const [item, setItem] = useState('');
+
+  useEffect(() => {
+    //냉동하기 버튼 유효성 검사
+    const isManualValid = price.trim() !== '' && item.trim() !== '';
+    const isLinkValid = value.trim() !== '';
+    onInputStateChange({
+      mode: activeToggle,
+      isValid: activeToggle === 'manual' ? isManualValid : isLinkValid,
+    });
+  }, [activeToggle, price, item, value]);
+
+  //모달창 연결 버튼 클릭 상태
+  const [confirmModal, setConfirmModal] = useState(false);
+
+  useEffect(() => {
+    if (activeToggle === 'manual') {
+      setValue('');
+    }
+
+    if (activeToggle === 'link') {
+      setPrice('');
+      setItem('');
+    }
+  }, [activeToggle]);
+
+  useEffect(() => {
+    setPrice('');
+    setItem('');
+    setValue('');
+    setIsFocused(false);
+
+    // 부모에 "입력 무효" 다시 알려주기
+    onInputStateChange({
+      mode: activeToggle,
+      isValid: false,
+    });
+  }, [resetKey]);
 
   return (
     <>
@@ -87,17 +137,23 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
                 data-layer="금액 원의 품목 을 결제할지 고민이에요"
                 className="flex-1 justify-start"
               >
-                <InlineInput placeholder="금액" value={price} onChange={setPrice} />
+                <InlineInput placeholder="금액" value={price} onChange={setPrice} type="price" />
 
-                <span className="text-gray-800 text-xl font-medium font-sans leading-8 tracking-tight">
+                <span className="text-gray-800 Medium_20 font-sans leading-8 tracking-tight">
                   {' '}
                   원의
                   <br />
                 </span>
 
-                <InlineInput placeholder="품목" value={item} onChange={setItem} />
+                <InlineInput
+                  placeholder="품목"
+                  value={item}
+                  onChange={setItem}
+                  type="text"
+                  maxLength={10}
+                />
 
-                <span className="text-gray-800 text-xl font-medium font-sans leading-8 tracking-tight">
+                <span className="text-gray-800 Medium_20 font-sans leading-8 tracking-tight">
                   {' '}
                   을<br />
                   결제할지 고민이에요
@@ -105,20 +161,47 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
               </div>
             </div>
 
-            <div
+            <button
               data-layer="button"
               data-property-1="freeze_basic"
-              className="Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute bg-white-400 rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5"
+              className={[
+                'Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5',
+                !canFreeze ? 'bg-white-400 text-gray-200 ' : 'bg-main-skyblue text-white-800',
+              ].join(' ')}
+              disabled={!canFreeze}
+              onClick={() => setConfirmModal(true)}
             >
               <div
                 data-layer="냉동하기"
-                className="flex-1 self-stretch text-center justify-center text-gray-200 text-base font-bold font-sans leading-6 tracking-tight"
+                className="flex-1 self-stretch text-center justify-center Bold_16 font-sans leading-6 tracking-tight"
               >
                 냉동하기
               </div>
-            </div>
+            </button>
           </div>
         )}
+
+        <AlertModal
+          isOpen={confirmModal}
+          onClose={() => {
+            console.log('freeze canceled!');
+            setConfirmModal(false);
+          }}
+          title="냉동하시겠습니까"
+          message="24시간 후 알림을 전송해요"
+          twoButtons={{
+            leftText: '취소',
+            rightText: '냉동하기',
+            onRight: () => {
+              console.log('freeze success!');
+              setConfirmModal(false);
+              setPrice('');
+              setItem('');
+              setValue('');
+              setIsFocused(false);
+            },
+          }}
+        />
 
         {activeToggle === 'link' && (
           <div>
@@ -128,25 +211,27 @@ export default function ToggleCard({ activeToggle, onToggleChange }: ToggleProps
               onChange={(e) => setValue(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              className={`Frame15 w-64 h-32 px-4 py-2 left-[14px] top-[29px] absolute rounded-xl outline outline-1 outline-offset-[-1px]  inline-flex justify-start items-start gap-2.5
-                placeholder:font-medium
-                placeholder:font-sans
-                placeholder:leading-6
+              className={`Frame15 w-64 h-32 px-4 py-2 left-[14px] top-[29px] absolute rounded-xl outline outline-1 outline-offset-[-1px]  inline-flex justify-start items-start gap-2.5 resize-none
+                placeholder:Medium_15
                 ${getInputColor()}`}
             />
 
-            <div
+            <button
               data-layer="button"
               data-property-1="freeze_basic"
-              className="Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute bg-white-400 rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5"
+              className={[
+                'Button w-64 h-10 px-4 py-2 left-[16px] top-[172px] absolute rounded-xl shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] inline-flex justify-center items-center gap-2.5',
+                !canFreeze ? 'bg-white-400 text-gray-200 ' : 'bg-main-skyblue text-white-800',
+              ].join(' ')}
+              disabled={!canFreeze}
             >
               <div
                 data-layer="링크 등록"
-                className="flex-1 self-stretch text-center justify-center text-gray-200 text-base font-bold font-sans leading-6 tracking-tight"
+                className="flex-1 self-stretch text-center justify-center Bold_16 font-sans leading-6 tracking-tight"
               >
                 링크 등록
               </div>
-            </div>
+            </button>
           </div>
         )}
       </div>
