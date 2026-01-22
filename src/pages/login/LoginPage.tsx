@@ -36,7 +36,6 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             grayBg
-            showLastChar
             error={!isPasswordValid ? '영문, 숫자, 특수문자 포함 8~20자' : undefined}
             helperText={isPasswordValid ? '영문, 숫자, 특수문자 포함 8~20자' : undefined}
           />

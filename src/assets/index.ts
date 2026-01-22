@@ -17,3 +17,8 @@ export { default as exercise } from './setup/exercise.svg';
 export { default as familyoccasion } from './setup/familyoccasion.svg';
 export { default as insurance } from './setup/insurance.svg';
 export { default as etc } from './setup/etc.svg';
+export { default as go } from './go.svg';
+export { default as pw } from './pw.svg';
+export { default as logout } from './logout.svg';
+export { default as quit } from './quit.svg';
+export { default as snow } from './snow.svg';
