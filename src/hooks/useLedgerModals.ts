@@ -1,7 +1,6 @@
 // hooks/useLedgerModals.ts
 import { useState } from 'react';
 import type { ParsedLedgerData } from '@/types/ledger';
-import type { LedgerEntry } from '@/components/ledger/LedgerEntryList';
 import type { ParseLedgerResponse } from '@/apis/ledger/types';
 
 type Params = {
@@ -10,41 +9,20 @@ type Params = {
 };
 
 export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params) {
-  // ===== Paste Modal =====
   const [isPasteOpen, setIsPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState('');
 
-  // ===== Manual Modal =====
-  const [isManualOpen, setIsManualOpen] = useState(false);
-
-  // ===== Parsed Modal =====
   const [isParsedOpen, setIsParsedOpen] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedLedgerData | null>(null);
 
-  // ===== Edit Modal =====
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editEntry, setEditEntry] = useState<LedgerEntry | null>(null);
-
-  // ===== API State =====
   const [isParsing, setIsParsing] = useState(false);
   const [pasteError, setPasteError] = useState('');
 
-  // ===== Actions =====
   const onPaste = () => {
     onCloseFab();
-
-    // 초기화
     setPasteText('');
     setPasteError('');
-    setParsedData(null);
-    setIsParsedOpen(false);
-
     setIsPasteOpen(true);
-  };
-
-  const onManual = () => {
-    onCloseFab();
-    setIsManualOpen(true);
   };
 
   const onClosePaste = () => setIsPasteOpen(false);
@@ -53,13 +31,13 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
     const text = pasteText.trim();
     if (!text || isParsing) return;
 
-    setPasteError('');
     setIsParsing(true);
+    setPasteError('');
 
     try {
       const parsed: ParseLedgerResponse = await parseLedgerText(text);
 
-      //memo는 여기서만 결합
+      // ✅ 여기서만 memo 결합
       const completed: ParsedLedgerData = {
         ...parsed,
         memo: text,
@@ -69,8 +47,7 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
       setParsedData(completed);
       setIsParsedOpen(true);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '분석 실패';
-      setPasteError(msg);
+      setPasteError(e instanceof Error ? e.message : '분석 실패');
     } finally {
       setIsParsing(false);
     }
@@ -81,53 +58,22 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
     setParsedData(null);
   };
 
-  // ===== Edit =====
-  const openEdit = (entry: LedgerEntry) => {
-    setEditEntry(entry);
-    setIsEditOpen(true);
-  };
-
-  const closeEdit = () => {
-    setIsEditOpen(false);
-    setEditEntry(null);
-  };
-
   return {
-    // paste
     isPasteOpen,
     setIsPasteOpen,
     pasteText,
     setPasteText,
 
-    // manual
-    isManualOpen,
-    setIsManualOpen,
-
-    // parsed
     isParsedOpen,
-    setIsParsedOpen,
     parsedData,
     setParsedData,
 
-    // edit
-    isEditOpen,
-    setIsEditOpen,
-    editEntry,
-    setEditEntry,
-
-    // api
     isParsing,
-    setIsParsing,
     pasteError,
-    setPasteError,
 
-    // handlers (LedgerPage에서 쓰던 이름 그대로)
     onPaste,
-    onManual,
     onClosePaste,
     onSubmitPaste,
     onCloseParsed,
-    openEdit,
-    closeEdit,
   };
 }
