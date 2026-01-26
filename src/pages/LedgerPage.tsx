@@ -10,12 +10,15 @@ import ManualUpdateModal from '@/components/ledger/ManualUpdateModal';
 // ✅ 리스트 + 타입
 import LedgerEntryList, { type LedgerEntry } from '@/components/ledger/LedgerEntryList';
 
-// ✅ 수정 모달(방금 만든 파일)
+// ✅ 수정 모달
 import LedgerEditModal from '@/components/ledger/LedgerEditModal';
 
 import { parseLedgerText } from '@/apis/ledger/parseLedgerText';
 import type { ParsedLedgerData } from '@/types/ledger';
 import { useMemo, useState } from 'react';
+
+// ✅ entries 훅
+import useLedgerEntries from '@/hook/useLedgerEntries';
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
@@ -67,27 +70,14 @@ export default function LedgerPage() {
   const [isParsing, setIsParsing] = useState(false);
   const [pasteError, setPasteError] = useState<string>('');
 
-  // ✅ 로컬 내역 목록(임시)
-  const [entries, setEntries] = useState<LedgerEntry[]>([]);
-
   const onToggleFab = () => setIsFabOpen((v) => !v);
   const onCloseFab = () => setIsFabOpen(false);
 
   const selectedDateLabel = useMemo(() => formatDateYYYYMMDD(selectedDate), [selectedDate]);
 
-  const visibleEntries = useMemo(() => {
-    return entries.filter((e) => e.date === selectedDateLabel);
-  }, [entries, selectedDateLabel]);
-
-  const addEntry = (entry: Omit<LedgerEntry, 'id'>) => {
-    setEntries((prev) => [
-      {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        ...entry,
-      },
-      ...prev,
-    ]);
-  };
+  // ✅ entries 관련은 전부 훅에서 가져옴 (이름 그대로!)
+  const { entries, setEntries, visibleEntries, addEntry, onSaveEdit, onDeleteEntry } =
+    useLedgerEntries(selectedDateLabel);
 
   // ✅ 지출 전용 공통 저장(하나만!)
   const handleSaveExpense = (draft: ExpenseDraft) => {
@@ -106,19 +96,10 @@ export default function LedgerPage() {
     setEditEntry(entry);
     setIsEditOpen(true);
   };
+
   const closeEdit = () => {
     setIsEditOpen(false);
     setEditEntry(null);
-  };
-
-  // ✅ 수정 저장(리스트 업데이트)
-  const onSaveEdit = (next: LedgerEntry) => {
-    setEntries((prev) => prev.map((e) => (e.id === next.id ? next : e)));
-  };
-
-  // ✅ 삭제
-  const onDeleteEntry = (id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id));
   };
 
   const onPaste = () => {
@@ -164,7 +145,7 @@ export default function LedgerPage() {
     setParsedData(null);
   };
 
-  // ✅ ParsedModal 저장: payload → ExpenseDraft → handleSaveExpense (하나로 끝)
+  // ✅ ParsedModal 저장: payload → ExpenseDraft → handleSaveExpense
   const onSaveParsedExpenseOnly = (payload: {
     type: string;
     amount: number;
@@ -185,7 +166,7 @@ export default function LedgerPage() {
     setParsedData(null);
   };
 
-  // ✅ ManualModal 저장: draft 그대로 → handleSaveExpense (하나로 끝)
+  // ✅ ManualModal 저장: draft 그대로 → handleSaveExpense
   const onSaveManualExpenseOnly = (draft: ExpenseDraft) => {
     handleSaveExpense(draft);
     setIsManualOpen(false);
