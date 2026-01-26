@@ -1,6 +1,10 @@
 import { chevronLeftIcon, chevronRightIcon } from '@/assets';
 import { useMemo, useState } from 'react';
 
+type Props = {
+  selectedDate: Date;
+  onChangeSelectedDate: (d: Date) => void;
+};
 // 하단코드에서 매핑때 깔끔하게 사용하려고 선언 해놨어요
 const DOW = ['Sun', 'Mon', 'Tue', 'Wen', 'Thr', 'Fri', 'Sat'];
 
@@ -42,7 +46,7 @@ function buildMonthCells(monthFirst: Date) {
   });
 }
 
-export default function LedgerCalendar() {
+export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: Props) {
   const [today] = useState(() => new Date());
 
   // 현재 보고 있는 달(항상 1일로 고정)
@@ -51,9 +55,6 @@ export default function LedgerCalendar() {
     d.setDate(1);
     return d;
   });
-
-  // 선택된 날짜
-  const [selectedDate, setSelectedDate] = useState<Date>(today);
 
   const year = monthFirst.getFullYear();
   const month = monthFirst.getMonth() + 1; // 1~12
@@ -71,7 +72,7 @@ export default function LedgerCalendar() {
   };
 
   const onSelect = (d: Date) => {
-    setSelectedDate(d);
+    onChangeSelectedDate(d);
 
     // 선택한 날짜가 다른 달이면, 그 달로 자동 이동
     if (d.getFullYear() !== year || d.getMonth() !== monthFirst.getMonth()) {
