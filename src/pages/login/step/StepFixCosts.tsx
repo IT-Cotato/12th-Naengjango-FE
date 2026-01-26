@@ -26,7 +26,10 @@ type FixCost = {
 type Props = {
   value: FixCost[];
   onChange: (v: FixCost[]) => void;
-  budget: string;
+  budget: string; // 위에 표시되는 예산
+  showBudgetInput?: boolean; // 예산 수정중일 때 true
+  onBudgetChange?: (v: string) => void; // 예산 변경 핸들러
+  inputBudget?: string; // 입력 필드에 사용할 예산 (없으면 budget 사용)
 };
 
 // 카테고리 데이터
@@ -53,7 +56,14 @@ const CATEGORIES = {
   ],
 };
 
-export default function StepFixCosts({ value, onChange, budget }: Props) {
+export default function StepFixCosts({
+  value,
+  onChange,
+  budget,
+  showBudgetInput = false,
+  onBudgetChange,
+  inputBudget,
+}: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
     id: string;
@@ -120,6 +130,27 @@ export default function StepFixCosts({ value, onChange, budget }: Props) {
         <span className="text-gray-800 font-semibold">입니다.</span>
       </div>
 
+      {showBudgetInput && onBudgetChange && (
+        <div className="mt-6">
+          <p className="mb-1 Medium_18 text-[#000000]">한 달 예산을 입력하세요</p>
+          <Input
+            placeholder="ex) 600,000"
+            value={
+              inputBudget !== undefined
+                ? inputBudget
+                  ? formatNumber(inputBudget)
+                  : ''
+                : budget
+                  ? formatNumber(budget)
+                  : ''
+            }
+            onChange={(e) => onBudgetChange(e.target.value.replace(/[^0-9]/g, ''))}
+            inputMode="numeric"
+            rightSlot={<span className="text-gray-400"></span>}
+          />
+        </div>
+      )}
+
       <p className="mt-8 mb-6 text-[18px] font-medium text-gray-800 text-center">
         고정 지출 카테고리를 선택해주세요
       </p>
@@ -172,6 +203,7 @@ export default function StepFixCosts({ value, onChange, budget }: Props) {
         >
           <Input
             placeholder="ex) 60,000"
+            inputMode="numeric"
             value={inputAmount ? formatNumber(inputAmount) : ''}
             onChange={(e) => setInputAmount(e.target.value.replace(/[^0-9]/g, ''))}
           />

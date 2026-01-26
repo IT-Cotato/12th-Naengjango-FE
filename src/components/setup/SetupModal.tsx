@@ -35,6 +35,9 @@ export default function Modal({
         className="w-full h-[359px] rounded-t-[30px] bg-white-800 p-6"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="flex justify-center mb-4">
+          <div className="w-11 h-1 rounded-full bg-gray-200" />
+        </div>
         {/* 아이콘 */}
         {icon && (
           <div className="flex justify-center mb-1">
@@ -51,7 +54,6 @@ export default function Modal({
 
         {/* 금액 입력 칸 */}
         <div className="mb-18">{children}</div>
-
         {/* 버튼 */}
         <div className="flex gap-2 mt-8">
           {onDelete && (

@@ -5,7 +5,10 @@ type Props = {
   placeholder?: string;
   value?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onFocus?: React.FocusEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
   type?: string;
+  inputMode?: 'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search';
   disabled?: boolean;
   error?: React.ReactNode;
   helperText?: React.ReactNode;
@@ -24,7 +27,10 @@ const Input = ({
   placeholder,
   value,
   onChange,
+  onFocus,
+  onBlur,
   type = 'text',
+  inputMode,
   disabled,
   error,
   helperText,
@@ -123,13 +129,24 @@ const Input = ({
           ${inputClassName ?? ''}`}
       >
         <input
-          className="w-full bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed"
+          className="w-full bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed"
           placeholder={hidePlaceholderOnFocus && isFocused ? '' : placeholder}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={(e) => {
+            setIsFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            // 모바일에서 입력 완료 후 확대된 화면을 원래대로 복원
+            if (window.visualViewport) {
+              window.scrollTo(0, 0);
+            }
+            onBlur?.(e);
+          }}
           value={showLastChar && type === 'password' ? maskedValue : value}
           onChange={handleChange}
           type={showLastChar && type === 'password' ? 'text' : type}
+          inputMode={inputMode}
           disabled={disabled}
         />
 
