@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-
-import type { ParsedLedgerData, LedgerDraft } from '@/types/ledger';
+import type { ParsedLedgerData } from '@/types/ledger';
 
 type EntryType = 'income' | 'expense';
 
@@ -28,7 +27,6 @@ function formatYYYYMMDD(dateStr: string) {
 export default function LedgerParsedModal({ open, data, onClose, onSave }: Props) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
-  // ✅ ParsedLedgerData는 type이 없으니 여기까지는 그대로
   const initial = useMemo<ParsedLedgerData>(() => {
     return (
       data ?? {
@@ -41,7 +39,6 @@ export default function LedgerParsedModal({ open, data, onClose, onSave }: Props
     );
   }, [data]);
 
-  // ✅ type은 Draft에만 존재 (UI state)
   const [type, setType] = useState<EntryType>('expense');
 
   const [amount, setAmount] = useState<number>(initial.amount);
@@ -65,14 +62,16 @@ export default function LedgerParsedModal({ open, data, onClose, onSave }: Props
   const disabled = !Number.isFinite(amount) || amount <= 0;
 
   const handleSave = () => {
-    onSave({
-      date: initial.date,
-      type, // ✅ 포함 가능
-      amount,
-      category: category.trim(),
-      description: description.trim(),
-      memo: memo ?? '',
-    });
+    onSave(
+      {
+        date: initial.date,
+        amount,
+        category: category.trim(),
+        description: description.trim(),
+        memo: memo ?? '',
+      },
+      type,
+    );
   };
 
   return (
@@ -132,7 +131,7 @@ export default function LedgerParsedModal({ open, data, onClose, onSave }: Props
           </div>
         </div>
 
-        {/* ✅ 저장 버튼 */}
+        {/* 저장 버튼 */}
         <div className="absolute left-6 right-6 bottom-[34px]">
           <button
             type="button"

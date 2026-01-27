@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import Button from '@/components/common/Button';
 import type { LedgerEntry } from '@/components/ledger/LedgerEntryList';
+import LedgerCategoryModal from '@/components/ledger/LedgerCategoryModal';
 
 type EntryType = 'income' | 'expense';
 
@@ -43,8 +44,12 @@ export default function LedgerEditModal({ open, entry, onClose, onSave, onDelete
   const [amountInput, setAmountInput] = useState<string>(
     safeEntry.amount > 0 ? formatNumberWithComma(safeEntry.amount) : '',
   );
+  const [category, setCategory] = useState<string>(safeEntry.category ?? '');
   const [description, setDescription] = useState<string>(safeEntry.description ?? '');
   const [memo, setMemo] = useState<string>(safeEntry.memo ?? '');
+
+  // ✅ 카테고리 모달
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   // ✅ 이제 hook 호출은 끝났으니 조건부 return 가능
   if (!open || !entry) return null;
@@ -75,6 +80,7 @@ export default function LedgerEditModal({ open, entry, onClose, onSave, onDelete
       ...entry,
       type,
       amount,
+      category: category.trim(),
       description: description.trim(),
       memo,
     });
@@ -86,6 +92,8 @@ export default function LedgerEditModal({ open, entry, onClose, onSave, onDelete
     onDelete(entry.id);
     onClose();
   };
+
+  const openCategory = () => setIsCategoryOpen(true);
 
   return (
     <div
@@ -125,21 +133,30 @@ export default function LedgerEditModal({ open, entry, onClose, onSave, onDelete
           </button>
         </div>
 
-        {/* category preview (수정은 아직 안 붙이니까 entry.category 그대로 표시) */}
+        {/* ✅ category preview (아이콘 원 + 텍스트 둘 다 클릭되면 모달 오픈) */}
         <div className="w-96 px-6 absolute left-0 top-[82px] inline-flex flex-col justify-start items-start">
           <div className="self-stretch h-24 inline-flex justify-center items-center gap-6">
             <div className="w-14 h-24 relative">
               <div className="w-14 left-0 top-[54px] absolute inline-flex flex-col justify-start items-center">
-                <div className="self-stretch h-5 text-center text-black text-base font-medium leading-6 tracking-tight">
-                  {entry.category || '카테고리'}
-                </div>
+                <button
+                  type="button"
+                  onClick={openCategory}
+                  className="self-stretch h-5 text-center text-black text-base font-medium leading-6 tracking-tight"
+                >
+                  {category || '카테고리'}
+                </button>
               </div>
 
-              <div className="size-12 p-3 left-[4px] top-0 absolute bg-[color:var(--color-sub-skyblue)] rounded-3xl inline-flex justify-start items-center gap-2.5">
+              <button
+                type="button"
+                onClick={openCategory}
+                aria-label="카테고리 수정"
+                className="size-12 p-3 left-[4px] top-0 absolute bg-[color:var(--color-sub-skyblue)] rounded-3xl inline-flex justify-start items-center gap-2.5"
+              >
                 <div className="size-6 relative overflow-hidden">
                   <div className="w-4 h-5 left-[3px] top-[2px] absolute bg-[color:var(--color-gray-800)]" />
                 </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -238,6 +255,14 @@ export default function LedgerEditModal({ open, entry, onClose, onSave, onDelete
             저장
           </Button>
         </div>
+
+        {/* ✅ 카테고리 수정 모달 */}
+        <LedgerCategoryModal
+          open={isCategoryOpen}
+          value={category}
+          onClose={() => setIsCategoryOpen(false)}
+          onSave={(nextCategory) => setCategory(nextCategory)}
+        />
       </div>
     </div>
   );
