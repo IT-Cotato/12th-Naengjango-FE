@@ -1,14 +1,13 @@
-// hooks/useLedgerModals.ts
 import { useState } from 'react';
 import type { ParsedLedgerData } from '@/types/ledger';
 import type { ParseLedgerResponse } from '@/apis/ledger/types';
 
 type Params = {
-  onCloseFab: () => void;
   parseLedgerText: (text: string) => Promise<ParseLedgerResponse>;
+  onCloseFab: () => void;
 };
 
-export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params) {
+export default function usePasteModal({ parseLedgerText, onCloseFab }: Params) {
   const [isPasteOpen, setIsPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState('');
 
@@ -20,8 +19,12 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
 
   const onPaste = () => {
     onCloseFab();
+
     setPasteText('');
     setPasteError('');
+    setParsedData(null);
+    setIsParsedOpen(false);
+
     setIsPasteOpen(true);
   };
 
@@ -31,23 +34,23 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
     const text = pasteText.trim();
     if (!text || isParsing) return;
 
-    setIsParsing(true);
     setPasteError('');
+    setIsParsing(true);
 
     try {
       const parsed: ParseLedgerResponse = await parseLedgerText(text);
 
-      // ✅ 여기서만 memo 결합
       const completed: ParsedLedgerData = {
         ...parsed,
-        memo: text,
+        memo: text, // ✅ memo는 여기서만
       };
 
       setIsPasteOpen(false);
       setParsedData(completed);
       setIsParsedOpen(true);
     } catch (e) {
-      setPasteError(e instanceof Error ? e.message : '분석 실패');
+      const msg = e instanceof Error ? e.message : '분석 실패';
+      setPasteError(msg);
     } finally {
       setIsParsing(false);
     }
@@ -65,11 +68,14 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
     setPasteText,
 
     isParsedOpen,
+    setIsParsedOpen,
     parsedData,
     setParsedData,
 
     isParsing,
+    setIsParsing,
     pasteError,
+    setPasteError,
 
     onPaste,
     onClosePaste,

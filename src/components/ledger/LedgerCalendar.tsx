@@ -1,19 +1,20 @@
 import { chevronLeftIcon, chevronRightIcon } from '@/assets';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 type Props = {
   selectedDate: Date;
   onChangeSelectedDate: (d: Date) => void;
+
+  // ✅ 추가: rows(5 or 6) 전달
+  onRowsChange?: (rows: number) => void;
 };
-// 하단코드에서 매핑때 깔끔하게 사용하려고 선언 해놨어요
+
 const DOW = ['Sun', 'Mon', 'Tue', 'Wen', 'Thr', 'Fri', 'Sat'];
 
-// 상단 헤더 02월 12월과 같이 표시해주는 함수
 function pad2(n: number) {
   return String(n).padStart(2, '0');
 }
 
-// 연, 월, 일 비교해서 선택한 날짜인지, 오늘인지 판단하는 함수
 function isSameDay(a: Date, b: Date) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -22,34 +23,36 @@ function isSameDay(a: Date, b: Date) {
   );
 }
 
-/**
- * monthFirst: 해당 월의 1일 (예: 2025-12-01)
- * 일요일 시작 기준 35칸(5주) 달력 그리드 생성
- */
 function buildMonthCells(monthFirst: Date) {
   const y = monthFirst.getFullYear();
   const m = monthFirst.getMonth();
 
   const first = new Date(y, m, 1);
-  const firstDow = first.getDay(); // 시작일이 일요일 먼저 나오게
+  const firstDow = first.getDay();
+
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const totalCells = firstDow + daysInMonth > 35 ? 42 : 35;
+
   const start = new Date(y, m, 1 - firstDow);
 
-  // 캘린더 그리드 5행 7열 기준 35칸으로 만들었습니다.
-  return Array.from({ length: 35 }, (_, i) => {
+  return Array.from({ length: totalCells }, (_, i) => {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
 
     return {
       date: d,
-      inMonth: d.getMonth() === m, // 해당 날짜가 현재 월에 속하는 날짜인지 체크
+      inMonth: d.getMonth() === m,
     };
   });
 }
 
-export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: Props) {
+export default function LedgerCalendar({
+  selectedDate,
+  onChangeSelectedDate,
+  onRowsChange,
+}: Props) {
   const [today] = useState(() => new Date());
 
-  // 현재 보고 있는 달(항상 1일로 고정)
   const [monthFirst, setMonthFirst] = useState(() => {
     const d = new Date(today);
     d.setDate(1);
@@ -57,24 +60,24 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
   });
 
   const year = monthFirst.getFullYear();
-  const month = monthFirst.getMonth() + 1; // 1~12
+  const month = monthFirst.getMonth() + 1;
   const label = `${year}.${pad2(month)}`;
 
-  // useMemo로 monthFirst가 바뀔 때만 달력 다시 계산
   const cells = useMemo(() => buildMonthCells(monthFirst), [monthFirst]);
+  const rows = useMemo(() => Math.ceil(cells.length / 7), [cells.length]);
 
-  const onPrev = () => {
+  // ✅ rows 변경 시 부모에 알려줌
+  useEffect(() => {
+    onRowsChange?.(rows);
+  }, [rows, onRowsChange]);
+
+  const onPrev = () =>
     setMonthFirst((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-
-  const onNext = () => {
+  const onNext = () =>
     setMonthFirst((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
 
   const onSelect = (d: Date) => {
     onChangeSelectedDate(d);
-
-    // 선택한 날짜가 다른 달이면, 그 달로 자동 이동
     if (d.getFullYear() !== year || d.getMonth() !== monthFirst.getMonth()) {
       setMonthFirst(new Date(d.getFullYear(), d.getMonth(), 1));
     }
@@ -83,7 +86,6 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
   return (
     <div className="w-full h-full p-[10px]">
       {/* 헤더 */}
-      {/* 캘린더 헤더 (연 / 월 이동) */}
       <div className="w-full px-6 py-3">
         <div className="w-full flex items-center justify-center gap-[13px] ">
           <button
@@ -113,7 +115,6 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
       <div className="w-full px-0">
         <div>
           <div className="h-6 flex items-center">
-            {/* Sun, Mon 부분 매핑*/}
             {DOW.map((d) => (
               <div
                 key={d}
@@ -126,7 +127,7 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
 
           {/* 날짜 영역 */}
           <div>
-            {Array.from({ length: 5 }, (_, row) => {
+            {Array.from({ length: rows }, (_, row) => {
               const rowCells = cells.slice(row * 7, row * 7 + 7);
 
               return (
@@ -134,7 +135,6 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
                   {rowCells.map(({ date, inMonth }, col) => {
                     const isSelected = isSameDay(date, selectedDate);
                     const isToday = isSameDay(date, today);
-
                     const showDot = isToday;
 
                     return (
@@ -148,7 +148,6 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
                           'focus:outline-none focus-visible:ring',
                         ].join(' ')}
                       >
-                        {/* 날짜 숫자 */}
                         <div
                           className={[
                             'size-3.5 flex items-center justify-center rounded-full',
@@ -163,7 +162,6 @@ export default function LedgerCalendar({ selectedDate, onChangeSelectedDate }: P
                           {date.getDate()}
                         </div>
 
-                        {/* 점 있으면 표시, 없으면 자리 유지 (백이랑 연동 시 수정 예정) */}
                         {showDot ? (
                           <div className="size-3 relative">
                             <div className="size-2 absolute left-[1.5px] top-[1.5px] bg-[color:var(--color-main-skyblue)]" />
