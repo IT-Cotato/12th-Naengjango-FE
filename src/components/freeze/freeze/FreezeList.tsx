@@ -106,6 +106,12 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
     onSelectApp(null);
   }, [resetKey]);
 
+  useEffect(() => {
+    if (selectedAppId) {
+      moveToAppPage(selectedAppId);
+    }
+  }, [selectedAppId]);
+
   return (
     <>
       {apps.length === 0 && (

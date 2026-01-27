@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import dropdown from '@/assets/icons/dropdown.svg';
 
-export type SortOption = '최신순' | '가격순';
+export type SortOption = '최신순' | '가격순' | '임박순';
 
 type DropDownProps = {
   value: SortOption;
@@ -11,7 +11,7 @@ type DropDownProps = {
 export default function DropDown({ value, onChange }: DropDownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const options: SortOption[] = ['최신순', '가격순'];
+  const options: SortOption[] = ['최신순', '가격순', '임박순'];
 
   const sortedOptions = [value, ...options.filter((option) => option !== value)];
 

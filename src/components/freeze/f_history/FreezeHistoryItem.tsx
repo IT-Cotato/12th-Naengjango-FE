@@ -8,6 +8,7 @@ type Props = {
   remainingHour: number;
   checked: boolean;
   onToggle: () => void;
+  onClick: () => void;
 };
 
 export default function FreezeHistoryItem({
@@ -17,9 +18,13 @@ export default function FreezeHistoryItem({
   remainingHour,
   checked,
   onToggle,
+  onClick,
 }: Props) {
   return (
-    <div className="w-full px-4 py-3 bg-sub-skyblue rounded-xl inline-flex justify-between items-start">
+    <div
+      className="w-full px-4 py-3 bg-sub-skyblue rounded-xl inline-flex justify-between items-start cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex gap-3">
         <img src={image} className="size-[54px] rounded-lg" />
 
@@ -38,7 +43,10 @@ export default function FreezeHistoryItem({
       <img
         src={checked ? checkinbox : box}
         className="w-[16px] h-[16px] cursor-pointer"
-        onClick={onToggle}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
       />
     </div>
   );
