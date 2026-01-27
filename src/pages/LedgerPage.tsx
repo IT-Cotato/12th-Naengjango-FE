@@ -86,7 +86,7 @@ export default function LedgerPage() {
   } = useLedgerModals({ onCloseFab, parseLedgerText });
 
   /* ---------- save flow ---------- */
-  const { onSaveManualExpenseOnly, onSaveParsedExpenseOnly, onSaveEditExpense } = useLedgerSave({
+  const { onSaveManual, onSaveParsed, onSaveEditEntry } = useLedgerSave({
     addEntry,
     onSaveEdit,
   });
@@ -94,26 +94,28 @@ export default function LedgerPage() {
   /* ---------- save wrappers (모달 닫기 포함) ---------- */
 
   // ✅ 수동 입력 저장 → 저장 후 닫기
-  const handleSaveManual = (draft: Parameters<typeof onSaveManualExpenseOnly>[0]) => {
-    onSaveManualExpenseOnly(draft);
+  const handleSaveManual = (draft: Parameters<typeof onSaveManual>[0]) => {
+    onSaveManual(draft);
     setIsManualOpen(false);
   };
 
   // ✅ 파싱 저장 → 날짜 정규화 + 저장 후 닫기
-  const handleSaveParsed = (payload: ParsedLedgerData) => {
-    onSaveParsedExpenseOnly({
-      ...payload,
-      date: formatFromUnknownDateString(payload.date),
-    });
+  const handleSaveParsed = (payload: ParsedLedgerData /*, type: 'income' | 'expense' */) => {
+    onSaveParsed(
+      {
+        ...payload,
+        date: formatFromUnknownDateString(payload.date),
+      },
+      'expense', // <- 지금 Parsed에서 type 선택 UI 없으면 기본값
+    );
     onCloseParsed();
   };
 
   // ✅ 수정 저장 → 저장 후 닫기
-  const handleSaveEdit = (next: Parameters<typeof onSaveEditExpense>[0]) => {
-    onSaveEditExpense(next);
+  const handleSaveEdit = (next: Parameters<typeof onSaveEditEntry>[0]) => {
+    onSaveEditEntry(next);
     closeEdit();
   };
-
   // ✅ 삭제 → 삭제 후 닫기
   const handleDeleteEdit = (id: string) => {
     onDeleteEntry(id);
@@ -173,7 +175,7 @@ export default function LedgerPage() {
 
       {/* ===== 수정 ===== */}
       <LedgerEditModal
-        key={editEntry?.id ?? 'edit'}
+        key={`${isEditOpen}-${editEntry?.id ?? 'none'}`}
         open={isEditOpen}
         entry={editEntry}
         onClose={closeEdit}

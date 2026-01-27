@@ -8,7 +8,7 @@ type Props = {
   open: boolean;
   data: ParsedLedgerData | null;
   onClose: () => void;
-  onSave: (payload: LedgerDraft) => void; // ✅ 여기 핵심: ParsedLedgerData -> LedgerDraft
+  onSave: (payload: ParsedLedgerData, type: EntryType) => void;
 };
 
 function formatNumberWithComma(value: number) {

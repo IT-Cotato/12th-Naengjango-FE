@@ -5,6 +5,7 @@ type EntryType = 'income' | 'expense';
 
 type ExpenseDraft = {
   date: string;
+  type: EntryType;
   amount: number;
   category: string;
   description: string;
@@ -92,10 +93,10 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
     }
   };
 
-  // ✅ STEP3 저장: "일단 지출만 저장" (type UI는 유지하되 무시)
   const handleSaveExpense = () => {
     onSaveExpense({
       date,
+      type,
       amount,
       category: category.trim(),
       description: description.trim(),
