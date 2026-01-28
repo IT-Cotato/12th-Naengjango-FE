@@ -4,6 +4,12 @@ import EChart from './EChart';
 
 type FreezeInnerTab = 'weekly' | 'monthly';
 
+// 센터 기준 px 오프셋
+const LABEL_POS = {
+  thin: { x: -120, y: -40 }, // 얇은 링
+  thick: { x: 15, y: 6 }, // 두꺼운 링
+} as const;
+
 const FreezeEffectCard: React.FC = () => {
   const [innerTab, setInnerTab] = useState<FreezeInnerTab>('weekly');
 
@@ -23,14 +29,6 @@ const FreezeEffectCard: React.FC = () => {
       existingText: '218,600원',
     };
   }, [innerTab]);
-
-  // 센터 기준 px 오프셋
-  const LABEL_POS = useMemo(() => {
-    return {
-      thin: { x: -120, y: -40 }, // 얇은 링
-      thick: { x: 15, y: 6 }, // 두꺼운 링
-    };
-  }, []);
 
   const donutOption: EChartsOption = useMemo(() => {
     const startAngle = 90;
@@ -130,74 +128,77 @@ const FreezeEffectCard: React.FC = () => {
     };
   }, [saving, existing]);
 
-  const lineOption: EChartsOption =
-    innerTab === 'weekly'
-      ? {
-          grid: { left: 24, right: 16, top: 10, bottom: 20 },
-          xAxis: {
-            type: 'category',
-            data: ['4주 전', '3주 전', '2주 전', '1주 전', '이번 주'],
-            axisLine: { show: false },
-            axisTick: { show: false },
-            axisLabel: { color: '#A7A7A7', fontSize: 10 },
-          },
-          yAxis: {
-            type: 'value',
-            axisLine: { show: false },
-            axisTick: { show: false },
-            splitLine: { show: false },
-            axisLabel: { color: '#A7A7A7', fontSize: 10 },
-          },
-          series: [
-            {
-              type: 'line',
-              data: [45, 32, 58, 67, 89],
-              smooth: true,
-              symbol: 'none',
-              lineStyle: { color: '#5E97D7', width: 2 },
+  const lineOption: EChartsOption = useMemo(
+    () =>
+      innerTab === 'weekly'
+        ? {
+            grid: { left: 24, right: 16, top: 10, bottom: 20 },
+            xAxis: {
+              type: 'category',
+              data: ['4주 전', '3주 전', '2주 전', '1주 전', '이번 주'],
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: { color: '#A7A7A7', fontSize: 10 },
             },
-            {
-              type: 'line',
-              data: [38, 45, 52, 61, 75],
-              smooth: true,
-              symbol: 'none',
-              lineStyle: { color: '#D1D5DB', width: 2 },
+            yAxis: {
+              type: 'value',
+              axisLine: { show: false },
+              axisTick: { show: false },
+              splitLine: { show: false },
+              axisLabel: { color: '#A7A7A7', fontSize: 10 },
             },
-          ],
-        }
-      : {
-          grid: { left: 24, right: 16, top: 10, bottom: 20 },
-          xAxis: {
-            type: 'category',
-            data: ['11월', '12월', '1월', '2월'],
-            axisLine: { show: false },
-            axisTick: { show: false },
-            axisLabel: { color: '#A7A7A7', fontSize: 10 },
+            series: [
+              {
+                type: 'line',
+                data: [45, 32, 58, 67, 89],
+                smooth: true,
+                symbol: 'none',
+                lineStyle: { color: '#5E97D7', width: 2 },
+              },
+              {
+                type: 'line',
+                data: [38, 45, 52, 61, 75],
+                smooth: true,
+                symbol: 'none',
+                lineStyle: { color: '#D1D5DB', width: 2 },
+              },
+            ],
+          }
+        : {
+            grid: { left: 24, right: 16, top: 10, bottom: 20 },
+            xAxis: {
+              type: 'category',
+              data: ['11월', '12월', '1월', '2월'],
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: { color: '#A7A7A7', fontSize: 10 },
+            },
+            yAxis: {
+              type: 'value',
+              axisLine: { show: false },
+              axisTick: { show: false },
+              splitLine: { show: false },
+              axisLabel: { color: '#A7A7A7', fontSize: 10 },
+            },
+            series: [
+              {
+                type: 'line',
+                data: [87, 67, 76, 34],
+                smooth: true,
+                symbol: 'none',
+                lineStyle: { color: '#EF4444', width: 2 },
+              },
+              {
+                type: 'line',
+                data: [38, 65, 87, 60],
+                smooth: true,
+                symbol: 'none',
+                lineStyle: { color: '#D1D5DB', width: 2 },
+              },
+            ],
           },
-          yAxis: {
-            type: 'value',
-            axisLine: { show: false },
-            axisTick: { show: false },
-            splitLine: { show: false },
-            axisLabel: { color: '#A7A7A7', fontSize: 10 },
-          },
-          series: [
-            {
-              type: 'line',
-              data: [87, 67, 76, 34],
-              smooth: true,
-              symbol: 'none',
-              lineStyle: { color: '#EF4444', width: 2 },
-            },
-            {
-              type: 'line',
-              data: [38, 65, 87, 60],
-              smooth: true,
-              symbol: 'none',
-              lineStyle: { color: '#D1D5DB', width: 2 },
-            },
-          ],
-        };
+    [innerTab],
+  );
 
   return (
     <div className="px-5 py-8 w-82 bg-white rounded-[20px] shadow-[0_4px_20px_rgba(15,23,42,0.08)]">
@@ -235,18 +236,14 @@ const FreezeEffectCard: React.FC = () => {
 
       {innerTab === 'weekly' ? (
         <p className="Bold_20 text-gray-800 mb-5">
-          이번 주 냉동 성공으로{' '}
-          <p>
+          이번 주 냉동 성공으로 <br/>
             <span className="text-main-skyblue">{savingText}</span> 지켰어요!
           </p>
-        </p>
       ) : (
         <p className="Bold_20 text-gray-800 mb-5">
-          이번 달 냉동 성공으로{' '}
-          <p>
+          이번 달 냉동 성공으로 <br/>
             <span className="text-main-skyblue">{savingText}</span> 지켰어요!
           </p>
-        </p>
       )}
 
       {/* 도넛 차트 + 라벨(HTML 오버레이) */}
