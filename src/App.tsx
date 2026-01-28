@@ -6,6 +6,7 @@ import FreezePage from '@/pages/FreezePage';
 import ReportPage from '@/pages/ReportPage';
 import MyPage from '@/pages/my/MyPage';
 import MemberInfoPage from '@/pages/my/MemberInfoPage';
+import NotificationPage from '@/pages/my/NotificationPage';
 import SignupPage from '@/pages/signup/SignUpPage';
 import AuthLayout from './layouts/AuthLayout';
 import LoginPage from '@/pages/login/LoginPage';
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/report" element={<ReportPage />} />
         <Route path="/my" element={<MyPage />} />
         <Route path="/my/member-info" element={<MemberInfoPage />} />
+        <Route path="/my/notifications" element={<NotificationPage />} />
       </Route>
 
       <Route element={<AuthLayout />}>
