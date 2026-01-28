@@ -24,7 +24,7 @@ export default function UpdateModal({ item, onClose, onSave }: UpdateModalProps)
         onClick={onClose}
       >
         <div
-          className="w-[375px] h-[676px] top-[136px] relative bg-white-800 rounded-tl-[30px] rounded-tr-[30px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.30)] overflow-hidden"
+          className="w-[375px] h-[397px] absolute bottom-0 bg-white-800 rounded-tl-[30px] rounded-tr-[30px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.30)] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <div

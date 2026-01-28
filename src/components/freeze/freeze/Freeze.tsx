@@ -17,10 +17,10 @@ export default function Freeze() {
   };
   return (
     <>
-      <div className="justify-center items-center">
+      <div className="justify-center items-center overflow-hidden">
         <div
           data-layer="Frame 48096424"
-          className="Frame48096424 w-[327px] h-[546px] left-[24px] top-[154px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden"
+          className="Frame48096424 w-[327px] h-[546px] left-[24px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden"
         >
           <div
             data-layer="Frame 32"
