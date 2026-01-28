@@ -34,3 +34,4 @@ export { default as pw } from './pw.svg';
 export { default as logout } from './logout.svg';
 export { default as quit } from './quit.svg';
 export { default as snow } from './snow.svg';
+export {default as none} from './none.svg';
