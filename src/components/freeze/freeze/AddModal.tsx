@@ -62,7 +62,7 @@ export default function AddModal({ onClose, onConfirm }: AddModalProps) {
       >
         <div
           data-layer="Frame 25"
-          className="Frame25 w-[375px] h-[488px] relative top-[324px] bg-white-800 rounded-tl-[30px] rounded-tr-[30px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.30)] overflow-hidden"
+          className="Frame25 w-[375px] h-[488px] absolute bottom-0 bg-white-800 rounded-tl-[30px] rounded-tr-[30px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.30)] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <button

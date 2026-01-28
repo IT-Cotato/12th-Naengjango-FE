@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import dropdown from '@/assets/icons/dropdown.svg';
 
-export type SortOption = '최신순' | '가격순';
+export type SortOption = '최신순' | '가격순' | '임박순';
 
 type DropDownProps = {
   value: SortOption;
@@ -11,7 +11,7 @@ type DropDownProps = {
 export default function DropDown({ value, onChange }: DropDownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const options: SortOption[] = ['최신순', '가격순'];
+  const options: SortOption[] = ['최신순', '가격순', '임박순'];
 
   const sortedOptions = [value, ...options.filter((option) => option !== value)];
 
@@ -20,7 +20,7 @@ export default function DropDown({ value, onChange }: DropDownProps) {
       {/* 활성화 전*/}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-[58px] h-[22px] pl-[7px] relative rounded-md outline outline-[0.5px] outline-gray-200
+        className="w-[58px] h-[22px] pl-[7px]  pr-[4px] gap-0 relative rounded-md outline outline-[1px] outline-gray-200
         inline-flex justify-center items-center cursor-pointer bg-white-800"
       >
         <div className="text-gray-400 Medium_12 font-sans leading-none tracking-tight">{value}</div>
@@ -48,7 +48,7 @@ export default function DropDown({ value, onChange }: DropDownProps) {
                 }}
                 className={`
         pl-[7px] pr-[4px] py-0.5 bg-white-800
-        outline outline-[0.5px] outline-gray-200
+        outline outline-[1px] outline-gray-200 gap-0
         inline-flex justify-between items-center cursor-pointer
         ${index === 0 ? 'rounded-t-md' : ''}
         ${index === sortedOptions.length - 1 ? 'rounded-b-md' : ''}
