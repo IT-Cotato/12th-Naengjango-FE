@@ -11,6 +11,7 @@ import SignupPage from '@/pages/signup/SignUpPage';
 import AuthLayout from './layouts/AuthLayout';
 import LoginPage from '@/pages/login/LoginPage';
 import SetupPage from '@/pages/login/SetupPage';
+import OnboardingPage from '@/pages/login/OnboardingPage';
 import FindIdPage from './pages/login/find/FindIdPage';
 import FindPwPage from './pages/login/find/FindPwPage';
 import ChangePwPage from '@/pages/my/ChangePwPage';
@@ -33,6 +34,7 @@ export default function App() {
 
       <Route element={<AuthLayout />}>
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/find-id" element={<FindIdPage />} />

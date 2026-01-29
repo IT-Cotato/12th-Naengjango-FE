@@ -35,3 +35,6 @@ export { default as logout } from './logout.svg';
 export { default as quit } from './quit.svg';
 export { default as snow } from './snow.svg';
 export {default as none} from './none.svg';
+export {default as before_agree} from './before_agree.svg';
+export {default as after_agree} from './after_agree.svg';
+export {default as onboarding} from './onboarding.svg';
