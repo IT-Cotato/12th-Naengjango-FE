@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Button from '@/components/common/Button';
+import LedgerCategoryGrid from './LedgerCategoryGrid';
 
-type EntryType = 'income' | 'expense';
+import { getCategoryIcon } from '@/components/ledger/categoryCatalog';
+import type { EntryType } from '@/components/ledger/categoryCatalog';
 
 type ExpenseDraft = {
   date: string;
@@ -27,26 +29,13 @@ function onlyDigits(str: string) {
   return str.replace(/[^\d]/g, '');
 }
 
-const CATEGORIES = [
-  '식비',
-  '의류',
-  '문화생활',
-  '생필품',
-  '미용',
-  '의료',
-  '교육',
-  '경조사',
-  '교통비',
-  '기타',
-] as const;
-
 export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }: Props) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // STEP 1
-  const [type, setType] = useState<EntryType>('expense'); // ✅ UI는 유지
+  const [type, setType] = useState<EntryType>('expense');
   const [amount, setAmount] = useState(0);
   const [amountInput, setAmountInput] = useState('');
 
@@ -57,11 +46,30 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
   const [description, setDescription] = useState('');
   const [memo, setMemo] = useState('');
 
+  const categoryIconSrc = useMemo(() => getCategoryIcon(type, category), [type, category]);
+
+  const resetAll = () => {
+    setStep(1);
+
+    setType('expense');
+    setAmount(0);
+    setAmountInput('');
+
+    setCategory('');
+    setDescription('');
+    setMemo('');
+  };
+
+  const closeWithReset = () => {
+    resetAll();
+    onClose();
+  };
+
   if (!open) return null;
 
   const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (sheetRef.current && sheetRef.current.contains(e.target as Node)) return;
-    onClose();
+    closeWithReset();
   };
 
   const handleAmountChange = (v: string) => {
@@ -102,15 +110,25 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
       description: description.trim(),
       memo: memo.trim(),
     });
+
+    closeWithReset();
   };
 
   const handleBack = () => {
     if (step === 3) return setStep(2);
     if (step === 2) return setStep(1);
-    onClose();
+    closeWithReset();
   };
 
-  const sheetHeightClass = step === 2 ? 'h-[481px]' : step === 3 ? 'h-[553px]' : 'h-96';
+  // ✅ step별 높이 유지 (네 로직 유지)
+  const sheetHeightClass =
+    step === 2
+      ? type === 'income'
+        ? 'h-[360px]'
+        : 'h-[481px]'
+      : step === 3
+        ? 'h-[553px]'
+        : 'h-96';
 
   return (
     <div
@@ -222,33 +240,7 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
             </div>
 
             <div className="absolute left-0 top-[94px] w-96 px-6">
-              <div className="w-80 mx-auto grid grid-cols-4 gap-x-4 gap-y-6">
-                {CATEGORIES.map((c) => {
-                  const selected = category === c;
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCategory(c)}
-                      className="flex flex-col items-center gap-2"
-                    >
-                      <div
-                        className={[
-                          'size-12 rounded-full flex items-center justify-center',
-                          selected
-                            ? 'bg-[color:var(--color-main-skyblue)]'
-                            : 'bg-[color:var(--color-sub-skyblue)]',
-                        ].join(' ')}
-                      >
-                        {/* 아이콘 어셋 연결 예정 */}
-                      </div>
-                      <div className="text-[color:var(--color-gray-800)] text-xs font-medium">
-                        {c}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <LedgerCategoryGrid mode={type} value={category} onChange={setCategory} />
             </div>
 
             <div className="absolute left-6 right-6 bottom-[34px]">
@@ -293,16 +285,14 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
                     </div>
                   </div>
 
-                  <div className="size-12 p-3 left-[4px] top-0 absolute bg-[color:var(--color-sub-skyblue)] rounded-3xl inline-flex justify-start items-center gap-2.5">
-                    <div className="size-6 relative overflow-hidden">
-                      <div className="w-4 h-5 left-[3px] top-[2px] absolute bg-[color:var(--color-gray-800)]" />
-                    </div>
+                  <div className="size-12 p-3 left-[4px] top-0 absolute bg-[color:var(--color-sub-skyblue)] rounded-3xl inline-flex justify-center items-center">
+                    <img src={categoryIconSrc} alt="" className="size-6" draggable={false} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 분류 (UI 유지, 저장은 지출로만) */}
+            {/* ✅ 분류 (수입/지출) - 복구 */}
             <div className="w-96 h-11 px-6 left-0 top-[181px] absolute inline-flex justify-start items-center gap-3">
               <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
                 분류
@@ -341,7 +331,7 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
               </div>
             </div>
 
-            {/* 금액 */}
+            {/* ✅ 금액 - 복구 */}
             <div className="w-96 px-6 left-0 top-[233px] absolute inline-flex justify-start items-start gap-3">
               <div className="py-2 flex justify-center items-start gap-2.5">
                 <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
@@ -350,9 +340,18 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
               </div>
 
               <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
-                <div className="flex-1 self-stretch text-[color:var(--color-error)] text-base font-medium leading-6 tracking-tight">
-                  {amountInput}
-                </div>
+                <input
+                  inputMode="numeric"
+                  value={amountInput}
+                  onChange={(e) => handleAmountChange(e.target.value)}
+                  placeholder="0"
+                  className={[
+                    'flex-1 self-stretch bg-transparent outline-none text-base font-medium leading-6 tracking-tight',
+                    type === 'income'
+                      ? 'text-[color:var(--color-main-skyblue)]'
+                      : 'text-[color:var(--color-error)]',
+                  ].join(' ')}
+                />
               </div>
             </div>
 
@@ -392,7 +391,7 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
               </div>
             </div>
 
-            {/* 저장 버튼 (다음 버튼과 동일 규칙) */}
+            {/* 저장 버튼 */}
             <div className="absolute left-6 right-6 bottom-[34px]">
               <Button disabled={step3Disabled} onClick={handleSaveExpense}>
                 저장
