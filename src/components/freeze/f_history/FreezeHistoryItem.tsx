@@ -1,5 +1,6 @@
 import box from '../../../assets/icons/box.svg';
 import checkinbox from '../../../assets/icons/checkinbox.svg';
+import { useEffect, useRef, useState } from 'react';
 
 type Props = {
   image: string;
@@ -9,6 +10,9 @@ type Props = {
   checked: boolean;
   onToggle: () => void;
   onClick: () => void;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  isFirst: boolean;
+  isLast: boolean;
 };
 
 export default function FreezeHistoryItem({
@@ -19,11 +23,41 @@ export default function FreezeHistoryItem({
   checked,
   onToggle,
   onClick,
+  containerRef,
+  isFirst,
+  isLast,
 }: Props) {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const [ratio, setRatio] = useState(1); // 얼마나 화면에 보이는지
+  const shouldApplyEffect = !isFirst && !isLast && ratio < 1;
+
+  useEffect(() => {
+    if (!itemRef.current || !containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setRatio(entry.intersectionRatio);
+      },
+      {
+        root: containerRef.current,
+        threshold: Array.from({ length: 11 }, (_, i) => i / 10),
+      },
+    );
+
+    observer.observe(itemRef.current);
+    return () => observer.disconnect();
+  }, [containerRef]);
+
   return (
     <div
-      className="w-full px-4 py-3 bg-sub-skyblue rounded-xl inline-flex justify-between items-start cursor-pointer"
+      ref={itemRef}
       onClick={onClick}
+      style={{
+        opacity: shouldApplyEffect ? Math.max(0.8, ratio) : 1,
+        filter: shouldApplyEffect ? `blur(${(1 - ratio) * 3}px)` : 'none',
+        transition: 'opacity 0.2s ease, filter 0.2s ease',
+      }}
+      className="w-full px-4 py-3 bg-sub-skyblue rounded-xl inline-flex justify-between items-start cursor-pointer"
     >
       <div className="flex gap-3">
         <img src={image} className="size-[54px] rounded-lg" />

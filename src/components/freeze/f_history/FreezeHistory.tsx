@@ -96,31 +96,38 @@ export default function FreezeHistory() {
   return (
     <>
       <div
-        className={`left-[24px] top-[100px] relative bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden
-          ${isEmpty ? 'w-[327px] h-[546px]' : 'w-[327px] h-[646px]'}`}
+        className="relative left-[24px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden
+          w-[327px] h-[546px]"
       >
         {!isEmpty && (
-          <>
-            <div
-              ref={listRef}
-              className="w-[287px] left-[20px] top-[99px] absolute inline-flex flex-col justify-start items-start gap-4 max-h-[360px] overflow-y-scroll overflow-x-hidden freeze-scroll"
-            >
-              {sortedItems.map((item) => (
-                <FreezeHistoryItem
-                  key={item.id}
-                  image={item.image}
-                  title={item.title}
-                  price={item.price}
-                  remainingHour={item.remainingHour}
-                  checked={item.checked}
-                  onToggle={() => {
-                    setItem((prev) =>
-                      prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
-                    );
-                  }}
-                  onClick={() => setSelectedItem(item)}
-                />
-              ))}
+          <div>
+            <div className="absolute left-[20px] top-[107px] w-[287px] relative">
+              <div
+                ref={listRef}
+                className="
+                flex flex-col gap-4 max-h-[305px] overflow-y-scroll overflow-x-hidden freeze-scroll
+              "
+              >
+                {sortedItems.map((item, index) => (
+                  <FreezeHistoryItem
+                    key={item.id}
+                    image={item.image}
+                    title={item.title}
+                    price={item.price}
+                    remainingHour={item.remainingHour}
+                    checked={item.checked}
+                    containerRef={listRef}
+                    isFirst={index === 0}
+                    isLast={index === sortedItems.length - 1}
+                    onToggle={() => {
+                      setItem((prev) =>
+                        prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
+                      );
+                    }}
+                    onClick={() => setSelectedItem(item)}
+                  />
+                ))}
+              </div>
             </div>
             <div
               data-layer="Frame 48096449"
@@ -141,7 +148,7 @@ export default function FreezeHistory() {
 
             <div
               data-layer="Frame 48096448"
-              className="Frame48096448 w-[287px] left-[20px] top-[474px] absolute inline-flex flex-col justify-start items-start gap-2.5"
+              className="Frame48096448 w-[287px] left-[20px] top-[424px] absolute inline-flex flex-col justify-start items-start gap-2.5"
             >
               <div
                 data-layer="Frame 48096447"
@@ -196,7 +203,7 @@ export default function FreezeHistory() {
             </div>
             <div
               data-layer="Frame 48096450"
-              className="Frame48096450 w-[375px] left-[-24px] top-[540px] absolute inline-flex flex-col justify-start items-start"
+              className="Frame48096450 w-[375px] left-[-24px] top-[477px] absolute inline-flex flex-col justify-start items-start gap-0"
             >
               <div
                 data-layer="Frame 41"
@@ -204,7 +211,7 @@ export default function FreezeHistory() {
               >
                 <div
                   data-layer="선택한 상품을 구매하면"
-                  className="flex-1 text-center justify-center text-gray-800 SemiBold_20 font-sans leading-[30px] tracking-tight"
+                  className="flex-1 text-center justify-center text-gray-800 SemiBold_16 font-sans"
                 >
                   선택한 상품을 구매하면
                 </div>
@@ -217,21 +224,13 @@ export default function FreezeHistory() {
                   data-layer="하루 4,000원 쓸 수 있게 돼요!"
                   className="4000 flex-1 text-center justify-center"
                 >
-                  <span className="text-gray-800 SemiBold_20 font-sans leading-[30px] tracking-tight">
-                    하루
-                  </span>
-                  <span className="text-error SemiBold_20 font-sans leading-[30px] tracking-tight">
-                    {' '}
-                    4,000원
-                  </span>
-                  <span className="text-gray-800 SemiBold_20 font-sans leading-[30px] tracking-tight">
-                    {' '}
-                    쓸 수 있게 돼요!
-                  </span>
+                  <span className="text-gray-800 SemiBold_16 font-sans ">하루</span>
+                  <span className="text-error SemiBold_16 font-sans "> 4,000원</span>
+                  <span className="text-gray-800 SemiBold_16 font-sans "> 쓸 수 있게 돼요!</span>
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {isEmpty && (
