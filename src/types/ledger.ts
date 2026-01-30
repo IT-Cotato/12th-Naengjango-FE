@@ -18,7 +18,7 @@ export type LedgerEntry = {
 };
 
 export type LedgerDraft = {
-  type: string; // "지출" / "수입" 문자열
+  type: 'income' | 'expense'; // "지출" / "수입" 문자열
   amount: number;
   description: string;
   date: string; // "2025.12.21"

@@ -1,15 +1,6 @@
 import type { EntryType } from '@/components/ledger/categoryCatalog';
 import { getCategoryIcon } from '@/components/ledger/categoryCatalog';
-
-export type LedgerEntry = {
-  id: string;
-  date: string; // "2025.12.21"
-  category: string;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  memo?: string;
-};
+import type { LedgerEntry } from '@/types/ledger';
 
 function formatWon(amount: number) {
   return `${amount.toLocaleString('ko-KR')}원`;

@@ -1,10 +1,4 @@
-export type ParseLedgerResponse = {
-  type: string;
-  amount: number;
-  description: string;
-  date: string;
-  category: string;
-};
+import type { ParseLedgerResponse } from './types';
 
 export async function parseLedgerText(rawText: string) {
   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/accounts/parser`, {
