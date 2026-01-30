@@ -18,7 +18,7 @@ export default function BottomTab() {
               src={isActive ? TAB_ICONS[tab.key].active : TAB_ICONS[tab.key].inactive}
               alt=""
               aria-hidden
-              className={['w-24 h-24', isActive ? 'opacity-100' : 'opacity-70'].join(' ')}
+              className={['w-8 h-8', isActive ? 'opacity-100' : 'opacity-70'].join(' ')}
             />
           )}
         </NavLink>

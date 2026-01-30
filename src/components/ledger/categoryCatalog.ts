@@ -26,7 +26,6 @@ export type EntryType = 'income' | 'expense';
  * Categories
  * ========================= */
 export const INCOME_CATEGORIES = ['급여', '용돈', '정산', '환급', '이자/배당', '기타'] as const;
-
 export type IncomeCategory = (typeof INCOME_CATEGORIES)[number];
 
 export const EXPENSE_CATEGORIES = [
@@ -42,8 +41,17 @@ export const EXPENSE_CATEGORIES = [
   '취미',
   '기타',
 ] as const;
-
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
+
+/* =========================
+ * ✅ shared normalizer (export)
+ * ========================= */
+export function normalizeCategory(value: string): string {
+  return (value ?? '')
+    .trim()
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width chars 제거
+    .replace(/[／]/g, '/'); // 전각 슬래시 → 일반 슬래시
+}
 
 /* =========================
  * Icon maps
@@ -54,7 +62,7 @@ const INCOME_ICON_MAP: Record<IncomeCategory, string> = {
   정산: adjustment,
   환급: refund,
   '이자/배당': allocation,
-  기타: elseIcon, // ✅ 여기 무조건 elseIcon
+  기타: elseIcon, // ✅ 수입 기타는 elseIcon
 };
 
 const EXPENSE_ICON_MAP: Record<ExpenseCategory, string> = {
@@ -72,15 +80,8 @@ const EXPENSE_ICON_MAP: Record<ExpenseCategory, string> = {
 };
 
 /* =========================
- * Helpers
+ * Type guards
  * ========================= */
-function normalizeCategory(value: string): string {
-  return value
-    .trim()
-    .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width chars 제거
-    .replace(/[／]/g, '/'); // 전각 슬래시 → 일반 슬래시
-}
-
 function isIncomeCategory(v: string): v is IncomeCategory {
   return (INCOME_CATEGORIES as readonly string[]).includes(v);
 }
