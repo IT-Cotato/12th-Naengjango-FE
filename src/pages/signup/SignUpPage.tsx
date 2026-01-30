@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SignupHeader from '@/components/signup/SignupHeader';
 import Button from '@/components/common/Button';
+import TermsAgreementModal, { type Term } from '@/components/signup/TermsAgreementModal';
 
 import StepName from './step/StepName';
 import StepPhone from './step/StepPhone';
@@ -15,6 +17,7 @@ const STEP_ORDER: Step[] = ['name', 'phone', 'verify', 'id', 'password', 'passwo
 const hideBackSteps: Step[] = ['id', 'password', 'passwordVerify'];
 
 export default function SignupPage() {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('name');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -33,6 +36,36 @@ export default function SignupPage() {
   const [isVerifyDone, setIsVerifyDone] = useState(false);
   // 아이디 중복확인 여부
   const [isIdChecked, setIsIdChecked] = useState(false);
+  // 약관 동의 모달 표시 여부
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
+  // 약관 목록
+  const terms: Term[] = [
+    {
+      id: 'all',
+      label: '약관 전체 동의',
+      required: false,
+      content: '',
+    },
+    {
+      id: 'terms',
+      label: '이용 약관 동의',
+      required: true,
+      content: '이용 약관 동의 설명\n\n여기에 실제 이용 약관 내용이 들어갑니다.',
+    },
+    {
+      id: 'privacy',
+      label: '개인정보 수집 및 이용 동의',
+      required: true,
+      content: '개인정보 수집 및 이용 동의 설명\n\n여기에 실제 개인정보 수집 및 이용 동의 내용이 들어갑니다.',
+    },
+    {
+      id: 'sms',
+      label: 'SMS 알림 허용',
+      required: false,
+      content: 'SMS 알림 허용 설명\n\n여기에 실제 SMS 알림 허용 내용이 들어갑니다.',
+    },
+  ];
 
   const requestSms = () => {
     // 인증번호 발송 API (나중에)
@@ -43,11 +76,25 @@ export default function SignupPage() {
   };
 
   const goNext = () => {
+    // 비밀번호 확인 단계에서 다음 버튼을 누르면 약관 동의 모달 표시
+    if (step === 'passwordVerify') {
+      setIsTermsModalOpen(true);
+      return;
+    }
+
     const next = STEP_ORDER[stepIndex + 1];
     if (next) setStep(next);
     else {
       // 가입 요청 API (나중에)
     }
+  };
+
+  // 약관 동의 완료 후 처리
+  const handleTermsConfirm = () => {
+    setIsTermsModalOpen(false);
+    // 가입 요청 API (나중에)
+    // 회원가입 API 호출 후 성공 시 온보딩 페이지로 이동
+    navigate('/onboarding');
   };
 
   // 첫 화면이면 undefined 반환 → SignupHeader에서 navigate(-1)
@@ -211,6 +258,14 @@ export default function SignupPage() {
           다음
         </Button>
       </div>
+
+      {/* 약관 동의 모달 */}
+      <TermsAgreementModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onConfirm={handleTermsConfirm}
+        terms={terms}
+      />
     </div>
   );
 }
