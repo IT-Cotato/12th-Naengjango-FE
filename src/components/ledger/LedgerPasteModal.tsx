@@ -2,14 +2,28 @@ import { useRef } from 'react';
 
 type Props = {
   open: boolean;
+
   value: string;
   onChange: (v: string) => void;
+
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: () => void | Promise<void>;
+
+  loading?: boolean;
+  error?: string;
 };
 
-export default function LedgerPasteModal({ open, value, onChange, onClose, onSubmit }: Props) {
+export default function LedgerPasteModal({
+  open,
+  value,
+  onChange,
+  onClose,
+  onSubmit,
+  loading = false,
+  error = '',
+}: Props) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   if (!open) return null;
 
@@ -18,7 +32,17 @@ export default function LedgerPasteModal({ open, value, onChange, onClose, onSub
     onClose();
   };
 
-  const disabled = value.trim().length === 0;
+  const disabled = loading || value.trim().length === 0;
+
+  /** textarea 높이 자동 조절 */
+  const handleChange = (v: string) => {
+    onChange(v);
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
 
   return (
     <div
@@ -48,24 +72,43 @@ export default function LedgerPasteModal({ open, value, onChange, onClose, onSub
         </div>
 
         {/* input */}
-        <div className="w-full pt-[24px] flex flex-col items-center gap-px">
-          <div className="w-80 h-12 px-4 py-2 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] inline-flex justify-start items-center gap-2.5">
-            <input
+        <div className="w-full pt-[24px] flex flex-col items-center gap-2">
+          <div className="w-80 px-4 py-2 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)]">
+            <textarea
+              ref={textareaRef}
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => handleChange(e.target.value)}
               placeholder="문자를 붙여넣으세요"
-              className="flex-1 self-stretch bg-transparent outline-none text-[color:var(--color-gray-800)] text-base font-medium leading-6 tracking-tight placeholder:text-[color:var(--color-gray-400)]"
+              rows={1}
+              className="
+                w-full
+                bg-transparent
+                outline-none
+                resize-none
+                text-[color:var(--color-gray-800)]
+                text-base
+                font-medium
+                leading-6
+                tracking-tight
+                placeholder:text-[color:var(--color-gray-400)]
+              "
             />
           </div>
 
-          {/* button */}
+          {error ? (
+            <div className="w-80 text-sm text-[color:var(--color-error)] leading-5">{error}</div>
+          ) : null}
+
+          {/* button (피그마 투 코드 반영) */}
           <button
             type="button"
             onClick={onSubmit}
             disabled={disabled}
             className={[
-              'w-80 h-14 px-4 py-2 mt-3 rounded-[10px] inline-flex justify-center items-center gap-2.5',
-              disabled ? 'bg-[color:var(--color-gray-300)]' : 'bg-[color:var(--color-gray-800)]',
+              'w-80 h-14 px-4 py-2 rounded-[10px] inline-flex justify-center items-center gap-2.5',
+              disabled
+                ? 'bg-[color:var(--color-gray-300)]'
+                : 'bg-[color:var(--color-main-skyblue)]',
             ].join(' ')}
           >
             <div className="flex-1 self-stretch text-center text-[color:var(--color-white-800)] text-base font-bold leading-10 tracking-tight">
