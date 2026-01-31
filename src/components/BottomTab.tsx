@@ -11,7 +11,7 @@ export default function BottomTab() {
           key={tab.key}
           to={tab.to}
           aria-label={tab.ariaLabel}
-          className="py-2 flex items-center justify-center"
+          className="mb-4 flex items-center justify-center"
         >
           {({ isActive }) => (
             <img
