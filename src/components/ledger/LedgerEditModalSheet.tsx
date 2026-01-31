@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import Button from '@/components/common/Button';
 import LedgerCategoryModal from '@/components/ledger/LedgerCategoryModal';
 import AlertModal from '@/components/common/AlertModal';
-import type { LedgerEntry } from '@/components/ledger/LedgerEntryList';
+import type { LedgerEntry } from '@/types/ledger';
 
 import type { EntryType } from '@/components/ledger/categoryCatalog';
 import { getCategoryIcon } from '@/components/ledger/categoryCatalog';

@@ -12,7 +12,7 @@ type UpdateModalProps = {
 export default function UpdateModal({ item, onClose, onSave }: UpdateModalProps) {
   const [selectedAppId, setSelectedAppId] = useState<string | null>(item.selectedAppId);
 
-  const [resetKey, setResetKey] = useState(0); // FreezeList 요구사항 유지용
+  const resetKey = 0; // FreezeList 요구사항 유지용
   const [price, setPrice] = useState(item.price.toLocaleString());
   const [product, setProduct] = useState(item.title);
 

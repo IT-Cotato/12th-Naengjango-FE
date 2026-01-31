@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import type { LedgerEntry } from '@/components/ledger/LedgerEntryList';
+import type { LedgerEntry } from '@/types/ledger';
 import LedgerEditModalSheet from './LedgerEditModalSheet';
 
 type Props = {
