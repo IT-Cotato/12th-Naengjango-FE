@@ -9,7 +9,7 @@ export default function FreezePage() {
     <>
       <div
         data-layer="냉동 화면"
-        className="w-[375px] h-[812px] relative bg-white-800 overflow-hidden"
+        className="w-full h-screen relative bg-white-800 overflow-hidden justify-center"
       >
         <Menu activeTab={activeTab} onTabChange={setActiveTab} />
         {activeTab === 'freeze' && <Freeze />}
