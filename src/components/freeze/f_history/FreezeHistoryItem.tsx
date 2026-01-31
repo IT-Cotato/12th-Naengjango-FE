@@ -1,5 +1,5 @@
 import box_24 from '../../../assets/icons/box-24.svg';
-import checkinbox from '../../../assets/icons/checkinbox.svg';
+import checkinbox_24 from '../../../assets/icons/checkinbox-24.svg';
 import { useEffect, useRef, useState } from 'react';
 
 type Props = {
@@ -75,7 +75,7 @@ export default function FreezeHistoryItem({
       </div>
 
       <img
-        src={checked ? checkinbox : box_24}
+        src={checked ? checkinbox_24 : box_24}
         className="w-[24px] h-[24px] cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
