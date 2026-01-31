@@ -1,6 +1,6 @@
-import box from '../../../assets/icons/box.svg';
+import box24 from '../../../assets/icons/box-24.svg';
 import snow from '../../../assets/snow.svg';
-import checkinbox from '../../../assets/icons/checkinbox.svg';
+import checkinbox24 from '../../../assets/icons/checkinbox-24.svg';
 import DropDown from '@/components/freeze/f_history/DropDown';
 import type { SortOption } from '@/components/freeze/f_history/DropDown';
 import { useEffect, useRef, useState } from 'react';
@@ -140,7 +140,7 @@ export default function FreezeHistory() {
                 }}
               >
                 <div className="text-main-skyblue Medium_12">전체 선택</div>
-                <img src={isAllChecked ? checkinbox : box} className="w-[16px] h-[16px]" />
+                <img src={isAllChecked ? checkinbox24 : box24} className="w-[20px] h-[20px]" />
               </div>
 
               <DropDown value={sortOption} onChange={(value) => setSortOption(value)} />
