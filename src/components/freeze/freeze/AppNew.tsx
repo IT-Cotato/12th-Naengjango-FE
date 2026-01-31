@@ -36,7 +36,18 @@ export default function AppNew({
     >
       <div
         data-layer="name"
-        className="w-full text-center text-gray-800 Bold_14 font-sans leading-5 tracking-tight line-clamp-2 break-all"
+        className="
+    max-w-[46px]
+    text-center
+    text-gray-800
+    Regular_10
+    font-sans
+    leading-4
+    tracking-tight
+    whitespace-nowrap
+    overflow-hidden
+    text-ellipsis
+  "
       >
         {name}
       </div>

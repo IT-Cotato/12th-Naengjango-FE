@@ -62,6 +62,7 @@ export default function InlineInput({
 
       <input
         type="text"
+        inputMode={type === 'price' ? 'numeric' : undefined}
         placeholder={placeholder}
         value={value}
         style={{ width }}
