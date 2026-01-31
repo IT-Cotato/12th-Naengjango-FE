@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { LedgerEntry } from '@/components/ledger/LedgerEntryList';
+import type { LedgerEntry } from '@/types/ledger';
 
 export default function useLedgerEntries(selectedDateLabel: string) {
   // ✅ 기존 LedgerPage의 entries/setEntries 이름 그대로 유지
