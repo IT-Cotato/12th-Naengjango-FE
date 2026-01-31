@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { LedgerEntry } from '@/components/ledger/LedgerEntryList';
+import type { LedgerEntry } from '@/types/ledger';
 
 export default function useEditModal() {
   const [isEditOpen, setIsEditOpen] = useState(false);
