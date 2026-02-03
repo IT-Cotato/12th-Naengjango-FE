@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { errorIcon } from '@/assets';
 
 type Props = {
   label?: string;
@@ -20,6 +21,7 @@ type Props = {
   grayBg?: boolean; // 클릭 전 회색 배경, 클릭 시 흰색 배경
   showLastChar?: boolean; // 비밀번호 마지막 글자만 보이게
   keepBlueBorder?: boolean; // 값이 있으면 파란 테두리 유지
+  showErrorIcon?: boolean; // 에러 아이콘 표시 여부 (기본값: true)
 };
 
 const Input = ({
@@ -42,6 +44,7 @@ const Input = ({
   grayBg = false,
   showLastChar = false,
   keepBlueBorder = false,
+  showErrorIcon = true,
 }: Props) => {
   const [isFocused, setIsFocused] = useState(false);
   const [maskedValue, setMaskedValue] = useState('');
@@ -154,7 +157,10 @@ const Input = ({
       </div>
 
       {error ? (
-        <p className="mt-2 ml-2 text-xs text-red-500">{error}</p>
+        <div className="mt-2 ml-2 flex items-center gap-1">
+          {showErrorIcon && <img src={errorIcon} alt="error" className="w-3 h-3" />}
+          <p className="text-xs text-red-500">{error}</p>
+        </div>
       ) : helperText ? (
         <p className="mt-2 ml-2 text-xs text-gray-400">{helperText}</p>
       ) : null}

@@ -15,7 +15,7 @@ export interface Term {
 interface TermsAgreementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (agreedTerms: { terms: boolean; privacy: boolean; sms: boolean }) => void;
   terms: Term[];
 }
 
@@ -164,7 +164,16 @@ const TermsAgreementModal: React.FC<TermsAgreementModalProps> = ({
           </div>
 
           <div className="px-5 mt-8">
-            <Button disabled={!canConfirm} onClick={onConfirm}>
+            <Button
+              disabled={!canConfirm}
+              onClick={() => {
+                onConfirm({
+                  terms: checkedTerms.has('terms'),
+                  privacy: checkedTerms.has('privacy'),
+                  sms: checkedTerms.has('sms'),
+                });
+              }}
+            >
               확인
             </Button>
           </div>
