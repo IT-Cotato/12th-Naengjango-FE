@@ -96,7 +96,7 @@ export default function FreezeHistory() {
   return (
     <>
       <div
-        className="relative left-[24px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden
+        className="relative left-[28.5px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden
           w-[327px] h-[546px]"
       >
         {!isEmpty && (

@@ -14,7 +14,7 @@ export default function Menu({ activeTab, onTabChange }: MenuProps) {
     <>
       <div
         data-layer="menu"
-        className="Menu w-96 h-[76px] z-1 top-[0px] fixed bg-white-800 inline-flex justify-between items-end"
+        className="Menu w-full left-0 h-[76px] z-1 top-[0px] fixed bg-white-800 inline-flex justify-between items-end"
       >
         <div
           data-layer="냉동하기"

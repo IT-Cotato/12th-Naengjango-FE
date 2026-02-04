@@ -7,10 +7,7 @@ export default function FreezePage() {
   const [activeTab, setActiveTab] = useState<'freeze' | 'history'>('freeze');
   return (
     <>
-      <div
-        data-layer="냉동 화면"
-        className="w-[375px] h-[812px] relative bg-white-800 overflow-hidden"
-      >
+      <div data-layer="냉동 화면" className="w-full h-screen relative bg-white-800 overflow-hidden">
         <Menu activeTab={activeTab} onTabChange={setActiveTab} />
         {activeTab === 'freeze' && <Freeze />}
 
