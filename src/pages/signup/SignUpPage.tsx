@@ -42,6 +42,13 @@ export default function SignupPage() {
   // 전화번호 인증 에러
   const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
 
+  // 약관 id 매핑 
+  const AGREEMENT_ID_MAP: Record<'terms' | 'privacy' | 'sms', number> = {
+    terms: 1,
+    privacy: 2,
+    sms: 3,
+  } as const;
+
   // 약관 목록
   const terms: Term[] = [
     {
@@ -127,10 +134,9 @@ export default function SignupPage() {
   }) => {
     try {
       // 약관 동의 id 배열 생성 
-      const agreedAgreementIds: number[] = [];
-      if (agreedTerms.terms) agreedAgreementIds.push(1);
-      if (agreedTerms.privacy) agreedAgreementIds.push(2);
-      if (agreedTerms.sms) agreedAgreementIds.push(3);
+      const agreedAgreementIds = (['terms', 'privacy', 'sms'] as const)
+        .filter((key) => agreedTerms[key])
+        .map((key) => AGREEMENT_ID_MAP[key]);
 
       // 회원가입 데이터 저장 
       const signupData = {
