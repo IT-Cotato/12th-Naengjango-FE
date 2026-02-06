@@ -22,6 +22,8 @@ export default function SetupPage() {
     if (next) {
       setStep(next);
     } else {
+      // 예산 설정 완료 시 첫 로그인 플래그 제거 
+      localStorage.removeItem('isFirstLogin');
       navigate('/home');
     }
   };

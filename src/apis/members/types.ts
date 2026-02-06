@@ -27,6 +27,12 @@ export interface SignupRequest {
   fixedExpenditures?: Array<{ item: string; amount: number }>;
 }
 
+// 로그인 요청
+export interface LoginRequest {
+  loginId: string;
+  password: string;
+}
+
 
 
 
@@ -54,6 +60,16 @@ export interface CheckIdResponse extends ApiResponse<boolean> {
 
 // 회원가입 응답
 export interface SignupResponse extends ApiResponse<string> {}
+
+// 로그인 응답 결과
+export interface LoginResult {
+  accessToken: string;
+  refreshToken: string;
+  signupCompleted: boolean;
+}
+
+// 로그인 응답
+export interface LoginResponse extends ApiResponse<LoginResult> {}
 
 
 
