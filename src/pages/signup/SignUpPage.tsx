@@ -152,6 +152,8 @@ export default function SignupPage() {
 
       if (response.isSuccess) {
         setIsTermsModalOpen(false);
+        // 회원가입 성공 시 첫 로그인 플래그 저장
+        localStorage.setItem('isFirstLogin', 'true');
         navigate('/onboarding');
       } else {
         throw new Error(response.message || '회원가입에 실패했습니다.');

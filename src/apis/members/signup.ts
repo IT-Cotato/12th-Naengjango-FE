@@ -8,26 +8,9 @@ import type {
   VerifySmsRequest,
   VerifySmsResponse,
 } from './types';
+import { postJson } from '../utils/apiClient';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-// 공통 post json 요청 함수
-async function postJson<T>(url: string, data: unknown, defaultErrorMessage: string): Promise<T> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-
-  const responseData: any = await res.json();
-
-  if (!res.ok || !responseData.isSuccess) {
-    const message = responseData.message || responseData.result || defaultErrorMessage;
-    throw new Error(message);
-  }
-
-  return responseData as T;
-}
 
 // SMS 인증번호 발송 api
 export async function sendSms(data: SendSmsRequest): Promise<SendSmsResponse> {
