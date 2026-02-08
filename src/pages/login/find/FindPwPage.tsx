@@ -4,6 +4,7 @@ import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import AlertModal from '@/components/common/AlertModal';
 import { findLoginPw } from '@/apis/members/signup';
+import { back } from '@/assets';
 
 export default function FindPwPage() {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ export default function FindPwPage() {
 
   const canSubmit = name.trim().length > 0 && id.trim().length > 0 && phone.length === 11;
 
+  const clearError = () => setError(undefined);
+
   const handlefindPw = async () => {
     if (!canSubmit || isLoading) return;
 
@@ -23,20 +26,14 @@ export default function FindPwPage() {
     setError(undefined);
 
     try {
-      const response = await findLoginPw({
+      await findLoginPw({
         name: name.trim(),
         loginId: id.trim(),
         phoneNumber: phone.replace(/\D/g, ''), // 숫자만 추출
       });
-
-      if (response.isSuccess) {
-        setIsModalOpen(true);
-      } else {
-        throw new Error(response.message || '비밀번호 찾기에 실패했습니다.');
-      }
+      setIsModalOpen(true);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '비밀번호 찾기에 실패했습니다.';
-      setError(errorMessage);
+      setError('회원 정보가 일치하지 않습니다');
     } finally {
       setIsLoading(false);
     }
@@ -49,10 +46,14 @@ export default function FindPwPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-      <div className="px-5 pt-6 h-24" />
+      <header className="flex h-18 items-center px-5 pt-6">
+        <button type="button" onClick={() => navigate(-1)}>
+          <img src={back} alt="back" className="h-6 w-6" />
+        </button>
+      </header>
 
       <main className="px-5 pt-17.5 pb-28">
-        <h1 className="text-center text-2xl font-bold text-gray-800">비밀번호 찾기</h1>
+        <h1 className="text-center Bold_24 text-gray-800">비밀번호 찾기</h1>
 
         <div className="mt-8 flex flex-col gap-4">
           <Input
@@ -60,21 +61,20 @@ export default function FindPwPage() {
             value={name}
             onChange={(e) => {
               setName(e.target.value);
-              setError(undefined);
+              clearError();
             }}
             keepBlueBorder
-            error={error}
+            hasError={!!error}
           />
           <Input
             placeholder="아이디"
             value={id}
             onChange={(e) => {
               setId(e.target.value);
-              setError(undefined);
+              clearError();
             }}
             keepBlueBorder
-            error={error ? '' : undefined}
-            showErrorIcon={false}
+            hasError={!!error}
           />
           <Input
             placeholder="전화번호"
@@ -82,12 +82,12 @@ export default function FindPwPage() {
             value={phone}
             onChange={(e) => {
               setPhone(e.target.value.replace(/[^0-9]/g, ''));
-              setError(undefined);
+              clearError();
             }}
-            helperText="'-'를 제외한 전화번호만 입력"
+            helperText={error ? undefined : "'-'를 제외한 전화번호만 입력"}
+            error={error}
             keepBlueBorder
-            error={error ? '' : undefined}
-            showErrorIcon={false}
+            showErrorIcon={true}
           />
         </div>
 

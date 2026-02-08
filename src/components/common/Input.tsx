@@ -12,6 +12,7 @@ type Props = {
   inputMode?: 'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search';
   disabled?: boolean;
   error?: React.ReactNode;
+  hasError?: boolean; // 에러 상태만 표시 (빨간 테두리만, 메시지는 표시 안 함)
   helperText?: React.ReactNode;
   rightSlot?: React.ReactNode;
   className?: string;
@@ -35,6 +36,7 @@ const Input = ({
   inputMode,
   disabled,
   error,
+  hasError,
   helperText,
   rightSlot,
   className,
@@ -101,10 +103,11 @@ const Input = ({
   };
 
   const hasValue = value && value.length > 0;
+  const showError = error || hasError;
 
   const borderClass = disabled
     ? 'border-0'
-    : error
+    : showError
       ? 'border-red-500 border-[1.5px]'
       : success
         ? 'border-[#5e97d7] border-[1.5px]'
