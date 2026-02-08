@@ -33,6 +33,11 @@ export interface LoginRequest {
   password: string;
 }
 
+// Id 찾기 요청
+export interface FindIdRequest {
+  name: string;
+  phoneNumber: string;
+}
 
 
 
@@ -71,6 +76,12 @@ export interface LoginResult {
 // 로그인 응답
 export interface LoginResponse extends ApiResponse<LoginResult> {}
 
+// Id 찾기 응답 결과
+export interface FindIdResult {
+  loginId: string;
+}
 
+// Id 찾기 응답
+export interface FindIdResponse extends ApiResponse<FindIdResult> {}
 
 

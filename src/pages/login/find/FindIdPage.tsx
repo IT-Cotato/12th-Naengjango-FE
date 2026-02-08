@@ -2,19 +2,41 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
+import { findLoginId } from '@/apis/members/signup';
 
 export default function FindIdPage() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [foundId, setFoundId] = useState<string | null>(null); // 결과 화면 전환용
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const canSubmit = name.trim().length > 0 && phone.length === 11;
 
-  const handlefindId = () => {
-    // Id 찾기 API 호출 (나중에)
-    // 임시로 아이디 설정
-    setFoundId('jan****26');
+  const handlefindId = async () => {
+    if (!canSubmit || isLoading) return;
+
+    setIsLoading(true);
+    setError(undefined);
+
+    try {
+      const response = await findLoginId({
+        name: name.trim(),
+        phoneNumber: phone.replace(/\D/g, ''), // 숫자만 추출
+      });
+
+      if (response.isSuccess && response.result?.loginId) {
+        setFoundId(response.result.loginId);
+      } else {
+        throw new Error(response.message || '아이디를 찾을 수 없습니다.');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '아이디 찾기에 실패했습니다.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 결과 화면
@@ -53,23 +75,32 @@ export default function FindIdPage() {
           <Input
             placeholder="이름"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError(undefined);
+            }}
             keepBlueBorder
+            error={error}
           />
           <Input
             placeholder="전화번호"
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
+            onChange={(e) => {
+              setPhone(e.target.value.replace(/[^0-9]/g, ''));
+              setError(undefined);
+            }}
             helperText="'-'를 제외한 전화번호만 입력"
             keepBlueBorder
+            error={error ? '' : undefined}
+            showErrorIcon={false}
           />
         </div>
 
         {/* 버튼 */}
         <div className="mt-6 flex flex-col gap-3">
-          <Button disabled={!canSubmit} onClick={handlefindId}>
-            아이디 찾기
+          <Button disabled={!canSubmit || isLoading} onClick={handlefindId}>
+            {isLoading ? '찾는 중...' : '아이디 찾기'}
           </Button>
         </div>
       </main>
