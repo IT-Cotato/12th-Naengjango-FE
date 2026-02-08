@@ -8,6 +8,8 @@ export default function Freeze() {
   const [toggleInputValid, setToggleInputValid] = useState(false);
   const canFreeze = Boolean(selectedAppId && toggleInputValid);
   const [resetKey, setResetKey] = useState(0);
+  const [itemName, setItemName] = useState('');
+  const [price, setPrice] = useState(0);
 
   const handleToggleChange = (mode: 'manual' | 'link') => {
     setActiveToggle(mode);
@@ -15,6 +17,33 @@ export default function Freeze() {
     // 탭 바뀔 때 이전 입력은 무효 처리
     setToggleInputValid(false);
   };
+
+  const handleFreeze = async () => {
+    if (!selectedAppId || !itemName || !price) return;
+
+    const body = {
+      appName: selectedAppId, // appName = 선택된 앱 ID
+      itemName: itemName,
+      price: price,
+    };
+
+    console.log('보내는 body: ', body);
+
+    const accessToken =
+      'eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3NzA1MjgwMTcsImV4cCI6MTc3MDUyOTgxNywibWVtYmVySWQiOjQsInJvbGUiOiJVU0VSIiwic2lnbnVwQ29tcGxldGVkIjp0cnVlfQ.ZbTrSKmTRFUJJG_uYr7TUy00fEXvbIdUAyyla5qDPeytqxjKQD6wJGo97VPq9cXY';
+
+    const res = await fetch('https://15.134.213.116.nip.io/api/freezes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      //credentials: 'include',
+      body: JSON.stringify(body),
+    });
+    console.log('freeze res:', await res.json());
+  };
+
   return (
     <>
       <div className="Frame 11 justify-center items-center overflow-hidden">
@@ -57,7 +86,10 @@ export default function Freeze() {
             onToggleChange={handleToggleChange}
             onInputStateChange={(state) => {
               setToggleInputValid(state.isValid);
+              setItemName(state.itemName);
+              setPrice(state.price);
             }}
+            onFreeze={handleFreeze}
             canFreeze={canFreeze}
             resetKey={resetKey}
           />
