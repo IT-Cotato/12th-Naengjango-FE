@@ -39,6 +39,13 @@ export interface FindIdRequest {
   phoneNumber: string;
 }
 
+// 비번 찾기 요청
+export interface FindPwRequest {
+  name: string;
+  phoneNumber: string;
+  loginId: string;
+}
+
 
 
 
@@ -84,4 +91,5 @@ export interface FindIdResult {
 // Id 찾기 응답
 export interface FindIdResponse extends ApiResponse<FindIdResult> {}
 
-
+// 비번 찾기 응답
+export interface FindPwResponse extends ApiResponse<string> {}
