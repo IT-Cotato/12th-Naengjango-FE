@@ -4,7 +4,7 @@ import { back, logout, pw, quit } from '@/assets';
 import MenuItem from '@/components/my/MenuItem';
 import InfoItem from '@/components/my/InfoItem';
 import AlertModal from '@/components/common/AlertModal';
-import { logout as logoutApi } from '@/apis/members/login';
+import { logout as logoutApi , withdrawal as withdrawalApi } from '@/apis/members/login';
 
 export default function MemberInfoPage() {
   const navigate = useNavigate();
@@ -35,10 +35,22 @@ export default function MemberInfoPage() {
     }
   };
 
-  const handleWithdraw = () => {
-    // 회원 탈퇴
-    console.log('회원 탈퇴');
-    setIsWithdrawModalOpen(false);
+  const handleWithdrawal = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+
+    try {
+      if (accessToken) {
+        await withdrawalApi(accessToken);
+      }
+    } catch (error) {
+      console.error('회원 탈퇴 실패:', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('isFirstLogin');
+      setIsWithdrawModalOpen(false);
+      navigate('/login');
+    }
   };
 
   const menuItems = [
@@ -118,7 +130,7 @@ export default function MemberInfoPage() {
         twoButtons={{
           leftText: '취소',
           rightText: '회원 탈퇴',
-          onRight: handleWithdraw,
+          onRight: handleWithdrawal,
         }}
         className="h-[157px]"
         buttonClassName="h-[47px]"

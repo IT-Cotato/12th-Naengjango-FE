@@ -96,3 +96,6 @@ export interface FindPwResponse extends ApiResponse<string> {}
 
 // 로그아웃 응답
 export interface LogoutResponse extends ApiResponse<string> {}
+
+// 탈퇴 응답
+export interface WithdrawalResponse extends ApiResponse<string> {}
