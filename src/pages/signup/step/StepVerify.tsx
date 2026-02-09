@@ -116,6 +116,7 @@ export default function StepVerify({
 
       <Input
         placeholder={placeholder}
+        inputMode="numeric"
         hidePlaceholderOnFocus={!isExpired}
         value={value}
         onChange={(e) => {
