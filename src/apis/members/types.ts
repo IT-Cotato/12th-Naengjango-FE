@@ -93,3 +93,6 @@ export interface FindIdResponse extends ApiResponse<FindIdResult> {}
 
 // 비번 찾기 응답
 export interface FindPwResponse extends ApiResponse<string> {}
+
+// 로그아웃 응답
+export interface LogoutResponse extends ApiResponse<string> {}

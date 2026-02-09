@@ -4,6 +4,7 @@ import { back, logout, pw, quit } from '@/assets';
 import MenuItem from '@/components/my/MenuItem';
 import InfoItem from '@/components/my/InfoItem';
 import AlertModal from '@/components/common/AlertModal';
+import { logout as logoutApi } from '@/apis/members/login';
 
 export default function MemberInfoPage() {
   const navigate = useNavigate();
@@ -17,10 +18,21 @@ export default function MemberInfoPage() {
     joinDate: '2025.02.20',
   };
 
-  const handleLogout = () => {
-    // 로그아웃
-    console.log('로그아웃');
-    setIsLogoutModalOpen(false);
+  const handleLogout = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+
+    try {
+      if (accessToken) {
+        await logoutApi(accessToken);
+      }
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      setIsLogoutModalOpen(false);
+      navigate('/login');
+    }
   };
 
   const handleWithdraw = () => {
