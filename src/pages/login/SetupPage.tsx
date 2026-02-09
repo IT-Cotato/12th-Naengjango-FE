@@ -4,6 +4,7 @@ import SignupHeader from '@/components/signup/SignupHeader';
 import Button from '@/components/common/Button';
 import StepBudget from './step/StepBudget';
 import StepFixCosts from './step/StepFixCosts';
+import { updateBudget, updateFixedExpenditures } from '@/apis/members/mypage';
 
 type Step = 'budget' | 'fixcosts';
 
@@ -14,17 +15,89 @@ export default function SetupPage() {
   const [step, setStep] = useState<Step>('budget');
   const [budget, setBudget] = useState('');
   const [fixCosts, setFixCosts] = useState<{ id: string; amount: string }[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const stepIndex = STEP_ORDER.indexOf(step);
 
-  const goNext = () => {
+  const goNext = async () => {
     const next = STEP_ORDER[stepIndex + 1];
     if (next) {
       setStep(next);
     } else {
-      // 예산 설정 완료 시 첫 로그인 플래그 제거 
-      localStorage.removeItem('isFirstLogin');
-      navigate('/home');
+      // 예산 설정 완료 시 예산 수정 API 호출
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.error('accessToken이 없습니다.');
+        navigate('/login');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const budgetNumber = parseInt(budget.replace(/,/g, ''), 10);
+        if (isNaN(budgetNumber)) {
+          throw new Error('유효하지 않은 예산 값입니다.');
+        }
+
+        // 예산 수정 API 호출
+        await updateBudget({ budget: budgetNumber }, accessToken);
+
+        // 고정지출 수정 API 호출
+        const fixedExpenditureItems = fixCosts.map((fixCost) => {
+          const amount = parseInt(fixCost.amount.replace(/,/g, ''), 10);
+          if (isNaN(amount)) {
+            throw new Error(`유효하지 않은 고정지출 금액입니다: ${fixCost.id}`);
+          }
+
+          // id를 label로 변환
+          const CATEGORIES = {
+            주거: [
+              { id: 'rent', label: '월세' },
+              { id: 'manageFee', label: '관리비' },
+              { id: 'internet', label: '인터넷' },
+              { id: 'utility', label: '공과금' },
+            ],
+            구독: [
+              { id: 'ott', label: 'OTT' },
+              { id: 'music', label: '음악' },
+              { id: 'cloud', label: '클라우드' },
+              { id: 'delivery', label: '배달앱' },
+            ],
+            생활: [
+              { id: 'transport', label: '교통비' },
+              { id: 'phone', label: '통신비' },
+              { id: 'exercise', label: '운동' },
+              { id: 'familyoccasion', label: '경조사' },
+              { id: 'insurance', label: '보험료' },
+              { id: 'etc', label: '기타' },
+            ],
+          };
+
+          const allItems = [
+            ...CATEGORIES.주거,
+            ...CATEGORIES.구독,
+            ...CATEGORIES.생활,
+          ];
+          const categoryItem = allItems.find((item) => item.id === fixCost.id);
+          const itemLabel = categoryItem?.label || fixCost.id;
+
+          return {
+            item: itemLabel,
+            amount,
+          };
+        });
+
+        await updateFixedExpenditures({ items: fixedExpenditureItems }, accessToken);
+
+        // 예산 설정 완료 시 첫 로그인 플래그 제거
+        localStorage.removeItem('isFirstLogin');
+        navigate('/home');
+      } catch (error) {
+        console.error('예산 설정 실패:', error);
+        alert(error instanceof Error ? error.message : '예산 설정에 실패했습니다.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -62,8 +135,8 @@ export default function SetupPage() {
 
       {/* 다음 버튼 고정 */}
       <div className="shrink-0 border-0 bg-white px-5 pb-6">
-        <Button disabled={!canNext} onClick={goNext}>
-          {step === 'fixcosts' ? '예산 설정 완료' : '다음'}
+        <Button disabled={!canNext || isSubmitting} onClick={goNext}>
+          {isSubmitting ? '설정 중...' : step === 'fixcosts' ? '예산 설정 완료' : '다음'}
         </Button>
       </div>
     </div>
