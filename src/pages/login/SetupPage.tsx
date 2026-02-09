@@ -5,6 +5,7 @@ import Button from '@/components/common/Button';
 import StepBudget from './step/StepBudget';
 import StepFixCosts from './step/StepFixCosts';
 import { updateBudget, updateFixedExpenditures } from '@/apis/members/mypage';
+import { getAllCategoryItems } from '@/constants/categories';
 
 type Step = 'budget' | 'fixcosts';
 
@@ -39,10 +40,7 @@ export default function SetupPage() {
           throw new Error('유효하지 않은 예산 값입니다.');
         }
 
-        // 예산 수정 API 호출
-        await updateBudget({ budget: budgetNumber }, accessToken);
-
-        // 고정지출 수정 API 호출
+        // 고정지출 항목을 API 형식에 맞게 변환
         const fixedExpenditureItems = fixCosts.map((fixCost) => {
           const amount = parseInt(fixCost.amount.replace(/,/g, ''), 10);
           if (isNaN(amount)) {
@@ -50,34 +48,7 @@ export default function SetupPage() {
           }
 
           // id를 label로 변환
-          const CATEGORIES = {
-            주거: [
-              { id: 'rent', label: '월세' },
-              { id: 'manageFee', label: '관리비' },
-              { id: 'internet', label: '인터넷' },
-              { id: 'utility', label: '공과금' },
-            ],
-            구독: [
-              { id: 'ott', label: 'OTT' },
-              { id: 'music', label: '음악' },
-              { id: 'cloud', label: '클라우드' },
-              { id: 'delivery', label: '배달앱' },
-            ],
-            생활: [
-              { id: 'transport', label: '교통비' },
-              { id: 'phone', label: '통신비' },
-              { id: 'exercise', label: '운동' },
-              { id: 'familyoccasion', label: '경조사' },
-              { id: 'insurance', label: '보험료' },
-              { id: 'etc', label: '기타' },
-            ],
-          };
-
-          const allItems = [
-            ...CATEGORIES.주거,
-            ...CATEGORIES.구독,
-            ...CATEGORIES.생활,
-          ];
+          const allItems = getAllCategoryItems();
           const categoryItem = allItems.find((item) => item.id === fixCost.id);
           const itemLabel = categoryItem?.label || fixCost.id;
 
@@ -87,7 +58,11 @@ export default function SetupPage() {
           };
         });
 
-        await updateFixedExpenditures({ items: fixedExpenditureItems }, accessToken);
+        // 예산 및 고정지출 수정 API를 병렬로 호출
+        await Promise.all([
+          updateBudget({ budget: budgetNumber }, accessToken),
+          updateFixedExpenditures({ items: fixedExpenditureItems }, accessToken),
+        ]);
 
         // 예산 설정 완료 시 첫 로그인 플래그 제거
         localStorage.removeItem('isFirstLogin');

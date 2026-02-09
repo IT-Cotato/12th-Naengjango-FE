@@ -36,9 +36,10 @@ export async function postJson<T>(url: string, data: unknown, defaultErrorMessag
   return fetchAndParseResponse<T>(res, defaultErrorMessage);
 }
 
-// 인증이 필요한 post json 요청 함수
-export async function postJsonWithAuth<T>(
+// 인증이 필요한 공통 fetch 함수
+async function fetchWithAuth<T>(
   url: string,
+  method: 'POST' | 'PATCH',
   data: unknown,
   defaultErrorMessage: string,
   accessToken: string
@@ -48,7 +49,7 @@ export async function postJsonWithAuth<T>(
   }
 
   const res = await fetch(url, {
-    method: 'POST',
+    method,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
@@ -59,6 +60,16 @@ export async function postJsonWithAuth<T>(
   return fetchAndParseResponse<T>(res, defaultErrorMessage);
 }
 
+// 인증이 필요한 post json 요청 함수
+export async function postJsonWithAuth<T>(
+  url: string,
+  data: unknown,
+  defaultErrorMessage: string,
+  accessToken: string
+): Promise<T> {
+  return fetchWithAuth<T>(url, 'POST', data, defaultErrorMessage, accessToken);
+}
+
 // patch json 요청 함수
 export async function patchJsonWithAuth<T>(
   url: string,
@@ -66,18 +77,5 @@ export async function patchJsonWithAuth<T>(
   defaultErrorMessage: string,
   accessToken: string
 ): Promise<T> {
-  if (!API_BASE_URL) {
-    throw new Error('API_BASE_URL 환경 변수가 설정되지 않았습니다.');
-  }
-
-  const res = await fetch(url, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(data),
-  });
-
-  return fetchAndParseResponse<T>(res, defaultErrorMessage);
+  return fetchWithAuth<T>(url, 'PATCH', data, defaultErrorMessage, accessToken);
 }
