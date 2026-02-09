@@ -18,40 +18,49 @@ export default function MemberInfoPage() {
     joinDate: '2025.02.20',
   };
 
-  const handleLogout = async () => {
+  const handleAuthAction = async ({
+    apiCall,
+    errorMsg,
+    isWithdrawal,
+  }: {
+    apiCall: (token: string) => Promise<unknown>;
+    errorMsg: string;
+    isWithdrawal: boolean;
+  }) => {
     const accessToken = localStorage.getItem('accessToken');
 
     try {
       if (accessToken) {
-        await logoutApi(accessToken);
+        await apiCall(accessToken);
       }
     } catch (error) {
-      console.error('로그아웃 실패:', error);
+      console.error(errorMsg, error);
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      setIsLogoutModalOpen(false);
+      if (isWithdrawal) {
+        localStorage.removeItem('isFirstLogin');
+        setIsWithdrawModalOpen(false);
+      } else {
+        setIsLogoutModalOpen(false);
+      }
       navigate('/login');
     }
   };
 
-  const handleWithdrawal = async () => {
-    const accessToken = localStorage.getItem('accessToken');
+  const handleLogout = () =>
+    handleAuthAction({
+      apiCall: logoutApi,
+      errorMsg: '로그아웃 실패:',
+      isWithdrawal: false,
+    });
 
-    try {
-      if (accessToken) {
-        await withdrawalApi(accessToken);
-      }
-    } catch (error) {
-      console.error('회원 탈퇴 실패:', error);
-    } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('isFirstLogin');
-      setIsWithdrawModalOpen(false);
-      navigate('/login');
-    }
-  };
+  const handleWithdrawal = () =>
+    handleAuthAction({
+      apiCall: withdrawalApi,
+      errorMsg: '회원 탈퇴 실패:',
+      isWithdrawal: true,
+    });
 
   const menuItems = [
     {
