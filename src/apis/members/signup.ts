@@ -7,6 +7,10 @@ import type {
   SendSmsResponse,
   VerifySmsRequest,
   VerifySmsResponse,
+  FindIdRequest,
+  FindIdResponse,
+  FindPwRequest,
+  FindPwResponse,
 } from './types';
 import { postJson } from '../utils/apiClient';
 
@@ -43,4 +47,14 @@ export async function checkId(data: CheckIdRequest): Promise<CheckIdResponse> {
 // 일반 회원가입 api
 export async function signup(data: SignupRequest): Promise<SignupResponse> {
   return postJson<SignupResponse>(`${API_BASE_URL}/api/members/signup`, data, '회원가입 실패');
+}
+
+// 아이디 찾기 api
+export async function findLoginId(data: FindIdRequest): Promise<FindIdResponse> {
+  return postJson<FindIdResponse>(`${API_BASE_URL}/auth/find-loginId`, data, '아이디 찾기 실패');
+}
+
+// 비번 찾기 api
+export async function findLoginPw(data: FindPwRequest): Promise<FindPwResponse> {
+  return postJson<FindPwResponse>(`${API_BASE_URL}/auth/find-password`, data, '비번 찾기 실패');
 }

@@ -66,9 +66,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-      <div className="px-5 pt-6 h-24" />
 
-      <main className="px-5 pt-17.5 pb-28">
+      <main className="px-5 pt-35 pb-28">
         <h1 className="text-center text-2xl font-bold text-gray-800">로그인</h1>
         <div className="mt-8 flex flex-col gap-4">
           <Input

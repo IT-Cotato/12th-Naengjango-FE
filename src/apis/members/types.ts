@@ -33,6 +33,18 @@ export interface LoginRequest {
   password: string;
 }
 
+// Id 찾기 요청
+export interface FindIdRequest {
+  name: string;
+  phoneNumber: string;
+}
+
+// 비번 찾기 요청
+export interface FindPwRequest {
+  name: string;
+  phoneNumber: string;
+  loginId: string;
+}
 
 
 
@@ -71,6 +83,13 @@ export interface LoginResult {
 // 로그인 응답
 export interface LoginResponse extends ApiResponse<LoginResult> {}
 
+// Id 찾기 응답 결과
+export interface FindIdResult {
+  loginId: string;
+}
 
+// Id 찾기 응답
+export interface FindIdResponse extends ApiResponse<FindIdResult> {}
 
-
+// 비번 찾기 응답
+export interface FindPwResponse extends ApiResponse<string> {}
