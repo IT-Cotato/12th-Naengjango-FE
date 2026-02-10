@@ -1,24 +1,60 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepFixCosts from '@/pages/login/step/StepFixCosts';
 import { close } from '@/assets';
-
-type FixCost = {
-  id: string;
-  amount: string;
-};
+import { updateBudget, updateFixedExpenditures } from '@/apis/my/mypage';
+import { getAllCategoryItems } from '@/constants/categories';
+import { useBudget } from '@/hooks/my/useBudget';
+import { useFixedExpenditures, type FixCost } from '@/hooks/my/useFixedExpenditures';
 
 export default function ChangeBudgetPage() {
   const navigate = useNavigate();
-  const [budget, setBudget] = useState('600000'); // 화면에 표시되는 예산 (나중에 api 연결)
-  const [tempBudget, setTempBudget] = useState('600000'); // 임시 예산 (입력 중인 값)
-  const [fixCosts, setFixCosts] = useState<FixCost[]>([]); // api 연결 (나중에)
+  const { budget: fetchedBudget } = useBudget();
+  const { items: fetchedFixCosts } = useFixedExpenditures();
+  const [tempBudget, setTempBudget] = useState('0');
+  const [fixCosts, setFixCosts] = useState<FixCost[]>([]);
+  const [saveLoading, setSaveLoading] = useState(false);
 
-  //api 연결 - 저장 버튼 클릭 시 호출 (나중에)
-  const handleSave = () => {
-    // 저장 시에만 예산 업데이트
-    setBudget(tempBudget);
-    console.log('예산 저장:', { budget: tempBudget, fixCosts });
+  useEffect(() => {
+    if (fetchedBudget !== null) {
+      setTempBudget(String(fetchedBudget));
+    }
+  }, [fetchedBudget]);
+
+  useEffect(() => {
+    setFixCosts(fetchedFixCosts);
+  }, [fetchedFixCosts]);
+
+  const budgetStr = fetchedBudget !== null ? String(fetchedBudget) : '0';
+
+  const handleSave = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    const budgetNum = Number(String(tempBudget).replace(/,/g, ''));
+    if (Number.isNaN(budgetNum) || budgetNum < 0) return;
+
+    setSaveLoading(true);
+    try {
+      const allItems = getAllCategoryItems();
+      const fixedExpenditureItems = fixCosts.map((fixCost) => {
+        const amount = parseInt(String(fixCost.amount).replace(/,/g, ''), 10);
+        if (Number.isNaN(amount))
+          throw new Error(`유효하지 않은 고정지출 금액입니다: ${fixCost.id}`);
+        const categoryItem = allItems.find((item) => item.id === fixCost.id);
+        const itemLabel = categoryItem?.label ?? fixCost.id;
+        return { item: itemLabel, amount };
+      });
+
+      await Promise.all([
+        updateBudget({ budget: budgetNum }, accessToken),
+        updateFixedExpenditures({ items: fixedExpenditureItems }, accessToken),
+      ]);
+      navigate('/my');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '저장에 실패했습니다.');
+    } finally {
+      setSaveLoading(false);
+    }
   };
 
   return (
@@ -35,7 +71,7 @@ export default function ChangeBudgetPage() {
           <StepFixCosts
             value={fixCosts}
             onChange={setFixCosts}
-            budget={budget}
+            budget={budgetStr}
             showBudgetInput={true}
             onBudgetChange={setTempBudget}
             inputBudget={tempBudget}
@@ -47,9 +83,10 @@ export default function ChangeBudgetPage() {
         <button
           type="button"
           onClick={handleSave}
-          className="w-full rounded-lg bg-main-skyblue py-3 text-white font-medium"
+          disabled={saveLoading}
+          className="w-full rounded-lg bg-main-skyblue py-3 text-white font-medium disabled:opacity-50"
         >
-          예산 설정 완료
+          {saveLoading ? '저장 중...' : '예산 설정 완료'}
         </button>
       </div>
     </div>

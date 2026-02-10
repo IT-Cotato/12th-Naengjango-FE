@@ -4,7 +4,7 @@ import SignupHeader from '@/components/signup/SignupHeader';
 import Button from '@/components/common/Button';
 import StepBudget from './step/StepBudget';
 import StepFixCosts from './step/StepFixCosts';
-import { updateBudget, updateFixedExpenditures } from '@/apis/members/mypage';
+import { updateBudget, updateFixedExpenditures } from '@/apis/my/mypage';
 import { getAllCategoryItems } from '@/constants/categories';
 
 type Step = 'budget' | 'fixcosts';
