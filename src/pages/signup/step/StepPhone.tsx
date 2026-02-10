@@ -27,6 +27,7 @@ export default function StepPhone({
     <div className="mt-2">
       <Input
         label="전화번호"
+        inputMode="numeric"
         placeholder="'-'를 제외한 숫자만 입력하세요"
         value={value}
         onChange={(e) => onChange(e.target.value)}
