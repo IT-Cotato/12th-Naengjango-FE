@@ -10,8 +10,15 @@ import ImageModal from '@/components/common/ImageModal';
 import * as images from '@/assets/images';
 import UpdateModal from './UpdateModal';
 import type { FreezeItem } from '@/types/FreezeItem';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+type ImageKey = keyof typeof images;
 
-export default function FreezeHistory() {
+type Props = {
+  refreshKey: number;
+  onUpdated: () => void;
+};
+
+export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [sortOption, setSortOption] = useState<SortOption>('최신순');
   const [item, setItem] = useState<FreezeItem[]>([]);
 
@@ -42,23 +49,36 @@ export default function FreezeHistory() {
   const listRef = useRef<HTMLDivElement>(null);
   const [rewardSnowball, setRewardSnowball] = useState<number | null>(null);
   const [currentSnowball, setCurrentSnowball] = useState<number | null>(null);
+  const [isStreak, setIsStreak] = useState(false);
+  const [streakDays, setStreakDays] = useState(0);
+  const [todaySnowballs, setTodaySnowballs] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // JS month는 0~11
+  const day = today.getDate();
+  const [monthRemaining, setMonthRemaining] = useState<number | null>(null); //이번달 잔여 예산
+  const [todayBudget, setTodayBudget] = useState<number | null>(null); //계산한 오늘 사용 가능 예산
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: 0 });
   }, [sortOption]);
 
-  const [selectedItem, setSelectedItem] = useState<FreezeItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<FreezeItem | null>(null); //상세 아이템 정보
   const isEmpty = item.length === 0;
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const accessToken =
-          'eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3NzA1MzAyNTIsImV4cCI6MTc3MDUzMjA1MiwibWVtYmVySWQiOjQsInJvbGUiOiJVU0VSIiwic2lnbnVwQ29tcGxldGVkIjp0cnVlfQ.hFv80yn_xKXLoMLx9zYiJM5jqRo8NOkZlC0XhZhnk6dlYLo4Aahd8OY6QA2nRbKS';
-        // const res = await fetch(`/api/freezes?sort=${sortParam}`);
-        const res = await fetch('https://15.134.213.116.nip.io/api/freezes?sort=latest', {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          console.warn('No access token. User might not be logged in.');
+          return;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/freezes?sort=latest`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -66,7 +86,6 @@ export default function FreezeHistory() {
         });
 
         const data = await res.json();
-
         if (!data.isSuccess) return;
 
         // 서버 데이터 → FreezeItem 형태로 변환
@@ -77,7 +96,7 @@ export default function FreezeHistory() {
             price: i.price,
             remainingHour: Math.floor(i.remainingSeconds / 3600),
             checked: false,
-            image: images.ably, // appName→이미지 매핑 필요
+            image: images[i.appName as ImageKey] ?? images.ably,
             selectedAppId: i.appName,
           };
         });
@@ -98,15 +117,18 @@ export default function FreezeHistory() {
     };
 
     fetchData();
-  }, [sortOption]);
+  }, [refreshKey]);
 
   const handleFail = async () => {
     try {
-      const accessToken =
-        'eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3NzA1MzAyNTIsImV4cCI6MTc3MDUzMjA1MiwibWVtYmVySWQiOjQsInJvbGUiOiJVU0VSIiwic2lnbnVwQ29tcGxldGVkIjp0cnVlfQ.hFv80yn_xKXLoMLx9zYiJM5jqRo8NOkZlC0XhZhnk6dlYLo4Aahd8OY6QA2nRbKS';
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.warn('No access token. User might not be logged in.');
+        return;
+      }
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
 
-      const res = await fetch('https://15.134.213.116.nip.io/api/freezes/fail', {
+      const res = await fetch(`${API_BASE_URL}/api/freezes/fail`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -135,13 +157,16 @@ export default function FreezeHistory() {
 
   const handleSuccess = async () => {
     try {
-      const accessToken =
-        'eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3NzA1MzAyNTIsImV4cCI6MTc3MDUzMjA1MiwibWVtYmVySWQiOjQsInJvbGUiOiJVU0VSIiwic2lnbnVwQ29tcGxldGVkIjp0cnVlfQ.hFv80yn_xKXLoMLx9zYiJM5jqRo8NOkZlC0XhZhnk6dlYLo4Aahd8OY6QA2nRbKS'; // 네가 쓰던 그대로
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.warn('No access token. User might not be logged in.');
+        return;
+      }
 
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
       console.log('freeze success body: ', { selectedIds });
 
-      const res = await fetch('https://15.134.213.116.nip.io/api/freezes/success', {
+      const res = await fetch(`${API_BASE_URL}/api/freezes/success`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -160,8 +185,10 @@ export default function FreezeHistory() {
       }
 
       // 서버 응답 저장
-      setRewardSnowball(data.result.affectedCount);
-      setCurrentSnowball(data.result.currentSnowball);
+      setRewardSnowball(data.result.action.snowballsGranted);
+      setCurrentSnowball(data.result.status.currentSnowballBalance);
+      setIsStreak(data.result.status.isStreak);
+      setStreakDays(data.result.status.streakDays);
 
       // 성공 모달 닫기 → 이미지 모달 열기
       setIsSuccessModalOpen(false);
@@ -176,21 +203,23 @@ export default function FreezeHistory() {
 
   const handleExtend = async () => {
     try {
-      const accessToken =
-        'eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3NzA1MzAyNTIsImV4cCI6MTc3MDUzMjA1MiwibWVtYmVySWQiOjQsInJvbGUiOiJVU0VSIiwic2lnbnVwQ29tcGxldGVkIjp0cnVlfQ.hFv80yn_xKXLoMLx9zYiJM5jqRo8NOkZlC0XhZhnk6dlYLo4Aahd8OY6QA2nRbKS'; // 네가 쓰던 그대로
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.warn('No access token. User might not be logged in.');
+        return;
+      }
 
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
-      console.log('freeze extend body: ', { selectedIds });
+      //console.log('freeze extend body: ', { selectedIds });
 
-      const res = await fetch('https://15.134.213.116.nip.io/api/freezes/extend', {
+      // 1) 연장 API 호출
+      const res = await fetch(`${API_BASE_URL}/api/freezes/extend`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          freezeIds: selectedIds,
-        }),
+        body: JSON.stringify({ freezeIds: selectedIds }),
       });
 
       const data = await res.json();
@@ -200,18 +229,156 @@ export default function FreezeHistory() {
         return;
       }
 
-      setIsExtendModalOpen(false);
-      // 체크박스 전체 해제
-      setItem((prev) =>
-        prev.map((item) => ({
-          ...item,
+      // 2) 연장된 아이템들 개별 GET 호출로 최신 데이터 가져오기
+      const updatedItems: FreezeItem[] = [];
+
+      for (const id of selectedIds) {
+        const detailRes = await fetch(`${API_BASE_URL}/api/freezes/${id}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        const detailData = await detailRes.json();
+        if (!detailData.isSuccess) continue;
+
+        const freeze = detailData.result;
+
+        // 남은 시간 직접 계산
+        const expires = new Date(freeze.expiresAt + 'Z');
+        const now = new Date();
+        const diffMs = expires.getTime() - now.getTime();
+        const diffSeconds = Math.max(0, Math.floor(diffMs / 1000));
+
+        updatedItems.push({
+          id: freeze.id,
+          title: freeze.itemName,
+          price: freeze.price,
+          remainingHour: Math.floor(diffSeconds / 3600),
           checked: false,
-        })),
+          selectedAppId: freeze.appName,
+          image: images[freeze.appName as ImageKey] ?? images.ably,
+        });
+      }
+
+      // 3) local state 업데이트 (해당 아이템만 대체) + 체크 해제까지 한 번에
+      setItem((prev) =>
+        prev.map((item) => {
+          const updated = updatedItems.find((u) => u.id === item.id);
+          return updated ? { ...updated, checked: false } : { ...item, checked: false };
+        }),
       );
+
+      setIsExtendModalOpen(false);
     } catch (err) {
       console.error(err);
     }
   };
+
+  //하루 가용 예산 계산
+  useEffect(() => {
+    const fetchBudgetPreview = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) return;
+
+      const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
+      if (selectedIds.length === 0) {
+        setTodayBudget(monthRemaining); // 선택 항목 없으면 그냥 오늘 예산만
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/freezes/budget-preview`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ freezeIds: selectedIds }),
+        });
+
+        const data = await res.json();
+        if (data.isSuccess && data.result) {
+          const { selectedTotalPrice, remainingDaysInMonth } = data.result;
+
+          // 오늘 가용 예산 계산
+          const availableToday = Math.max(
+            Math.floor((monthRemaining ?? 0 - selectedTotalPrice) / remainingDaysInMonth),
+            0,
+          );
+          setTodayBudget(availableToday);
+        } else {
+          console.error('budget-preview 실패', data.message);
+          setTodayBudget(0);
+        }
+      } catch (err) {
+        console.error(err);
+        setTodayBudget(0);
+      }
+    };
+
+    fetchBudgetPreview();
+  }, [item, monthRemaining]);
+
+  useEffect(() => {
+    const fetchAccountStatus = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) return;
+
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/accounts/status?year=${year}&month=${month}&day=${day}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+        const data = await res.json();
+        if (data.isSuccess && data.result) {
+          setMonthRemaining(data.result.monthRemaining);
+        } else {
+          console.error('accounts/status 실패', data.message);
+          setMonthRemaining(null);
+        }
+      } catch (err) {
+        console.error(err);
+        setMonthRemaining(null);
+      }
+    };
+
+    fetchAccountStatus();
+  }, []);
+
+  //눈덩이 조회
+  useEffect(() => {
+    const handleSnow = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          console.warn('No access token. User might not be logged in.');
+          return;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/snowballs/summary`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await res.json();
+        setTodaySnowballs(data.result.todayEarned);
+
+        if (!data.isSuccess) {
+          console.error('snow API 실패:', data.message);
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    handleSnow();
+  }, [item]);
 
   return (
     <>
@@ -363,8 +530,10 @@ export default function FreezeHistory() {
                   data-layer="하루 4,000원 쓸 수 있게 돼요!"
                   className="4000 flex-1 text-center justify-center"
                 >
-                  <span className="text-gray-800 SemiBold_16 font-sans ">하루</span>
-                  <span className="text-error SemiBold_16 font-sans "> 4,000원</span>
+                  <span className="text-gray-800 SemiBold_16 font-sans ">하루 </span>
+                  <span className="text-error SemiBold_16 font-sans ">
+                    {todayBudget?.toLocaleString() ?? 0}원
+                  </span>
                   <span className="text-gray-800 SemiBold_16 font-sans "> 쓸 수 있게 돼요!</span>
                 </div>
               </div>
@@ -438,7 +607,12 @@ export default function FreezeHistory() {
         onClose={() => {
           setIsSnowBall(false);
         }}
-        rewardMessage={`눈덩이 ${rewardSnowball ?? 0}개 지급 완료`}
+        title={isStreak ? `연속 ${streakDays}회 냉동 성공!` : '냉동 성공!'}
+        rewardMessage={
+          todaySnowballs === 2
+            ? '오늘 최대 눈덩이 수집 완료'
+            : `눈덩이 ${rewardSnowball ?? 0}개 지급 완료`
+        }
         currentMessage={`현재 보유 눈덩이: ${currentSnowball ?? 0}개`}
         confirmText="확인"
         image={snow}
@@ -451,6 +625,7 @@ export default function FreezeHistory() {
           onSave={(updated) => {
             setItem((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
             setSelectedItem(null);
+            onUpdated();
           }}
         />
       )}

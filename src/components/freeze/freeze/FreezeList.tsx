@@ -7,12 +7,13 @@ import AddModal from './AddModal';
 import { PRESET_APPS } from '@/data/presetApps';
 import AppNew from './AppNew';
 import AlertModal from '@/components/common/AlertModal';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const ITEMS_PER_PAGE = 8;
 
 type FreezeAppItem =
-  | { type: 'preset'; id: string; src: string }
-  | { type: 'custom'; id: string; name: string }
+  | { type: 'preset'; id: string; src: string; favId: number }
+  | { type: 'custom'; id: string; name: string; favId: number }
   | { type: 'add' };
 
 type AddResult = { type: 'preset'; appId: string } | { type: 'custom'; name: string };
@@ -20,7 +21,7 @@ type AddResult = { type: 'preset'; appId: string } | { type: 'custom'; name: str
 type FreezeListProps = {
   selectedAppId: string | null;
   onSelectApp: (id: string | null) => void;
-  resetKey: number;
+  resetKey?: number;
 };
 
 export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: FreezeListProps) {
@@ -40,7 +41,7 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
   };
 
   const [isDeleteMode, setIsDeleteMode] = useState(false);
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const startIndex = page * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -52,6 +53,57 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const renderItems: FreezeAppItem[] = [...pageApps];
+
+  useEffect(() => {
+    async function fetchFavoriteApps() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch(`${API_BASE_URL}/api/favorite-apps`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          console.error('앱 목록 조회 실패:', res.status);
+          return;
+        }
+
+        const data = await res.json();
+
+        const mapped: FreezeAppItem[] = data.result.map((item: any) => {
+          const isPreset = PRESET_APPS.some((p) => p.id === item.appName);
+
+          if (isPreset) {
+            // preset이면 PRESET_APPS에서 src 찾아오기
+            const preset = PRESET_APPS.find((p) => p.id === item.appName);
+
+            return {
+              type: 'preset',
+              id: item.appName,
+              src: preset ? preset.src : '', // 이미지 없을 일은 없지만 fallback 포함
+              favId: item.id, //삭제용
+            };
+          }
+
+          // preset에 없는 → custom
+          return {
+            type: 'custom',
+            id: item.appName,
+            name: item.appName,
+            favId: item.id, //삭제용
+          };
+        });
+        setApps(mapped);
+      } catch (error) {
+        console.error('앱 목록 조회 중 에러 발생:', error);
+      }
+    }
+
+    fetchFavoriteApps();
+  }, []);
 
   if (isAddInThisPage) {
     renderItems.push({ type: 'add' });
@@ -68,31 +120,87 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
   const isLastPage = page === totalPages - 1;
   const isPageFull = pageApps.length === ITEMS_PER_PAGE;
 
-  const handleConfirmAdd = (result: AddResult) => {
+  const handleConfirmAdd = async (result: AddResult) => {
+    let appName = '';
+
     if (result.type === 'preset') {
       const preset = PRESET_APPS.find((a) => a.id === result.appId);
       if (!preset) return;
 
-      const existingIndex = apps.findIndex((app) => app.type === 'preset' && app.id === preset.id);
+      // 이미 존재하는 preset인지 검사
+      const exists = apps.some((app) => app.type === 'preset' && app.id === preset.id);
+      if (exists) {
+        alert('이미 추가된 앱이에요!');
+        return; // → API 호출 막기
+      }
 
-      // 이미 존재하는 앱을 선택한 경우
-      if (existingIndex !== -1) {
-        onSelectApp(preset.id);
-        moveToAppPage(preset.id);
-        setIsAddModalOpen(false);
+      appName = preset.id;
+    }
+
+    if (result.type === 'custom') {
+      appName = result.name;
+    }
+
+    // 1) POST API 호출
+    let favId = null;
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      const response = await fetch(`${API_BASE_URL}/api/favorite-apps`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ appName }),
+      });
+
+      const data = await response.json();
+      console.log('Add favorite app response:', data);
+
+      if (!data.isSuccess) {
+        alert('앱 추가에 실패했습니다.');
         return;
       }
 
-      // 존재하지 않는 앱을 선택, 새로 추가
-      setApps((prev) => [...prev, { type: 'preset', id: preset.id, src: preset.src }]);
+      favId = 0; // ← 핵심!
+    } catch (e) {
+      console.error(e);
+      alert('서버 요청에 실패했습니다.');
+      return;
+    }
+
+    // 2) 성공 후 앱 리스트에 추가
+    if (result.type === 'preset') {
+      const preset = PRESET_APPS.find((a) => a.id === result.appId);
+      if (!preset) return;
+
+      setApps((prev) => [
+        ...prev,
+        {
+          type: 'preset',
+          id: preset.id,
+          src: preset.src,
+          favId, // ← 필수!
+        },
+      ]);
+
       onSelectApp(preset.id);
       moveToAppPage(preset.id);
     }
 
     if (result.type === 'custom') {
-      const id = `custom-${Date.now()}`;
+      const id = result.name;
 
-      setApps((prev) => [...prev, { type: 'custom', id, name: result.name }]);
+      setApps((prev) => [
+        ...prev,
+        {
+          type: 'custom',
+          id,
+          name: result.name,
+          favId, // ← 필수!
+        },
+      ]);
 
       onSelectApp(id);
       moveToAppPage(id);
@@ -102,8 +210,9 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
   };
 
   useEffect(() => {
-    // 초기화 시 선택 해제
-    onSelectApp(null);
+    if (resetKey !== undefined) {
+      onSelectApp(null);
+    }
   }, [resetKey]);
 
   useEffect(() => {
@@ -111,6 +220,31 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
       moveToAppPage(selectedAppId);
     }
   }, [selectedAppId]);
+
+  const handleDeleteApp = async (appId: number) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${API_BASE_URL}/api/favorite-apps/${appId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await res.json();
+
+      if (!data.isSuccess) {
+        console.error('삭제 실패:', data.message);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('삭제 요청 중 오류:', error);
+      return false;
+    }
+  };
 
   return (
     <>
@@ -170,7 +304,7 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
                   setIsDeleteMode(true);
                 }}
                 onDeleteClick={() => {
-                  setDeleteTargetId(item.id);
+                  setDeleteTargetId(item.favId);
                 }}
               />
             );
@@ -193,36 +327,36 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
                 setIsDeleteMode(true);
               }}
               onDeleteClick={() => {
-                setDeleteTargetId(item.id);
+                setDeleteTargetId(item.favId);
               }}
             />
           );
         })}
+
+        {/* 왼쪽 화살표 */}
+        {!isFirstPage && (
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            className="group w-6 h-6 absolute left-[4px] top-[62px]
+                     flex items-center justify-center"
+          >
+            <img src={chevron_gray_200} className="group-hover:hidden" />
+            <img src={chevron_gray_400} className="hidden group-hover:block scale-x-[-1]" />
+          </button>
+        )}
+
+        {/* 오른쪽 화살표 */}
+        {!isLastPage && isPageFull && (
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            className="group w-6 h-6 absolute right-[4px] top-[62px]
+                     flex items-center justify-center"
+          >
+            <img src={chevron_gray_200} className="group-hover:hidden scale-x-[-1]" />
+            <img src={chevron_gray_400} className="hidden group-hover:block" />
+          </button>
+        )}
       </div>
-
-      {/* 왼쪽 화살표 */}
-      {!isFirstPage && (
-        <button
-          onClick={() => setPage((p) => p - 1)}
-          className="group w-6 h-6 absolute left-[4px] top-[150px]
-                     flex items-center justify-center"
-        >
-          <img src={chevron_gray_200} className="group-hover:hidden" />
-          <img src={chevron_gray_400} className="hidden group-hover:block scale-x-[-1]" />
-        </button>
-      )}
-
-      {/* 오른쪽 화살표 */}
-      {!isLastPage && isPageFull && (
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          className="group w-6 h-6 absolute right-[4px] top-[150px]
-                     flex items-center justify-center"
-        >
-          <img src={chevron_gray_200} className="group-hover:hidden scale-x-[-1]" />
-          <img src={chevron_gray_400} className="hidden group-hover:block" />
-        </button>
-      )}
 
       {isAddModalOpen && (
         <AddModal onClose={() => setIsAddModalOpen(false)} onConfirm={handleConfirmAdd} />
@@ -239,13 +373,12 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
         twoButtons={{
           leftText: '취소',
           rightText: '삭제',
-          onRight: () => {
+          onRight: async () => {
             if (!deleteTargetId) return;
-
+            handleDeleteApp(deleteTargetId);
             setApps((prev) =>
-              prev.filter((app) => app.type === 'add' || app.id !== deleteTargetId),
+              prev.filter((app) => app.type === 'add' || app.favId !== deleteTargetId),
             );
-
             setDeleteTargetId(null);
             setIsDeleteMode(false);
           },

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import FreezeList from './FreezeList';
 import ToggleCard from './ToggleCard';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function Freeze() {
   const [activeToggle, setActiveToggle] = useState<'manual' | 'link'>('manual');
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -29,10 +31,12 @@ export default function Freeze() {
 
     console.log('보내는 body: ', body);
 
-    const accessToken =
-      'eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3NzA1MjgwMTcsImV4cCI6MTc3MDUyOTgxNywibWVtYmVySWQiOjQsInJvbGUiOiJVU0VSIiwic2lnbnVwQ29tcGxldGVkIjp0cnVlfQ.ZbTrSKmTRFUJJG_uYr7TUy00fEXvbIdUAyyla5qDPeytqxjKQD6wJGo97VPq9cXY';
-
-    const res = await fetch('https://15.134.213.116.nip.io/api/freezes', {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      console.warn('No access token. User might not be logged in.');
+      return;
+    }
+    const res = await fetch(`${API_BASE_URL}/api/freezes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

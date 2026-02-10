@@ -2,6 +2,7 @@ import type { FreezeItem } from '@/types/FreezeItem';
 import { useState } from 'react';
 import FreezeList from '../freeze/FreezeList';
 import InlineInput from '../freeze/InlineInput';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 type UpdateModalProps = {
   item: FreezeItem;
@@ -10,11 +11,51 @@ type UpdateModalProps = {
 };
 
 export default function UpdateModal({ item, onClose, onSave }: UpdateModalProps) {
-  const [selectedAppId, setSelectedAppId] = useState<string | null>(item.selectedAppId);
-
-  const resetKey = 0; // FreezeList 요구사항 유지용
   const [price, setPrice] = useState(item.price.toLocaleString());
   const [product, setProduct] = useState(item.title);
+  const [appName, setAppName] = useState<string | null>(item.selectedAppId);
+  console.log(item);
+
+  const handleSave = async () => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.warn('No access token. User might not be logged in.');
+        return;
+      }
+      const body = {
+        appName: appName,
+        itemName: product,
+        price: Number(price.replace(/,/g, '')),
+      };
+      const res = await fetch(`${API_BASE_URL}/api/freezes/${item.id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+      console.log(data);
+      if (!data.isSuccess) {
+        console.error('Freeze 수정 실패', data.message);
+        return;
+      }
+
+      // 성공 시 부모 컴포넌트(FreezeHistory)에게 업데이트 전달
+      onSave({
+        ...item,
+        title: product,
+        price: Number(price.replace(/,/g, '')),
+        selectedAppId: appName,
+      });
+      onClose();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <>
@@ -37,14 +78,7 @@ export default function UpdateModal({ item, onClose, onSave }: UpdateModalProps)
             <button
               data-property-1="action"
               className="w-[327px] h-14 px-4 py-2 left-[24px] top-[307px] absolute bg-main-skyblue rounded-[10px] justify-center items-center"
-              onClick={() => {
-                onSave({
-                  ...item,
-                  selectedAppId,
-                  title: product,
-                  price: Number(price.replace(/,/g, '')),
-                });
-              }}
+              onClick={handleSave}
             >
               <span className=" text-white-800 Bold_16 font-pretendard leading-none">
                 수정 완료
@@ -75,12 +109,10 @@ export default function UpdateModal({ item, onClose, onSave }: UpdateModalProps)
               </div>
             </div>
 
-            <div className="absolute -top-[40px] left-[25px] w-fill justify-center items-center">
-              <FreezeList
-                selectedAppId={selectedAppId}
-                onSelectApp={setSelectedAppId}
-                resetKey={resetKey}
-              />
+            <div className="relative mt-2 h-[80px]">
+              <div className="absolute -top-[60px] left-[25px]">
+                <FreezeList selectedAppId={appName} onSelectApp={setAppName} />
+              </div>
             </div>
           </div>
         </div>
