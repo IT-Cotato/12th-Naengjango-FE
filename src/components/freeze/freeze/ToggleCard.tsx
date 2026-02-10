@@ -6,9 +6,15 @@ import AlertModal from '@/components/common/AlertModal';
 type ToggleProps = {
   activeToggle: 'manual' | 'link';
   onToggleChange: (Toggle: 'manual' | 'link') => void;
-  onInputStateChange: (state: { mode: 'manual' | 'link'; isValid: boolean }) => void;
+  onInputStateChange: (state: {
+    mode: 'manual' | 'link';
+    isValid: boolean;
+    itemName: string;
+    price: number;
+  }) => void;
   canFreeze: boolean;
   resetKey: number;
+  onFreeze: () => void;
 };
 
 export default function ToggleCard({
@@ -17,6 +23,7 @@ export default function ToggleCard({
   onInputStateChange,
   canFreeze,
   resetKey,
+  onFreeze,
 }: ToggleProps) {
   const activeStyle =
     'w-32 h-9 px-2.5 py-[8px] px-[2px] left-[-2px] top-0 relative bg-white-800 rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.06)]';
@@ -40,16 +47,19 @@ export default function ToggleCard({
   };
 
   //수동입력 상태
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState(0);
+  const [priceString, setPriceString] = useState('');
   const [item, setItem] = useState('');
 
   useEffect(() => {
-    //냉동하기 버튼 유효성 검사
-    const isManualValid = price.trim() !== '' && item.trim() !== '';
+    const isManualValid = price > 0 && item.trim() !== '';
     const isLinkValid = value.trim() !== '';
+
     onInputStateChange({
       mode: activeToggle,
       isValid: activeToggle === 'manual' ? isManualValid : isLinkValid,
+      itemName: item,
+      price: price, // ← number 값만 전달
     });
   }, [activeToggle, price, item, value]);
 
@@ -62,13 +72,15 @@ export default function ToggleCard({
     }
 
     if (activeToggle === 'link') {
-      setPrice('');
+      setPrice(0);
+      setPriceString('');
       setItem('');
     }
   }, [activeToggle]);
 
   useEffect(() => {
-    setPrice('');
+    setPrice(0);
+    setPriceString('');
     setItem('');
     setValue('');
     setIsFocused(false);
@@ -77,6 +89,8 @@ export default function ToggleCard({
     onInputStateChange({
       mode: activeToggle,
       isValid: false,
+      itemName: '',
+      price: 0,
     });
   }, [resetKey]);
 
@@ -137,7 +151,17 @@ export default function ToggleCard({
                 data-layer="금액 원의 품목 을 결제할지 고민이에요"
                 className="flex-1 justify-start"
               >
-                <InlineInput placeholder="금액" value={price} onChange={setPrice} type="price" />
+                <InlineInput
+                  placeholder="금액"
+                  value={priceString}
+                  onChange={(v) => {
+                    setPriceString(v);
+
+                    const numeric = Number(v.replace(/,/g, ''));
+                    setPrice(numeric);
+                  }}
+                  type="price"
+                />
 
                 <span className="text-gray-800 Medium_20 font-sans leading-8 tracking-tight">
                   {' '}
@@ -194,8 +218,10 @@ export default function ToggleCard({
             rightText: '냉동하기',
             onRight: () => {
               console.log('freeze success!');
+              onFreeze();
               setConfirmModal(false);
-              setPrice('');
+              setPrice(0);
+              setPriceString('');
               setItem('');
               setValue('');
               setIsFocused(false);

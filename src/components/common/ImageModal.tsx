@@ -1,6 +1,7 @@
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  title: string;
   rewardMessage: string; // 눈덩이 n개 지급 완료
   currentMessage: string; // 현재 보유 눈덩이: n개
   image?: string | React.ReactNode;
@@ -12,6 +13,7 @@ type Props = {
 export default function ImageModal({
   isOpen,
   onClose,
+  title,
   rewardMessage,
   currentMessage,
   image,
@@ -42,7 +44,7 @@ export default function ImageModal({
           </div>
         )}
         <div className="flex-1 flex flex-col justify-center px-4 py-5">
-          <p className="SemiBold_16 text-gray-900">냉동 성공!</p>
+          <p className="SemiBold_16 text-gray-900">{title}</p>
           <p className="mt-1 SemiBold_16 text-gray-900 text-center">{rewardMessage}</p>
           <p className="mt-1.5 Regular_14 text-gray-600 text-center">{currentMessage}</p>
         </div>
