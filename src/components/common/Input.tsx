@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { errorIcon } from '@/assets';
 
 type Props = {
   label?: string;
@@ -11,6 +12,7 @@ type Props = {
   inputMode?: 'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search';
   disabled?: boolean;
   error?: React.ReactNode;
+  hasError?: boolean; // 에러 상태만 표시 (빨간 테두리만, 메시지는 표시 안 함)
   helperText?: React.ReactNode;
   rightSlot?: React.ReactNode;
   className?: string;
@@ -20,6 +22,7 @@ type Props = {
   grayBg?: boolean; // 클릭 전 회색 배경, 클릭 시 흰색 배경
   showLastChar?: boolean; // 비밀번호 마지막 글자만 보이게
   keepBlueBorder?: boolean; // 값이 있으면 파란 테두리 유지
+  showErrorIcon?: boolean; // 에러 아이콘 표시 여부 (기본값: true)
 };
 
 const Input = ({
@@ -33,6 +36,7 @@ const Input = ({
   inputMode,
   disabled,
   error,
+  hasError,
   helperText,
   rightSlot,
   className,
@@ -42,6 +46,7 @@ const Input = ({
   grayBg = false,
   showLastChar = false,
   keepBlueBorder = false,
+  showErrorIcon = true,
 }: Props) => {
   const [isFocused, setIsFocused] = useState(false);
   const [maskedValue, setMaskedValue] = useState('');
@@ -98,10 +103,11 @@ const Input = ({
   };
 
   const hasValue = value && value.length > 0;
+  const showError = error || hasError;
 
   const borderClass = disabled
     ? 'border-0'
-    : error
+    : showError
       ? 'border-red-500 border-[1.5px]'
       : success
         ? 'border-[#5e97d7] border-[1.5px]'
@@ -154,7 +160,10 @@ const Input = ({
       </div>
 
       {error ? (
-        <p className="mt-2 ml-2 text-xs text-red-500">{error}</p>
+        <div className="mt-2 ml-2 flex items-center gap-1">
+          {showErrorIcon && <img src={errorIcon} alt="error" className="w-3 h-3" />}
+          <p className="text-xs text-red-500">{error}</p>
+        </div>
       ) : helperText ? (
         <p className="mt-2 ml-2 text-xs text-gray-400">{helperText}</p>
       ) : null}

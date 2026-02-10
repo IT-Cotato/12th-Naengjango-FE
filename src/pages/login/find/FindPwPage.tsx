@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import AlertModal from '@/components/common/AlertModal';
+import { findLoginPw } from '@/apis/members/signup';
+import { back } from '@/assets';
 
 export default function FindPwPage() {
   const navigate = useNavigate();
@@ -10,13 +12,31 @@ export default function FindPwPage() {
   const [id, setId] = useState('');
   const [phone, setPhone] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const canSubmit = name.trim().length > 0 && id.trim().length > 0 && phone.length === 11;
 
-  const handlefindPw = () => {
-    // Pw 찾기 API 호출 (나중에)
-    // 성공 시 모달 열기
-    setIsModalOpen(true);
+  const clearError = () => setError(undefined);
+
+  const handlefindPw = async () => {
+    if (!canSubmit || isLoading) return;
+
+    setIsLoading(true);
+    setError(undefined);
+
+    try {
+      await findLoginPw({
+        name: name.trim(),
+        loginId: id.trim(),
+        phoneNumber: phone.replace(/\D/g, ''), // 숫자만 추출
+      });
+      setIsModalOpen(true);
+    } catch (error) {
+      setError('회원 정보가 일치하지 않습니다');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleModalClose = () => {
@@ -26,38 +46,55 @@ export default function FindPwPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-      <div className="px-5 pt-6 h-24" />
+      <header className="flex h-18 items-center px-5 pt-6">
+        <button type="button" onClick={() => navigate(-1)}>
+          <img src={back} alt="back" className="h-6 w-6" />
+        </button>
+      </header>
 
       <main className="px-5 pt-17.5 pb-28">
-        <h1 className="text-center text-2xl font-bold text-gray-800">비밀번호 찾기</h1>
+        <h1 className="text-center Bold_24 text-gray-800">비밀번호 찾기</h1>
 
         <div className="mt-8 flex flex-col gap-4">
           <Input
             placeholder="이름"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              clearError();
+            }}
             keepBlueBorder
+            hasError={!!error}
           />
           <Input
             placeholder="아이디"
             value={id}
-            onChange={(e) => setId(e.target.value)}
+            onChange={(e) => {
+              setId(e.target.value);
+              clearError();
+            }}
             keepBlueBorder
+            hasError={!!error}
           />
           <Input
             placeholder="전화번호"
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
-            helperText="'-'를 제외한 전화번호만 입력"
+            onChange={(e) => {
+              setPhone(e.target.value.replace(/[^0-9]/g, ''));
+              clearError();
+            }}
+            helperText={error ? undefined : "'-'를 제외한 전화번호만 입력"}
+            error={error}
             keepBlueBorder
+            showErrorIcon={true}
           />
         </div>
 
         {/* 버튼 */}
         <div className="mt-6 flex flex-col gap-3">
-          <Button disabled={!canSubmit} onClick={handlefindPw}>
-            비밀번호 찾기
+          <Button disabled={!canSubmit || isLoading} onClick={handlefindPw}>
+            {isLoading ? '처리 중...' : '비밀번호 찾기'}
           </Button>
         </div>
       </main>

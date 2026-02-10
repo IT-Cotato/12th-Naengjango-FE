@@ -4,6 +4,8 @@ import SignupHeader from '@/components/signup/SignupHeader';
 import Button from '@/components/common/Button';
 import StepBudget from './step/StepBudget';
 import StepFixCosts from './step/StepFixCosts';
+import { updateBudget, updateFixedExpenditures } from '@/apis/members/mypage';
+import { getAllCategoryItems } from '@/constants/categories';
 
 type Step = 'budget' | 'fixcosts';
 
@@ -14,15 +16,63 @@ export default function SetupPage() {
   const [step, setStep] = useState<Step>('budget');
   const [budget, setBudget] = useState('');
   const [fixCosts, setFixCosts] = useState<{ id: string; amount: string }[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const stepIndex = STEP_ORDER.indexOf(step);
 
-  const goNext = () => {
+  const goNext = async () => {
     const next = STEP_ORDER[stepIndex + 1];
     if (next) {
       setStep(next);
     } else {
-      navigate('/home');
+      // 예산 설정 완료 시 예산 수정 API 호출
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.error('accessToken이 없습니다.');
+        navigate('/login');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const budgetNumber = parseInt(budget.replace(/,/g, ''), 10);
+        if (isNaN(budgetNumber)) {
+          throw new Error('유효하지 않은 예산 값입니다.');
+        }
+
+        // 고정지출 항목을 API 형식에 맞게 변환
+        const fixedExpenditureItems = fixCosts.map((fixCost) => {
+          const amount = parseInt(fixCost.amount.replace(/,/g, ''), 10);
+          if (isNaN(amount)) {
+            throw new Error(`유효하지 않은 고정지출 금액입니다: ${fixCost.id}`);
+          }
+
+          // id를 label로 변환
+          const allItems = getAllCategoryItems();
+          const categoryItem = allItems.find((item) => item.id === fixCost.id);
+          const itemLabel = categoryItem?.label || fixCost.id;
+
+          return {
+            item: itemLabel,
+            amount,
+          };
+        });
+
+        // 예산 및 고정지출 수정 API를 병렬로 호출
+        await Promise.all([
+          updateBudget({ budget: budgetNumber }, accessToken),
+          updateFixedExpenditures({ items: fixedExpenditureItems }, accessToken),
+        ]);
+
+        // 예산 설정 완료 시 첫 로그인 플래그 제거
+        localStorage.removeItem('isFirstLogin');
+        navigate('/home');
+      } catch (error) {
+        console.error('예산 설정 실패:', error);
+        alert(error instanceof Error ? error.message : '예산 설정에 실패했습니다.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -60,8 +110,8 @@ export default function SetupPage() {
 
       {/* 다음 버튼 고정 */}
       <div className="shrink-0 border-0 bg-white px-5 pb-6">
-        <Button disabled={!canNext} onClick={goNext}>
-          {step === 'fixcosts' ? '예산 설정 완료' : '다음'}
+        <Button disabled={!canNext || isSubmitting} onClick={goNext}>
+          {isSubmitting ? '설정 중...' : step === 'fixcosts' ? '예산 설정 완료' : '다음'}
         </Button>
       </div>
     </div>

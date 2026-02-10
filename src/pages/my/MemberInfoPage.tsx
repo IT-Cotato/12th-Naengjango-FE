@@ -4,6 +4,7 @@ import { back, logout, pw, quit } from '@/assets';
 import MenuItem from '@/components/my/MenuItem';
 import InfoItem from '@/components/my/InfoItem';
 import AlertModal from '@/components/common/AlertModal';
+import { logout as logoutApi , withdrawal as withdrawalApi } from '@/apis/members/login';
 
 export default function MemberInfoPage() {
   const navigate = useNavigate();
@@ -17,17 +18,49 @@ export default function MemberInfoPage() {
     joinDate: '2025.02.20',
   };
 
-  const handleLogout = () => {
-    // 로그아웃
-    console.log('로그아웃');
-    setIsLogoutModalOpen(false);
+  const handleAuthAction = async ({
+    apiCall,
+    errorMsg,
+    isWithdrawal,
+  }: {
+    apiCall: (token: string) => Promise<unknown>;
+    errorMsg: string;
+    isWithdrawal: boolean;
+  }) => {
+    const accessToken = localStorage.getItem('accessToken');
+
+    try {
+      if (accessToken) {
+        await apiCall(accessToken);
+      }
+    } catch (error) {
+      console.error(errorMsg, error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      if (isWithdrawal) {
+        localStorage.removeItem('isFirstLogin');
+        setIsWithdrawModalOpen(false);
+      } else {
+        setIsLogoutModalOpen(false);
+      }
+      navigate('/login');
+    }
   };
 
-  const handleWithdraw = () => {
-    // 회원 탈퇴
-    console.log('회원 탈퇴');
-    setIsWithdrawModalOpen(false);
-  };
+  const handleLogout = () =>
+    handleAuthAction({
+      apiCall: logoutApi,
+      errorMsg: '로그아웃 실패:',
+      isWithdrawal: false,
+    });
+
+  const handleWithdrawal = () =>
+    handleAuthAction({
+      apiCall: withdrawalApi,
+      errorMsg: '회원 탈퇴 실패:',
+      isWithdrawal: true,
+    });
 
   const menuItems = [
     {
@@ -106,7 +139,7 @@ export default function MemberInfoPage() {
         twoButtons={{
           leftText: '취소',
           rightText: '회원 탈퇴',
-          onRight: handleWithdraw,
+          onRight: handleWithdrawal,
         }}
         className="h-[157px]"
         buttonClassName="h-[47px]"

@@ -33,10 +33,10 @@ export default function StepPasswordVerify({
   const errorNode = useMemo(() => {
     if (!error) return undefined;
     return (
-      <span className="flex items-center gap-1">
-        <img src={errorIcon} alt="error" className="h-3 w-3" />
+      <>
+        <img src={errorIcon} alt="error" className="w-3 h-3 inline-block mr-1" />
         {error}
-      </span>
+      </>
     );
   }, [error]);
 
@@ -49,6 +49,7 @@ export default function StepPasswordVerify({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         error={errorNode}
+        showErrorIcon={false}
       />
     </div>
   );
