@@ -10,6 +10,7 @@ import ImageModal from '@/components/common/ImageModal';
 import * as images from '@/assets/images';
 import UpdateModal from './UpdateModal';
 import type { FreezeItem } from '@/types/FreezeItem';
+import { useMemo } from 'react';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
@@ -23,24 +24,14 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [item, setItem] = useState<FreezeItem[]>([]);
 
   const isAllChecked = item.length > 0 && item.every((item) => item.checked);
-  const sortedItems = [...item].sort((a, b) => {
-    if (sortOption === '최신순') {
-      // id가 클수록 최신
-      return b.id - a.id;
-    }
-
-    if (sortOption === '가격순') {
-      // 가격 높은 순
-      return b.price - a.price;
-    }
-
-    if (sortOption === '임박순') {
-      // 가격 높은 순
-      return a.remainingHour - b.remainingHour;
-    }
-
-    return 0;
-  });
+  const sortedItems = useMemo(() => {
+    return [...item].sort((a, b) => {
+      if (sortOption === '최신순') return b.id - a.id;
+      if (sortOption === '가격순') return b.price - a.price;
+      if (sortOption === '임박순') return a.remainingHour - b.remainingHour;
+      return 0;
+    });
+  }, [item, sortOption]);
 
   const [isFailModalOpen, setIsFailModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -59,7 +50,8 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const month = today.getMonth() + 1; // JS month는 0~11
   const day = today.getDate();
   const [monthRemaining, setMonthRemaining] = useState<number | null>(null); //이번달 잔여 예산
-  const [todayBudget, setTodayBudget] = useState<number | null>(null); //계산한 오늘 사용 가능 예산
+  const [todayRemaining, setTodayRemaining] = useState<number | null>(null); //오늘 사용 가능 예산
+  const [todayBudget, setTodayBudget] = useState<number | null>(null); //새로 계산한 오늘 사용 가능 예산
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: 0 });
@@ -210,7 +202,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
       }
 
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
-      //console.log('freeze extend body: ', { selectedIds });
 
       // 1) 연장 API 호출
       const res = await fetch(`${API_BASE_URL}/api/freezes/extend`, {
@@ -273,6 +264,38 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     }
   };
 
+  //전체 예산, 하루 가용 예산 가져오기
+  useEffect(() => {
+    const fetchAccountStatus = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) return;
+
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/accounts/status?year=${year}&month=${month}&day=${day}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+        const data = await res.json();
+        if (data.isSuccess && data.result) {
+          setMonthRemaining(data.result.monthRemaining);
+          setTodayRemaining(data.result.todayRemaining);
+        } else {
+          console.error('accounts/status 실패', data.message);
+          setMonthRemaining(null);
+        }
+      } catch (err) {
+        console.error(err);
+        setMonthRemaining(null);
+      }
+    };
+
+    fetchAccountStatus();
+  }, []);
+
   //하루 가용 예산 계산
   useEffect(() => {
     const fetchBudgetPreview = async () => {
@@ -281,7 +304,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
       if (selectedIds.length === 0) {
-        setTodayBudget(monthRemaining); // 선택 항목 없으면 그냥 오늘 예산만
+        setTodayBudget(todayRemaining); // 선택 항목 없으면 그냥 오늘 예산만
         return;
       }
 
@@ -301,7 +324,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
           // 오늘 가용 예산 계산
           const availableToday = Math.max(
-            Math.floor((monthRemaining ?? 0 - selectedTotalPrice) / remainingDaysInMonth),
+            Math.floor(((monthRemaining ?? 0) - selectedTotalPrice) / remainingDaysInMonth),
             0,
           );
           setTodayBudget(availableToday);
@@ -317,36 +340,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
     fetchBudgetPreview();
   }, [item, monthRemaining]);
-
-  useEffect(() => {
-    const fetchAccountStatus = async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) return;
-
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/accounts/status?year=${year}&month=${month}&day=${day}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-        const data = await res.json();
-        if (data.isSuccess && data.result) {
-          setMonthRemaining(data.result.monthRemaining);
-        } else {
-          console.error('accounts/status 실패', data.message);
-          setMonthRemaining(null);
-        }
-      } catch (err) {
-        console.error(err);
-        setMonthRemaining(null);
-      }
-    };
-
-    fetchAccountStatus();
-  }, []);
 
   //눈덩이 조회
   useEffect(() => {
@@ -379,6 +372,8 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     };
     handleSnow();
   }, [item]);
+
+  const checkedItems = item.filter((i) => i.checked).map((i) => i.id);
 
   return (
     <>
@@ -507,37 +502,60 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
                 </button>
               </div>
             </div>
-            <div
-              data-layer="Frame 48096450"
-              className="Frame48096450 w-[375px] left-[-24px] top-[477px] absolute inline-flex flex-col justify-start items-start gap-0"
-            >
+            {checkedItems.length === 0 ? (
               <div
-                data-layer="Frame 41"
-                className="Frame41 self-stretch px-6 inline-flex justify-start items-center gap-2.5"
+                data-layer="Frame 48096450"
+                className="Frame48096450 w-[375px] left-[-24px] top-[477px] absolute inline-flex flex-col justify-start items-start gap-0"
               >
                 <div
-                  data-layer="선택한 상품을 구매하면"
-                  className="flex-1 text-center justify-center text-gray-800 SemiBold_16 font-sans"
+                  data-layer="Frame 42"
+                  className="Frame42 self-stretch px-6 inline-flex justify-start items-center gap-2.5"
                 >
-                  선택한 상품을 구매하면
+                  <div
+                    data-layer="하루 4,000원 쓸 수 있게 돼요!"
+                    className="4000 flex-1 text-center justify-center"
+                  >
+                    <span className="text-gray-800 SemiBold_16 font-sans "> 오늘 하루 </span>
+                    <span className="text-error SemiBold_16 font-sans ">
+                      {todayBudget?.toLocaleString() ?? 0}원
+                    </span>
+                    <span className="text-gray-800 SemiBold_16 font-sans "> 쓸 수 있어요!</span>
+                  </div>
                 </div>
               </div>
+            ) : (
               <div
-                data-layer="Frame 42"
-                className="Frame42 self-stretch px-6 inline-flex justify-start items-center gap-2.5"
+                data-layer="Frame 48096450"
+                className="Frame48096450 w-[375px] left-[-24px] top-[477px] absolute inline-flex flex-col justify-start items-start gap-0"
               >
                 <div
-                  data-layer="하루 4,000원 쓸 수 있게 돼요!"
-                  className="4000 flex-1 text-center justify-center"
+                  data-layer="Frame 41"
+                  className="Frame41 self-stretch px-6 inline-flex justify-start items-center gap-2.5"
                 >
-                  <span className="text-gray-800 SemiBold_16 font-sans ">하루 </span>
-                  <span className="text-error SemiBold_16 font-sans ">
-                    {todayBudget?.toLocaleString() ?? 0}원
-                  </span>
-                  <span className="text-gray-800 SemiBold_16 font-sans "> 쓸 수 있게 돼요!</span>
+                  <div
+                    data-layer="선택한 상품을 구매하면"
+                    className="flex-1 text-center justify-center text-gray-800 SemiBold_16 font-sans"
+                  >
+                    선택한 상품을 구매하면
+                  </div>
+                </div>
+                <div
+                  data-layer="Frame 42"
+                  className="Frame42 self-stretch px-6 inline-flex justify-start items-center gap-2.5"
+                >
+                  <div
+                    data-layer="하루 4,000원 쓸 수 있게 돼요!"
+                    className="4000 flex-1 text-center justify-center"
+                  >
+                    <span className="text-gray-800 SemiBold_16 font-sans ">하루 </span>
+                    <span className="text-error SemiBold_16 font-sans ">
+                      {todayBudget?.toLocaleString() ?? 0}원
+                    </span>
+                    <span className="text-gray-800 SemiBold_16 font-sans "> 쓸 수 있게 돼요!</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
