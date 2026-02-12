@@ -9,6 +9,8 @@ import type {
   GetMeResponse,
   RegisterInquiryRequest,
   RegisterInquiryResponse,
+  GetAccountStatusParams,
+  GetAccountStatusResponse,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -77,6 +79,23 @@ export async function registerInquiry(
     `${API_BASE_URL}/api/mypage/inquiries`,
     data,
     '문의하기 등록 실패',
+    accessToken,
+  );
+}
+
+// 남은 예산 조회 API
+export async function getAccountStatus(
+  params: GetAccountStatusParams,
+  accessToken: string,
+): Promise<GetAccountStatusResponse> {
+  const queryParams = new URLSearchParams({
+    year: String(params.year),
+    month: String(params.month),
+    day: String(params.day),
+  });
+  return getWithAuth<GetAccountStatusResponse>(
+    `${API_BASE_URL}/api/accounts/status?${queryParams}`,
+    '남은 예산 조회 실패',
     accessToken,
   );
 }
