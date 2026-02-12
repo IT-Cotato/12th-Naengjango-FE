@@ -9,7 +9,7 @@ import type {
   GetMeResponse,
   RegisterInquiryRequest,
   RegisterInquiryResponse,
-  GetAccountStatusParams,
+  GetAccountStatusRequest,
   GetAccountStatusResponse,
 } from './types';
 
@@ -85,7 +85,7 @@ export async function registerInquiry(
 
 // 남은 예산 조회 API
 export async function getAccountStatus(
-  params: GetAccountStatusParams,
+  params: GetAccountStatusRequest,
   accessToken: string,
 ): Promise<GetAccountStatusResponse> {
   const queryParams = new URLSearchParams({
