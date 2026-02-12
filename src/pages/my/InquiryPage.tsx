@@ -1,22 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { close } from '@/assets';
 import Button from '@/components/common/Button';
+import { getMe, registerInquiry } from '@/apis/my/mypage';
 
 export default function InquiryPage() {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const name = '냉잔고';
-
+  const [name, setName] = useState<string>('');
   const canSubmit = title.trim().length > 0 && content.trim().length > 0;
 
   const handleSubmit = () => {
-    // api 연결 - 저장 버튼 클릭 시 호출 (나중에)
-    console.log('문의하기:', { title, content });
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    registerInquiry({ title, content }, accessToken)
+      .then((res) => {
+        console.log('문의하기 등록 성공:', res);
+      })
+      .catch((e) => {
+        console.error('문의하기 등록 실패:', e);
+      });
     // 성공 시 마이페이지로 (state로 완료 상태 전달)
     navigate('/my', { state: { inquiryCompleted: true } });
   };
+  // 내 정보 조회
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    getMe(accessToken)
+      .then((res) => {
+        if (res.result?.name) {
+          setName(res.result.name);
+        }
+      })
+      .catch((e) => {
+        console.error('내 정보 조회 실패:', e);
+      });
+  }, []);
 
   return (
     <div className="min-h-dvh bg-white">
