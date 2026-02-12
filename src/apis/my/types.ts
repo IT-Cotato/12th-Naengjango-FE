@@ -10,6 +10,12 @@ export interface UpdateFixedExpendituresRequest {
   items: Array<{ item: string; amount: number }>;
 }
 
+// 문의하기 등록 요청
+export interface RegisterInquiryRequest {
+  title: string;
+  content: string;
+}
+
 // --- Response Types ---
 
 // 공통 API 응답 타입
@@ -61,3 +67,6 @@ export interface GetMeResult {
 
 // 마이페이지 내 정보 조회 응답
 export interface GetMeResponse extends ApiResponse<GetMeResult> {}
+
+// 문의하기 등록 응답
+export interface RegisterInquiryResponse extends ApiResponse {}

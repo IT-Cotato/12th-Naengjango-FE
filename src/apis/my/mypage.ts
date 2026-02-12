@@ -1,4 +1,4 @@
-import { getWithAuth, patchJsonWithAuth } from '../utils/apiClient';
+import { getWithAuth, patchJsonWithAuth, postJsonWithAuth } from '../utils/apiClient';
 import type {
   GetBudgetResponse,
   UpdateBudgetRequest,
@@ -7,6 +7,8 @@ import type {
   UpdateFixedExpendituresResponse,
   GetFixedExpendituresResponse,
   GetMeResponse,
+  RegisterInquiryRequest,
+  RegisterInquiryResponse,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -62,6 +64,19 @@ export async function updateFixedExpenditures(
     `${API_BASE_URL}/api/mypage/fixed-expenditures`,
     data,
     '고정지출 수정 실패',
+    accessToken,
+  );
+}
+
+// 문의하기 등록 API
+export async function registerInquiry(
+  data: RegisterInquiryRequest,
+  accessToken: string,
+): Promise<RegisterInquiryResponse> {
+  return postJsonWithAuth<RegisterInquiryResponse>(
+    `${API_BASE_URL}/api/mypage/inquiries`,
+    data,
+    '문의하기 등록 실패',
     accessToken,
   );
 }
