@@ -16,6 +16,13 @@ export interface RegisterInquiryRequest {
   content: string;
 }
 
+// 남은 예산 조회 요청
+export interface GetAccountStatusRequest {
+  year: number;
+  month: number;
+  day: number;
+}
+
 // --- Response Types ---
 
 // 공통 API 응답 타입
@@ -70,3 +77,12 @@ export interface GetMeResponse extends ApiResponse<GetMeResult> {}
 
 // 문의하기 등록 응답
 export interface RegisterInquiryResponse extends ApiResponse {}
+
+// 남은 예산 조회 응답 결과
+export interface GetAccountStatusResult {
+  todayRemaining: number;
+  monthRemaining: number;
+}
+
+// 남은 예산 조회 응답
+export interface GetAccountStatusResponse extends ApiResponse<GetAccountStatusResult> {}

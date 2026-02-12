@@ -3,11 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Toggle from '@/components/my/Toggle';
 import MenuItem from '@/components/my/MenuItem';
 import { getMe } from '@/apis/my/mypage';
+import { useAccountStatus } from '@/hooks/my/useAccountStatus';
 
 export default function MyPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState<string>('');
+  const { todayRemaining, budgetDiff } = useAccountStatus();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [showInquiryComplete, setShowInquiryComplete] = useState(false);
   const processedStateKeyRef = useRef<string | null>(null);
@@ -71,7 +73,22 @@ export default function MyPage() {
     <>
       <h1 className="Bold_24 text-gray-800 pt-15 pl-6">{name || '...'}님</h1>
       <p className="Medium_16 text-gray-800 pl-6">
-        오늘 <span className="text-main-skyblue">13,200원(700업)</span> 쓸 수 있어요!
+        오늘{' '}
+        <span className="text-main-skyblue">
+          {todayRemaining !== null
+            ? `${todayRemaining.toLocaleString()}원`
+            : '...원'}
+          {budgetDiff !== null && budgetDiff !== 0 && (
+            <span className={budgetDiff > 0 ? 'text-main-skyblue' : 'text-red-500'}>
+              ({Math.abs(budgetDiff).toLocaleString()}
+              {budgetDiff < 0 && (
+                <span className="inline-block ml-0.5 w-0 h-0 border-l-4 border-r-4 border-b-[6px] border-l-transparent border-r-transparent border-b-red-500" />
+              )}
+              {budgetDiff > 0 && '▲'})
+            </span>
+          )}
+        </span>{' '}
+        쓸 수 있어요!
       </p>
       <div className="flex items-center justify-between border-none rounded-[10px] bg-sub-skyblue w-[327px] h-[60px] mt-6 px-4 py-2 mx-auto">
         <p className="SemiBold_15 text-gray-800">냉동 만료 알림</p>
