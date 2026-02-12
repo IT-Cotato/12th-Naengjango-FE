@@ -46,6 +46,7 @@ export default function StepPassword({
         error={error}
         helperText={showHelperText ? '영문, 숫자, 특수문자 포함 8~20자' : undefined}
         success={success}
+        showErrorIcon={false}
       />
     </div>
   );

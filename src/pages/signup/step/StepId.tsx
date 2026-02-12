@@ -1,7 +1,8 @@
-import { verified } from '@/assets';
+import { verified, errorIcon } from '@/assets';
 import Input from '@/components/common/Input';
 import InputActionButton from '@/components/signup/InputActionButton';
 import { useEffect, useState } from 'react';
+import { checkId } from '@/apis/members/signup';
 
 type Props = {
   value: string;
@@ -35,10 +36,52 @@ export default function StepId({
   }, [disabled, isValid, isChecked, onValidChange]);
 
   const canCheck = !disabled && isValid;
+  const [isChecking, setIsChecking] = useState(false);
+  const [checkError, setCheckError] = useState<React.ReactNode>(undefined);
 
-  const handleCheckDup = () => {
-    // 중복확인 api (나중에)
-    setIsChecked(true);
+  const handleCheckDup = async () => {
+    if (!isValid || disabled) return;
+
+    setIsChecking(true);
+    setCheckError(undefined);
+
+    try {
+      const response = await checkId({ loginId: id });
+      // false = 사용 가능, true = 중복
+      if (response.isSuccess && response.result === false) {
+        setIsChecked(true);
+        setCheckError(undefined);
+      } else {
+        setIsChecked(false);
+        setCheckError(
+          <>
+            <img src={errorIcon} alt="error" className="w-3 h-3 inline-block mr-1" />
+            {response.message || '이미 사용 중인 아이디입니다.'}
+          </>,
+        );
+      }
+    } catch (error) {
+      setIsChecked(false);
+      const errorMessage = error instanceof Error ? error.message : '중복 확인 중 오류가 발생했습니다.';
+      
+      if (errorMessage.includes('이미 존재하는') || errorMessage.includes('존재하는 아이디')) {
+        setCheckError(
+          <>
+            <img src={errorIcon} alt="error" className="w-3 h-3 inline-block mr-1" />
+            이미 사용 중인 아이디입니다.
+          </>,
+        );
+      } else {
+        setCheckError(
+          <>
+            <img src={errorIcon} alt="error" className="w-3 h-3 inline-block mr-1" />
+            {errorMessage}
+          </>,
+        );
+      }
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   return (
@@ -49,14 +92,15 @@ export default function StepId({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        error={error}
+        error={error || checkError}
         helperText={showHelperText ? '영문, 숫자 포함 8~16자' : undefined}
+        showErrorIcon={!checkError}
         rightSlot={
           disabled ? null : isChecked ? (
             <img src={verified} alt="verified" className="h-6 w-6" />
           ) : (
-            <InputActionButton disabled={!canCheck} onClick={handleCheckDup}>
-              중복확인
+            <InputActionButton disabled={!canCheck || isChecking} onClick={handleCheckDup}>
+              {isChecking ? '확인 중...' : '중복확인'}
             </InputActionButton>
           )
         }

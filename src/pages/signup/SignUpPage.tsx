@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SignupHeader from '@/components/signup/SignupHeader';
 import Button from '@/components/common/Button';
+import TermsAgreementModal, { type Term } from '@/components/signup/TermsAgreementModal';
+import { signup, sendSms } from '@/apis/members/signup';
 
 import StepName from './step/StepName';
 import StepPhone from './step/StepPhone';
@@ -15,6 +18,7 @@ const STEP_ORDER: Step[] = ['name', 'phone', 'verify', 'id', 'password', 'passwo
 const hideBackSteps: Step[] = ['id', 'password', 'passwordVerify'];
 
 export default function SignupPage() {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('name');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -33,20 +37,130 @@ export default function SignupPage() {
   const [isVerifyDone, setIsVerifyDone] = useState(false);
   // 아이디 중복확인 여부
   const [isIdChecked, setIsIdChecked] = useState(false);
+  // 약관 동의 모달 표시 여부
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  // 전화번호 인증 에러
+  const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
 
-  const requestSms = () => {
-    // 인증번호 발송 API (나중에)
-    setIsVerifySent(true);
-    setIsVerifyDone(false);
-    setVerifyTimerKey((k) => k + 1); // 타이머 리셋
-    setStep('verify');
+  // 약관 id 매핑 
+  const AGREEMENT_ID_MAP: Record<'terms' | 'privacy' | 'sms', number> = {
+    terms: 1,
+    privacy: 2,
+    sms: 3,
+  } as const;
+
+  // 약관 목록
+  const terms: Term[] = [
+    {
+      id: 'all',
+      label: '약관 전체 동의',
+      required: false,
+      content: '',
+    },
+    {
+      id: 'terms',
+      label: '이용 약관 동의',
+      required: true,
+      content: '이용 약관 동의 설명\n\n여기에 실제 이용 약관 내용이 들어갑니다.',
+    },
+    {
+      id: 'privacy',
+      label: '개인정보 수집 및 이용 동의',
+      required: true,
+      content: '개인정보 수집 및 이용 동의 설명\n\n여기에 실제 개인정보 수집 및 이용 동의 내용이 들어갑니다.',
+    },
+    {
+      id: 'sms',
+      label: 'SMS 알림 허용',
+      required: false,
+      content: 'SMS 알림 허용 설명\n\n여기에 실제 SMS 알림 허용 내용이 들어갑니다.',
+    },
+  ];
+
+  const requestSms = async () => {
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 11) return;
+
+    setPhoneError(undefined); 
+
+    try {
+      const response = await sendSms({ phoneNumber: phoneDigits });
+      
+      // 응답이 성공이 아니면 에러 처리
+      if (!response.isSuccess) {
+        const errorMessage = response.message || response.result || '인증번호 발송에 실패했습니다.';
+        throw new Error(errorMessage);
+      }
+      
+      setIsVerifySent(true);
+      setIsVerifyDone(false);
+      setVerifyTimerKey((k) => k + 1); // 타이머 리셋
+      setPhoneError(undefined); // 성공 시 에러 제거
+      setStep('verify');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '인증번호 발송에 실패했습니다.';
+      
+      if (
+        errorMessage.includes('이미 가입된') ||
+        errorMessage.includes('가입된 휴대폰') ||
+        errorMessage.includes('휴대폰 번호')
+      ) {
+        setPhoneError('이미 가입된 전화번호입니다.');
+      } else {
+        setPhoneError(errorMessage);
+      }
+    }
   };
 
   const goNext = () => {
+    // 비밀번호 확인 단계에서 다음 버튼을 누르면 약관 동의 모달 표시
+    if (step === 'passwordVerify') {
+      setIsTermsModalOpen(true);
+      return;
+    }
+
     const next = STEP_ORDER[stepIndex + 1];
     if (next) setStep(next);
     else {
       // 가입 요청 API (나중에)
+    }
+  };
+
+  // 약관 동의 완료 후 처리
+  const handleTermsConfirm = async (agreedTerms: {
+    terms: boolean;
+    privacy: boolean;
+    sms: boolean;
+  }) => {
+    try {
+      // 약관 동의 id 배열 생성 
+      const agreedAgreementIds = (['terms', 'privacy', 'sms'] as const)
+        .filter((key) => agreedTerms[key])
+        .map((key) => AGREEMENT_ID_MAP[key]);
+
+      // 회원가입 데이터 저장 
+      const signupData = {
+        name: name.trim(),
+        phoneNumber: phone.replace(/\D/g, ''), // 숫자만 추출
+        loginId: id.trim(),
+        password: password.trim(),
+        agreedAgreementIds,
+      };
+
+      // 예산 없이 우선 회원가입
+      const response = await signup(signupData);
+
+      if (response.isSuccess) {
+        setIsTermsModalOpen(false);
+        // 회원가입 성공 시 첫 로그인 플래그 저장
+        localStorage.setItem('isFirstLogin', 'true');
+        navigate('/onboarding');
+      } else {
+        throw new Error(response.message || '회원가입에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('회원가입 실패:', error);
+      alert(error instanceof Error ? error.message : '회원가입에 실패했습니다.');
     }
   };
 
@@ -105,9 +219,13 @@ export default function SignupPage() {
         <>
           <StepPhone
             value={phone}
-            onChange={setPhone}
+            onChange={(v) => {
+              setPhone(v);
+              setPhoneError(undefined); 
+            }}
             onRequestVerify={requestSms}
             isVerifySent={isVerifySent}
+            error={phoneError}
           />
           <StepName value={name} onChange={setName} disabled />
         </>
@@ -122,14 +240,19 @@ export default function SignupPage() {
             onChange={setVerify}
             timerKey={verifyTimerKey}
             onVerifiedChange={setIsVerifyDone}
+            phoneNumber={phone}
           />
           <StepPhone
             value={phone}
-            onChange={setPhone}
+            onChange={(v) => {
+              setPhone(v);
+              setPhoneError(undefined); 
+            }}
             onRequestVerify={requestSms}
             isVerifySent={true}
             disabled={true}
             hideActionButton={isVerifyDone}
+            error={phoneError}
           />
           <StepName value={name} onChange={setName} disabled />
         </>
@@ -190,6 +313,7 @@ export default function SignupPage() {
     verifyTimerKey,
     isVerifySent,
     isVerifyDone,
+    phoneError,
   ]);
 
   return (
@@ -211,6 +335,14 @@ export default function SignupPage() {
           다음
         </Button>
       </div>
+
+      {/* 약관 동의 모달 */}
+      <TermsAgreementModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onConfirm={handleTermsConfirm}
+        terms={terms}
+      />
     </div>
   );
 }
