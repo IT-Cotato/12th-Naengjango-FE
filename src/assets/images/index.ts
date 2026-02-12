@@ -22,3 +22,10 @@ export { default as ssg } from './ssg.com.svg';
 export { default as temu } from './temu.svg';
 export { default as toss } from './toss.svg';
 export { default as zigzag } from './zigzag.svg';
+
+//homepage image
+export { default as level1_bg } from './homepage/level1_bg.svg';
+export { default as level2_bg } from './homepage/level2_bg.svg';
+export { default as level3_bg } from './homepage/level3_bg.svg';
+export { default as level4_bg } from './homepage/level4_bg.svg';
+export { default as upgrade } from './homepage/upgrade.svg';
