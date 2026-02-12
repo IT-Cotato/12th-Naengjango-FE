@@ -2,27 +2,43 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Toggle from '@/components/my/Toggle';
 import MenuItem from '@/components/my/MenuItem';
+import { getMe } from '@/apis/my/mypage';
 
 export default function MyPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const name = '냉잔고';
+  const [name, setName] = useState<string>('');
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [showInquiryComplete, setShowInquiryComplete] = useState(false);
   const processedStateKeyRef = useRef<string | null>(null);
+
+  // 내 정보 조회
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    getMe(accessToken)
+      .then((res) => {
+        if (res.result?.name) {
+          setName(res.result.name);
+        }
+      })
+      .catch((e) => {
+        console.error('내 정보 조회 실패:', e);
+      });
+  }, []);
 
   // location.state에서 완료 메시지 표시
   useEffect(() => {
     const state = location.state as { inquiryCompleted?: boolean } | null;
     const currentKey = location.key;
-    
+
     // 같은 location.key에서 이미 처리했다면 무시
     if (state?.inquiryCompleted && processedStateKeyRef.current !== currentKey) {
       processedStateKeyRef.current = currentKey;
-      
+
       // 메시지 표시
       setShowInquiryComplete(true);
-      
+
       // state 제거 (뒤로가기 시 다시 표시되지 않도록)
       window.history.replaceState({}, '', '/my');
     }
@@ -34,7 +50,7 @@ export default function MyPage() {
       const timer = setTimeout(() => {
         setShowInquiryComplete(false);
       }, 2000);
-      
+
       return () => {
         clearTimeout(timer);
       };
@@ -53,7 +69,7 @@ export default function MyPage() {
 
   return (
     <>
-      <h1 className="Bold_24 text-gray-800 pt-15 pl-6">{name}님</h1>
+      <h1 className="Bold_24 text-gray-800 pt-15 pl-6">{name || '...'}님</h1>
       <p className="Medium_16 text-gray-800 pl-6">
         오늘 <span className="text-main-skyblue">13,200원(700업)</span> 쓸 수 있어요!
       </p>
