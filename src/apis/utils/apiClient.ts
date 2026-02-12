@@ -62,7 +62,7 @@ async function fetchWithAuth<T>(
     headers,
   };
 
-  if (method !== 'GET' && data !== undefined) {
+  if (method !== 'GET') {
     fetchOptions.body = JSON.stringify(data);
   }
 
