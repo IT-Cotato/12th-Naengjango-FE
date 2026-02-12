@@ -1,3 +1,9 @@
+// homepage Icon
+export { default as alertIcon } from './icons/homepage/alerticon.svg';
+export { default as freezeicon } from './icons/homepage/freezeicon.svg';
+export { default as iceledger } from './icons/homepage/iceledger.svg';
+export { default as snowball } from './icons/homepage/snowball.svg';
+
 // image icons
 export { default as back } from './back.svg';
 export { default as close } from './close.svg';
@@ -34,4 +40,4 @@ export { default as pw } from './pw.svg';
 export { default as logout } from './logout.svg';
 export { default as quit } from './quit.svg';
 export { default as snow } from './snow.svg';
-export {default as none} from './none.svg';
+export { default as none } from './none.svg';
