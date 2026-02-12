@@ -6,9 +6,19 @@ import type {
   UpdateFixedExpendituresRequest,
   UpdateFixedExpendituresResponse,
   GetFixedExpendituresResponse,
+  GetMeResponse,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// 마이페이지 내 정보 조회 API
+export async function getMe(accessToken: string): Promise<GetMeResponse> {
+  return getWithAuth<GetMeResponse>(
+    `${API_BASE_URL}/api/mypage/me`,
+    '내 정보 조회 실패',
+    accessToken,
+  );
+}
 
 // 예산 조회 API
 export async function getBudget(accessToken: string): Promise<GetBudgetResponse> {

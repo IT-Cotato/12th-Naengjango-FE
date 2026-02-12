@@ -1,22 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { back, logout, pw, quit } from '@/assets';
 import MenuItem from '@/components/my/MenuItem';
 import InfoItem from '@/components/my/InfoItem';
 import AlertModal from '@/components/common/AlertModal';
-import { logout as logoutApi , withdrawal as withdrawalApi } from '@/apis/members/login';
+import { logout as logoutApi, withdrawal as withdrawalApi } from '@/apis/members/login';
+import { getMe } from '@/apis/my/mypage';
 
 export default function MemberInfoPage() {
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const name = '냉잔고';
-  const userInfo = {
-    name: '냉잔고',
-    id: 'jango2026',
-    phone: '010-1234-5678',
-    joinDate: '2025.02.20',
-  };
+  const [name, setName] = useState<string>('');
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    id: '',
+    phone: '',
+    joinDate: '',
+  });
+
+  // 마이페이지 내 정보 조회
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    getMe(accessToken)
+      .then((res) => {
+        if (res.result) {
+          const { name, loginId, phoneNumber, createdAt } = res.result;
+          setName(name);
+          const date = new Date(createdAt);
+          const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+          setUserInfo({
+            name,
+            id: loginId,
+            phone: phoneNumber,
+            joinDate: formattedDate,
+          });
+        }
+      })
+      .catch((e) => {
+        console.error('내 정보 조회 실패:', e);
+      });
+  }, []);
 
   const handleAuthAction = async ({
     apiCall,
@@ -93,13 +118,13 @@ export default function MemberInfoPage() {
         <div className="w-6" />
       </header>
       <div className="px-6 pt-12 pl-9.5 shrink-0">
-        <h2 className="Bold_24 text-gray-800">{name}님</h2>
+        <h2 className="Bold_24 text-gray-800">{name || '...'}님</h2>
       </div>
       <div className="mt-[41px] w-[327px] mx-auto shrink-0">
-        <InfoItem label="이름" value={userInfo.name} />
-        <InfoItem label="아이디" value={userInfo.id} />
-        <InfoItem label="전화번호" value={userInfo.phone} />
-        <InfoItem label="가입일" value={userInfo.joinDate} />
+        <InfoItem label="이름" value={userInfo.name || '...'} />
+        <InfoItem label="아이디" value={userInfo.id || '...'} />
+        <InfoItem label="전화번호" value={userInfo.phone || '...'} />
+        <InfoItem label="가입일" value={userInfo.joinDate || '...'} />
       </div>
       <div className="flex-1 flex flex-col justify-end shrink-0">
         <div className="w-full border-x-0 border-t border-b border-white-400 rounded-[10px] overflow-hidden">

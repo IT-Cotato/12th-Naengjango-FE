@@ -46,3 +46,18 @@ export interface UpdateFixedExpendituresResult {
 
 // 고정지출 수정 응답
 export interface UpdateFixedExpendituresResponse extends ApiResponse<UpdateFixedExpendituresResult> {}
+
+// 마이페이지 내 정보 조회 응답 결과
+export interface GetMeResult {
+  id: number;
+  name: string;
+  loginId: string;
+  phoneNumber: string;
+  budget: number;
+  socialType: string;
+  role: string;
+  createdAt: string;
+}
+
+// 마이페이지 내 정보 조회 응답
+export interface GetMeResponse extends ApiResponse<GetMeResult> {}
