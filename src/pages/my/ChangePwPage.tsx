@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { back, close } from '@/assets';
 import { useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input';
@@ -20,7 +20,9 @@ export default function ChangePwPage() {
       .then((res) => {
         if (res.result?.name) setName(res.result.name);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error('내 정보 조회에 실패했습니다:', error);
+      });
   }, []);
 
   // 현재 비밀번호 검증 (8자 이상만)
@@ -38,10 +40,7 @@ export default function ChangePwPage() {
       ? '영문, 숫자, 특수문자 포함 8~20자'
       : undefined;
 
-  const newPasswordErrorNode = useMemo(
-    () => (newPasswordError ? newPasswordError : undefined),
-    [newPasswordError],
-  );
+  const newPasswordErrorNode = newPasswordError;
 
   // 비밀번호 확인 검증
   const confirmPasswordTrimmed = confirmPassword.trim();
@@ -50,10 +49,7 @@ export default function ChangePwPage() {
       ? '비밀번호가 일치하지 않습니다'
       : undefined;
 
-  const passwordMatchErrorNode = useMemo(
-    () => (passwordMatchError ? passwordMatchError : undefined),
-    [passwordMatchError],
-  );
+  const passwordMatchErrorNode = passwordMatchError;
 
   const isPasswordsMatch =
     confirmPasswordTrimmed === newPasswordTrimmed && confirmPasswordTrimmed.length > 0;
