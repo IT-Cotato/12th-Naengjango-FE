@@ -1,60 +1,106 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import DailyBudgetChart from '@/components/report/DailyBudgetChart';
 import ReportTab, { type ReportTabKey } from '@/components/report/ReportTab';
 import ScenarioChart from '@/components/report/ScenarioChart';
 import FreezeEffectCard from '@/components/report/FreezeEffectCard';
 import DailyFreezeSuccessRate from '@/components/report/DailyFreezeSuccessRate';
+import { useReport } from '@/hooks/report/useReport';
+import { useDailyBudgetReport } from '@/hooks/report/useDailyBudgetReport';
 
-const dummyLabels = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전', '오늘'];
-const dummyValues = [32000, 28000, 35000, 30000, 34000, 33000, 13200];
-
-const scenarioItems = [
-  { label: '7일 전', value: 100 },
-  { label: '6일 전', value: 90 },
-  { label: '5일 전', value: 80 },
-  { label: '4일 전', value: 70 },
-  { label: '3일 전', value: 60 },
-  { label: '2일 전', value: 50 },
-  { label: '1일 전', value: 40 },
-  { label: '오늘', value: 30 },
-];
-
-const weeklyFreezeSuccessRates: Record<string, number> = {
-  월: 52,
-  화: 58,
-  수: 65,
-  목: 78,
-  금: 95,
-  토: 42,
-  일: 45,
-};
+const DAY_LABELS = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전', '오늘'];
 
 export default function ReportPage() {
   const [activeTab, setActiveTab] = useState<ReportTabKey>('daily');
+  const { data: reportData } = useReport();
+  const { data: dailyBudgetData } = useDailyBudgetReport();
+
+  const dailyChartLabels = useMemo(
+    () =>
+      dailyBudgetData?.dailyTrends?.length
+        ? DAY_LABELS.slice(-dailyBudgetData.dailyTrends.length)
+        : [],
+    [dailyBudgetData?.dailyTrends]
+  );
+  const dailyChartValues = useMemo(
+    () => dailyBudgetData?.dailyTrends?.map((t) => t.amount) ?? [],
+    [dailyBudgetData?.dailyTrends]
+  );
+  const todayBudgetText = dailyBudgetData
+    ? `${dailyBudgetData.todayAvailable.toLocaleString()}원`
+    : '';
+  const diffFromYesterday = dailyBudgetData?.diffFromYesterday ?? 0;
+  const diffText =
+    diffFromYesterday === 0
+      ? ''
+      : diffFromYesterday > 0
+        ? `${diffFromYesterday.toLocaleString()}▲`
+        : `${Math.abs(diffFromYesterday).toLocaleString()}▼`;
+
+  const scenarioItems = useMemo(() => {
+    if (!dailyBudgetData?.bankruptcyPrediction?.length) return [];
+    const pred = dailyBudgetData.bankruptcyPrediction;
+    return pred.map((item, i) => {
+      const from = new Date(item.baseDate).getTime();
+      const to = new Date(item.expectedDate).getTime();
+      const days = Math.max(0, Math.ceil((to - from) / (24 * 60 * 60 * 1000)));
+      return { label: DAY_LABELS[i] ?? `${i + 1}일 전`, value: days };
+    });
+  }, [dailyBudgetData?.bankruptcyPrediction]);
+
+  const bankruptDateLabel = useMemo(() => {
+    const last = dailyBudgetData?.bankruptcyPrediction?.slice(-1)[0];
+    if (!last?.expectedDate) return '';
+    const d = new Date(last.expectedDate);
+    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  }, [dailyBudgetData?.bankruptcyPrediction]);
+
+  const scenarioDateLabels = useMemo(() => {
+    const pred = dailyBudgetData?.bankruptcyPrediction;
+    if (!pred?.length) return [];
+    const last = new Date(pred[pred.length - 1].expectedDate);
+    const n = pred.length;
+    const startDay = Math.max(1, last.getDate() - n + 1);
+    return Array.from({ length: n }, (_, i) => `${startDay + i}일`);
+  }, [dailyBudgetData?.bankruptcyPrediction]);
+
+  const freezeSuccessRates = useMemo(() => {
+    if (!reportData?.successRateByDay) return {} as Record<string, number>;
+    return Object.fromEntries(
+      Object.entries(reportData.successRateByDay).map(([k, v]) => [k, Math.round((v ?? 0) * 100)])
+    );
+  }, [reportData?.successRateByDay]);
+
+  const freezeDescription = reportData?.bestSavingTime
+    ? `${reportData.bestSavingTime.day} ${reportData.bestSavingTime.timeSlot} 냉동 상품 성공률이 가장 높아요!`
+    : '';
 
   return (
     <div className="min-h-screen bg-white ">
       <ReportTab activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="px-4 pt-6 pb-6 space-y-4 flex flex-col items-center">
-        {activeTab === 'daily' && (
+        {activeTab === 'daily' && dailyBudgetData && (
           <>
             <DailyBudgetChart
-              labels={dummyLabels}
-              values={dummyValues}
+              labels={dailyChartLabels}
+              values={dailyChartValues}
               userName="냉잔고"
-              todayBudgetText="13,200원"
-              diffText="700▲"
+              todayBudgetText={todayBudgetText}
+              diffText={diffText}
             />
-            <ScenarioChart items={scenarioItems} bankruptDateLabel="2월 24일"/>
+            <ScenarioChart
+              items={scenarioItems}
+              bankruptDateLabel={bankruptDateLabel}
+              dateLabels={scenarioDateLabels}
+            />
           </>
         )}
         {activeTab === 'freeze' && (
           <>
-            <FreezeEffectCard />
+            <FreezeEffectCard reportData={reportData} />
             <DailyFreezeSuccessRate
-              successRates={weeklyFreezeSuccessRates}
-              description="금요일 오후 냉동 상품 성공률이 가장 높아요!"
+              successRates={freezeSuccessRates}
+              description={freezeDescription}
             />
           </>
         )}

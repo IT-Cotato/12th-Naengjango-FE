@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { EChartsOption } from 'echarts';
 import EChart from './EChart';
+import type { GetReportResult } from '@/apis/report/types';
 
 type FreezeInnerTab = 'weekly' | 'monthly';
 
@@ -10,29 +11,37 @@ const LABEL_POS = {
   thick: { x: 15, y: 6 }, // 두꺼운 링
 } as const;
 
-const FreezeEffectCard: React.FC = () => {
+interface FreezeEffectCardProps {
+  reportData?: GetReportResult | null;
+}
+
+const FreezeEffectCard: React.FC<FreezeEffectCardProps> = ({ reportData }) => {
   const [innerTab, setInnerTab] = useState<FreezeInnerTab>('weekly');
 
   const { saving, existing, savingText, existingText } = useMemo(() => {
-    if (innerTab === 'weekly') {
+    if (reportData) {
+      const saved = reportData.totalSavedAmount;
+      const failed = reportData.totalFailedAmount ?? 0;
       return {
-        saving: 89000,
-        existing: 43800,
-        savingText: '89,000원',
-        existingText: '43,800원',
+        saving: saved,
+        existing: Math.max(failed, 0.001),
+        savingText: `${saved.toLocaleString()}원`,
+        existingText: `${failed.toLocaleString()}원`,
       };
     }
     return {
-      saving: 416000,
-      existing: 218600,
-      savingText: '416,000원',
-      existingText: '218,600원',
+      saving: 0,
+      existing: 1,
+      savingText: '0원',
+      existingText: '0원',
     };
-  }, [innerTab]);
+  }, [reportData]);
 
   const donutOption: EChartsOption = useMemo(() => {
     const startAngle = 90;
     const clockwise = true;
+    const savingValue = saving || 0.001;
+    const existingValue = existing || 0.001;
 
     return {
       tooltip: { show: false },
@@ -50,7 +59,7 @@ const FreezeEffectCard: React.FC = () => {
           emphasis: { scale: false },
           data: [
             {
-              value: saving,
+              value: savingValue,
               name: '절약',
               itemStyle: {
                 color: {
@@ -67,7 +76,7 @@ const FreezeEffectCard: React.FC = () => {
               },
             },
             {
-              value: existing,
+              value: existingValue,
               name: '기존',
               itemStyle: {
                 color: {
@@ -100,7 +109,7 @@ const FreezeEffectCard: React.FC = () => {
           emphasis: { scale: false },
           data: [
             {
-              value: saving,
+              value: savingValue,
               name: '절약',
               itemStyle: {
                 color: {
@@ -117,7 +126,7 @@ const FreezeEffectCard: React.FC = () => {
               },
             },
             {
-              value: existing,
+              value: existingValue,
               name: '기존',
               itemStyle: { color: 'transparent' },
               emphasis: { itemStyle: { color: 'transparent' } },
@@ -128,6 +137,8 @@ const FreezeEffectCard: React.FC = () => {
     };
   }, [saving, existing]);
 
+  const DAY_ORDER = ['월', '화', '수', '목', '금', '토', '일'];
+
   const lineOption: EChartsOption = useMemo(
     () =>
       innerTab === 'weekly'
@@ -135,7 +146,9 @@ const FreezeEffectCard: React.FC = () => {
             grid: { left: 24, right: 16, top: 10, bottom: 20 },
             xAxis: {
               type: 'category',
-              data: ['4주 전', '3주 전', '2주 전', '1주 전', '이번 주'],
+              data: reportData?.successRateByDay
+                ? DAY_ORDER
+                : [],
               axisLine: { show: false },
               axisTick: { show: false },
               axisLabel: { color: '#A7A7A7', fontSize: 10 },
@@ -150,17 +163,12 @@ const FreezeEffectCard: React.FC = () => {
             series: [
               {
                 type: 'line',
-                data: [45, 32, 58, 67, 89],
+                data: reportData?.successRateByDay
+                  ? DAY_ORDER.map((day) => Math.round((reportData.successRateByDay[day] ?? 0) * 100))
+                  : [],
                 smooth: true,
                 symbol: 'none',
                 lineStyle: { color: '#5E97D7', width: 2 },
-              },
-              {
-                type: 'line',
-                data: [38, 45, 52, 61, 75],
-                smooth: true,
-                symbol: 'none',
-                lineStyle: { color: '#D1D5DB', width: 2 },
               },
             ],
           }
@@ -168,7 +176,7 @@ const FreezeEffectCard: React.FC = () => {
             grid: { left: 24, right: 16, top: 10, bottom: 20 },
             xAxis: {
               type: 'category',
-              data: ['11월', '12월', '1월', '2월'],
+              data: reportData?.successTrends?.map((t) => t.label) ?? [],
               axisLine: { show: false },
               axisTick: { show: false },
               axisLabel: { color: '#A7A7A7', fontSize: 10 },
@@ -183,21 +191,15 @@ const FreezeEffectCard: React.FC = () => {
             series: [
               {
                 type: 'line',
-                data: [87, 67, 76, 34],
+                data:
+                  reportData?.successTrends?.map((t) => Math.round(t.successRate * 100)) ?? [],
                 smooth: true,
                 symbol: 'none',
-                lineStyle: { color: '#EF4444', width: 2 },
-              },
-              {
-                type: 'line',
-                data: [38, 65, 87, 60],
-                smooth: true,
-                symbol: 'none',
-                lineStyle: { color: '#D1D5DB', width: 2 },
+                lineStyle: { color: '#5E97D7', width: 2 },
               },
             ],
           },
-    [innerTab],
+    [innerTab, reportData],
   );
 
   return (
@@ -285,14 +287,66 @@ const FreezeEffectCard: React.FC = () => {
           <>
             <p className="Bold_20 text-gray-800">주간 냉동 성공률 그래프</p>
             <p className="SemiBold_15 text-gray-800">
-              저번 주보다 <span className="text-main-skyblue">23,000원</span> 더 지켰어요!
+              {(() => {
+                const diff =
+                  reportData?.diffFromLastWeek ?? reportData?.diffFromLastPeriod;
+                if (diff == null) return <>저번 주 대비 변화를 확인해 보세요.</>;
+                if (diff >= 0) {
+                  return (
+                    <>
+                      저번 주보다{' '}
+                      <span className="text-main-skyblue">
+                        {diff.toLocaleString()}원
+                      </span>{' '}
+                      더 지켰어요!
+                    </>
+                  );
+                }
+                const amount =
+                  reportData?.diffFailedFromLastPeriod ?? Math.abs(diff);
+                return (
+                  <>
+                    저번 주보다{' '}
+                    <span className="text-error">
+                      {amount.toLocaleString()}원
+                    </span>{' '}
+                    더 못 지켰어요.
+                  </>
+                );
+              })()}
             </p>
           </>
         ) : (
           <>
             <p className="Bold_20 text-gray-800">월간 냉동 성공률 그래프</p>
             <p className="SemiBold_15 text-gray-800">
-              저번 달보다 <span className="text-error">45,000원</span> 더 못 지켰어요.
+              {(() => {
+                const diff =
+                  reportData?.diffFromLastWeek ?? reportData?.diffFromLastPeriod;
+                if (diff == null) return <>저번 달 대비 변화를 확인해 보세요.</>;
+                if (diff >= 0) {
+                  return (
+                    <>
+                      저번 달보다{' '}
+                      <span className="text-main-skyblue">
+                        {diff.toLocaleString()}원
+                      </span>{' '}
+                      더 지켰어요!
+                    </>
+                  );
+                }
+                const amount =
+                  reportData?.diffFailedFromLastPeriod ?? Math.abs(diff);
+                return (
+                  <>
+                    저번 달보다{' '}
+                    <span className="text-error">
+                      {amount.toLocaleString()}원
+                    </span>{' '}
+                    더 못 지켰어요.
+                  </>
+                );
+              })()}
             </p>
           </>
         )}
