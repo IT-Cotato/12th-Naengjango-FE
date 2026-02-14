@@ -12,6 +12,8 @@ import {
   pet,
   hobby,
   else as elseIcon,
+
+  // ✅ income icons
   salary,
   pinMoney,
   adjustment,
@@ -28,6 +30,10 @@ type Props = {
   onClose: () => void;
   onSave: (nextCategory: string) => void;
 };
+
+/* =========================
+   Category Definitions
+========================= */
 
 const EXPENSE_CATEGORIES = [
   '식비',
@@ -47,6 +53,10 @@ const INCOME_CATEGORIES = ['급여', '용돈', '정산', '환급', '이자/배�
 
 type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 type IncomeCategory = (typeof INCOME_CATEGORIES)[number];
+
+/* =========================
+   Icon Maps (NO any)
+========================= */
 
 const EXPENSE_ICON_MAP: Record<ExpenseCategory, string> = {
   식비: food,
@@ -68,8 +78,12 @@ const INCOME_ICON_MAP: Record<IncomeCategory, string> = {
   정산: adjustment,
   환급: refund,
   '이자/배당': allocation,
-  기타: elseIcon,
+  기타: elseIcon, // ✅ 수입 기타는 elseIcon
 };
+
+/* =========================
+   Type Guards
+========================= */
 
 function isExpenseCategory(v: string): v is ExpenseCategory {
   return (EXPENSE_CATEGORIES as readonly string[]).includes(v);
@@ -79,10 +93,16 @@ function isIncomeCategory(v: string): v is IncomeCategory {
   return (INCOME_CATEGORIES as readonly string[]).includes(v);
 }
 
+/* =========================
+   Component
+========================= */
+
 export default function LedgerCategoryModal({ open, mode, value, onClose, onSave }: Props) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
   const categories = mode === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+  // ✅ mode는 여기서만 존재함 → 높이도 컴포넌트 안에서 계산해야 함
   const sheetHeightClass = mode === 'income' ? 'h-[430px]' : 'h-[553px]';
 
   const initial = useMemo(() => {
@@ -92,18 +112,17 @@ export default function LedgerCategoryModal({ open, mode, value, onClose, onSave
     return categories[0] ?? '기타';
   }, [value, mode, categories]);
 
+  // ✅ open이 토글되어도 이전 값 남는 거 싫으면(원하면) key 리마운트 방식 권장
   const [selected, setSelected] = useState<string>(initial);
 
   if (!open) return null;
 
-  // 겹모달에서 onMouseDown은 뒤 모달까지 닫히는 케이스가 많아서 onClick이 더 안전함
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (sheetRef.current && sheetRef.current.contains(e.target as Node)) return;
     onClose();
   };
 
-  const handleSave = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleSave = () => {
     onSave(selected);
     onClose();
   };
@@ -119,15 +138,12 @@ export default function LedgerCategoryModal({ open, mode, value, onClose, onSave
       role="dialog"
       aria-modal="true"
       className="fixed inset-0 z-[80]"
-      onClick={handleBackdropClick}
+      onMouseDown={handleBackdropMouseDown}
     >
       <div className="absolute inset-0 bg-black/25" />
 
       <div
         ref={sheetRef}
-        // 여기 2개가 핵심: 내부 클릭/마우스다운이 뒤 모달로 전파되는 걸 막음
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
         className={[
           'absolute bottom-0 left-1/2 -translate-x-1/2 w-96',
           sheetHeightClass,
@@ -137,12 +153,15 @@ export default function LedgerCategoryModal({ open, mode, value, onClose, onSave
           'overflow-hidden',
         ].join(' ')}
       >
+        {/* Handle */}
         <div className="w-11 h-1 absolute left-1/2 top-[17px] -translate-x-1/2 bg-[color:var(--color-gray-200)] rounded-xs" />
 
+        {/* Title */}
         <div className="w-96 px-6 absolute left-0 top-[34px] flex justify-center">
           <div className="text-[color:var(--color-gray-800)] text-2xl font-bold">카테고리 수정</div>
         </div>
 
+        {/* Selected Preview */}
         <div className="absolute left-0 top-[82px] w-96 px-6 flex flex-col items-center">
           <div className="size-12 rounded-full bg-[color:var(--color-sub-skyblue)] flex items-center justify-center">
             <img src={getIcon(selected)} alt="" className="w-7 h-7" draggable={false} />
@@ -153,6 +172,7 @@ export default function LedgerCategoryModal({ open, mode, value, onClose, onSave
           </div>
         </div>
 
+        {/* Category Grid */}
         <div className="absolute left-0 top-[170px] w-96 px-6">
           <div className="grid grid-cols-4 gap-x-5 gap-y-6">
             {categories.map((c) => {
@@ -185,6 +205,7 @@ export default function LedgerCategoryModal({ open, mode, value, onClose, onSave
           </div>
         </div>
 
+        {/* Save Button */}
         <div className="absolute left-6 right-6 bottom-[34px]">
           <Button onClick={handleSave}>저장</Button>
         </div>

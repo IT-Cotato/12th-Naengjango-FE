@@ -1,13 +1,11 @@
 import usePasteModal from './usePasteModal';
 import useManualModal from './useManualModal';
 import useEditModal from './useEditModal';
-
-import type { ParsedLedgerData } from '@/types/ledger';
+import type { ParseLedgerResponse } from '@/apis/ledger/types';
 
 type Params = {
   onCloseFab: () => void;
-  // ✅ API 타입 ❌ → 도메인 타입 ✅
-  parseLedgerText: (text: string) => Promise<ParsedLedgerData>;
+  parseLedgerText: (text: string) => Promise<ParseLedgerResponse>;
 };
 
 export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params) {
@@ -15,6 +13,7 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
   const manual = useManualModal();
   const edit = useEditModal();
 
+  // LedgerPage에서 쓰던 이름 그대로 반환
   return {
     // paste
     isPasteOpen: paste.isPasteOpen,
@@ -45,7 +44,7 @@ export default function useLedgerModals({ onCloseFab, parseLedgerText }: Params)
     pasteError: paste.pasteError,
     setPasteError: paste.setPasteError,
 
-    // handlers
+    // handlers (이름 고정)
     onPaste: paste.onPaste,
     onManual: () => manual.onManual(onCloseFab),
     onClosePaste: paste.onClosePaste,
