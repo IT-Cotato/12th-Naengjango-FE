@@ -1,5 +1,6 @@
 // 앱 내부 도메인
 export type ParsedLedgerData = {
+  type: 'income' | 'expense';
   amount: number;
   date: string;
   description: string;
@@ -8,7 +9,8 @@ export type ParsedLedgerData = {
 };
 
 export type LedgerEntry = {
-  id: string;
+  id: string; // UI key (fallback 가능)
+  serverId?: string; // ✅ 서버 PK (있을 때만)
   date: string;
   type: 'income' | 'expense';
   amount: number;
