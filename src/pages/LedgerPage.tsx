@@ -27,6 +27,13 @@ import {
 
 /* ---------------- utils ---------------- */
 
+const isDev = import.meta.env.DEV;
+
+function devLog(...args: unknown[]) {
+  if (!isDev) return;
+  console.log(...args);
+}
+
 type ApiTransaction = {
   transactionId?: number | string;
   id?: number | string;
@@ -135,18 +142,18 @@ export default function LedgerPage() {
   const [loadError, setLoadError] = useState('');
 
   const refreshSelectedDate = useCallback(async () => {
-    // 여기서 API 포맷으로 조회
     const raw = await getTransactionsByDate(selectedDateLabelAPI);
-    let list: ApiTransaction[] = [];
 
+    let list: ApiTransaction[] = [];
     if (Array.isArray(raw)) {
       list = raw;
     } else if (raw && typeof raw === 'object' && 'result' in raw) {
       list = (raw as ApiListResponse).result ?? [];
     }
 
-    setEntries(normalizeEntries(list));
-    setEntries(normalizeEntries(list));
+    devLog('[GET BY DATE] count=', list.length, 'date=', selectedDateLabelAPI);
+
+    setEntries(normalizeEntries(list)); // ✅ 한 번만
   }, [selectedDateLabelAPI]);
 
   useEffect(() => {
@@ -158,22 +165,19 @@ export default function LedgerPage() {
 
       try {
         const raw = await getTransactionsByDate(selectedDateLabelAPI);
-
-        console.log('[GET BY DATE RAW]', raw);
-        console.log('[selectedDateLabelAPI]', selectedDateLabelAPI);
-
         if (!alive) return;
 
         let list: ApiTransaction[] = [];
-
         if (Array.isArray(raw)) {
           list = raw;
         } else if (raw && typeof raw === 'object' && 'result' in raw) {
           list = (raw as ApiListResponse).result ?? [];
         }
 
-        setEntries(normalizeEntries(list));
-        setEntries(normalizeEntries(list));
+        // ✅ 민감 데이터 raw 그대로 로깅 금지
+        devLog('[GET BY DATE] count=', list.length, 'date=', selectedDateLabelAPI);
+
+        setEntries(normalizeEntries(list)); // ✅ 한 번만
       } catch (e) {
         if (!alive) return;
         const msg = e instanceof Error ? e.message : '내역 조회 실패';
