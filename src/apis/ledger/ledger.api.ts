@@ -1,7 +1,10 @@
+// src/apis/ledger/ledger.api.ts
 import { api } from '@/lib/api';
 import { entryTypeToApiType, apiTypeToEntryType } from './mapper';
 import type { LedgerDraft, LedgerEntry } from '@/types/ledger';
 import type { ApiEntryType } from './types';
+
+const API_PREFIX = '/api'; // ✅ baseURL에서 /api 뺐으니 여기서 붙임
 
 function toApiDate(date: string) {
   return date.replace(/\./g, '-');
@@ -20,7 +23,7 @@ type ApiResponse<T> = {
 };
 
 type ApiCreateResult = {
-  transactionId: number; // 서버가 주는 PK
+  transactionId: number;
 };
 
 type ApiTransaction = {
@@ -28,7 +31,7 @@ type ApiTransaction = {
   transactionId?: number | string;
   id?: number | string;
 
-  type: ApiEntryType; // "지출" | "수입"
+  type: ApiEntryType;
   amount: number;
   category: string;
   description: string;
@@ -40,24 +43,9 @@ function makeUiId(serverId: string) {
   return `tx-${serverId}`;
 }
 
-/**
- * 핵심: 어떤 형태가 들어와도 서버 PK(숫자)만 뽑아냄
- *  - "33" -> "33"
- *  - 33 -> "33"
- *  - "tx-33" -> "33"
- *  - "" / null -> ""
- */
-function toServerId(raw: unknown): string {
-  const s = String(raw ?? '').trim();
-  if (!s) return '';
-
-  const m = s.match(/(\d+)/);
-  return m ? m[1] : '';
-}
-
 function normalizeApiTransaction(item: ApiTransaction): LedgerEntry {
   const serverIdRaw = item.transaction_id ?? item.transactionId ?? item.id;
-  const serverId = toServerId(serverIdRaw);
+  const serverId = serverIdRaw != null ? String(serverIdRaw) : '';
 
   return {
     id: serverId ? makeUiId(serverId) : `tmp-${crypto.randomUUID()}`,
@@ -72,9 +60,9 @@ function normalizeApiTransaction(item: ApiTransaction): LedgerEntry {
   };
 }
 
-/** 생성: POST /accounts/transactions */
+/** 생성: POST /api/accounts/transactions */
 export async function createTransaction(draft: LedgerDraft): Promise<LedgerEntry> {
-  const res = await api.post<ApiResponse<ApiCreateResult>>('/accounts/transactions', {
+  const res = await api.post<ApiResponse<ApiCreateResult>>(`${API_PREFIX}/accounts/transactions`, {
     type: entryTypeToApiType(draft.type),
     amount: draft.amount,
     category: draft.category,
@@ -86,13 +74,14 @@ export async function createTransaction(draft: LedgerDraft): Promise<LedgerEntry
   const txId = res.data?.result?.transactionId;
 
   if (txId == null) {
-    throw new Error('transactionId가 응답에 없습니다.');
+    // @ts-expect-error - fallback
+    return normalizeApiTransaction(res.data?.result ?? res.data);
   }
 
   const serverId = String(txId);
 
   return {
-    id: `tx-${serverId}`,
+    id: makeUiId(serverId),
     serverId,
     type: draft.type,
     amount: draft.amount,
@@ -103,9 +92,9 @@ export async function createTransaction(draft: LedgerDraft): Promise<LedgerEntry
   };
 }
 
-/** 날짜별 조회: GET /accounts/transactions?date=YYYY-MM-DD */
+/** 날짜별 조회: GET /api/accounts/transactions?date=YYYY-MM-DD */
 export async function getTransactionsByDate(date: string) {
-  const res = await api.get<ApiResponse<ApiTransaction[]>>('/accounts/transactions', {
+  const res = await api.get<ApiResponse<ApiTransaction[]>>(`${API_PREFIX}/accounts/transactions`, {
     params: { date: toApiDate(date) },
   });
 
@@ -113,36 +102,31 @@ export async function getTransactionsByDate(date: string) {
   return list.map(normalizeApiTransaction);
 }
 
-/** 수정: PATCH /accounts/transactions/{transactionId} */
+/** 수정: PATCH /api/accounts/transactions/{transactionId} */
 export async function updateTransaction(
   transactionId: string,
   patch: Partial<LedgerDraft>,
 ): Promise<LedgerEntry | null> {
-  const serverId = toServerId(transactionId);
-  if (!serverId) return null;
+  if (!transactionId) return null;
 
-  const res = await api.patch<ApiResponse<ApiTransaction>>(`/accounts/transactions/${serverId}`, {
-    ...(patch.type ? { type: entryTypeToApiType(patch.type) } : {}),
-    ...(patch.amount != null ? { amount: patch.amount } : {}),
-    ...(patch.category != null ? { category: patch.category } : {}),
-    ...(patch.description != null ? { description: patch.description } : {}),
-    ...(patch.memo != null ? { memo: patch.memo } : {}),
-    ...(patch.date ? { date: toApiDate(patch.date) } : {}),
-  });
+  const res = await api.patch<ApiResponse<ApiTransaction>>(
+    `${API_PREFIX}/accounts/transactions/${transactionId}`,
+    {
+      ...(patch.type ? { type: entryTypeToApiType(patch.type) } : {}),
+      ...(patch.amount != null ? { amount: patch.amount } : {}),
+      ...(patch.category != null ? { category: patch.category } : {}),
+      ...(patch.description != null ? { description: patch.description } : {}),
+      ...(patch.memo != null ? { memo: patch.memo } : {}),
+      ...(patch.date ? { date: toApiDate(patch.date) } : {}),
+    },
+  );
 
   const item = res.data?.result;
   if (!item) return null;
   return normalizeApiTransaction(item);
 }
 
-/** 삭제: DELETE /accounts/transactions/{transactionId} */
+/** 삭제: DELETE /api/accounts/transactions/{transactionId} */
 export async function deleteTransaction(transactionId: string) {
-  const serverId = toServerId(transactionId);
-  console.log('[API deleteTransaction param]', { transactionId, serverId });
-
-  if (!serverId) {
-    throw new Error('삭제할 transactionId가 올바르지 않습니다.');
-  }
-
-  return api.delete(`/accounts/transactions/${serverId}`);
+  return api.delete(`${API_PREFIX}/accounts/transactions/${transactionId}`);
 }
