@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
-import { back, close, errorIcon } from '@/assets';
+import { useState, useMemo, useEffect } from 'react';
+import { back, close } from '@/assets';
 import { useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
+import { getMe, changePassword } from '@/apis/my/mypage';
 
 export default function ChangePwPage() {
   const navigate = useNavigate();
@@ -10,28 +11,21 @@ export default function ChangePwPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const name = '냉잔고';
+  const [name, setName] = useState('');
 
-  // 현재 비밀번호 검증
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    getMe(accessToken)
+      .then((res) => {
+        if (res.result?.name) setName(res.result.name);
+      })
+      .catch(() => {});
+  }, []);
+
+  // 현재 비밀번호 검증 (8자 이상만)
   const currentPasswordTrimmed = currentPassword.trim();
-  const isCurrentPasswordValid =
-    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,20}$/.test(
-      currentPasswordTrimmed,
-    );
-  const currentPasswordError =
-    currentPasswordTrimmed.length > 0 && !isCurrentPasswordValid
-      ? '영문, 숫자, 특수문자 포함 8~20자'
-      : undefined;
-
-  const currentPasswordErrorNode = useMemo(() => {
-    if (!currentPasswordError) return undefined;
-    return (
-      <span className="flex items-center gap-1">
-        <img src={errorIcon} alt="error" className="h-3 w-3" />
-        {currentPasswordError}
-      </span>
-    );
-  }, [currentPasswordError]);
+  const isCurrentPasswordValid = currentPasswordTrimmed.length >= 8;
 
   // 새 비밀번호 검증
   const newPasswordTrimmed = newPassword.trim();
@@ -44,15 +38,10 @@ export default function ChangePwPage() {
       ? '영문, 숫자, 특수문자 포함 8~20자'
       : undefined;
 
-  const newPasswordErrorNode = useMemo(() => {
-    if (!newPasswordError) return undefined;
-    return (
-      <span className="flex items-center gap-1">
-        <img src={errorIcon} alt="error" className="h-3 w-3" />
-        {newPasswordError}
-      </span>
-    );
-  }, [newPasswordError]);
+  const newPasswordErrorNode = useMemo(
+    () => (newPasswordError ? newPasswordError : undefined),
+    [newPasswordError],
+  );
 
   // 비밀번호 확인 검증
   const confirmPasswordTrimmed = confirmPassword.trim();
@@ -61,15 +50,10 @@ export default function ChangePwPage() {
       ? '비밀번호가 일치하지 않습니다'
       : undefined;
 
-  const passwordMatchErrorNode = useMemo(() => {
-    if (!passwordMatchError) return undefined;
-    return (
-      <span className="flex items-center gap-1">
-        <img src={errorIcon} alt="error" className="h-3 w-3" />
-        {passwordMatchError}
-      </span>
-    );
-  }, [passwordMatchError]);
+  const passwordMatchErrorNode = useMemo(
+    () => (passwordMatchError ? passwordMatchError : undefined),
+    [passwordMatchError],
+  );
 
   const isPasswordsMatch =
     confirmPasswordTrimmed === newPasswordTrimmed && confirmPasswordTrimmed.length > 0;
@@ -82,9 +66,18 @@ export default function ChangePwPage() {
   };
 
   const handleChangePassword = () => {
-    // 비밀번호 변경 API (나중에)
-    console.log('비밀번호 변경:', { currentPassword, newPassword, confirmPassword });
-    setStep('complete');
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    changePassword(
+      { currentPassword, newPassword, newPasswordConfirm: confirmPassword },
+      accessToken,
+    )
+      .then(() => {
+        setStep('complete');
+      })
+      .catch((e) => {
+        console.error('비밀번호 변경 실패:', e instanceof Error ? e.message : e);
+      });
   };
 
   const handleGoHome = () => {
@@ -123,15 +116,11 @@ export default function ChangePwPage() {
                 <div className="mb-2">
                   <Input
                     placeholder="현재 비밀번호"
-                    helperText={
-                      !currentPasswordError ? '영문, 숫자, 특수문자 포함 8~20자' : undefined
-                    }
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     type="password"
                     showLastChar
-                    error={currentPasswordErrorNode}
-                    success={isCurrentPasswordValid && currentPasswordTrimmed.length > 0}
+                    success={isCurrentPasswordValid}
                   />
                 </div>
                 {/* 레이아웃 맞추기용 인풋 (투명 처리, 높이만 동일하게) */}

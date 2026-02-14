@@ -13,10 +13,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const passwordRegex =
-    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,20}$/;
-  const isPasswordValid = password.length === 0 || passwordRegex.test(password);
-
   const handleLogin = async () => {
     if (!id.trim() || !password.trim()) {
       setError('아이디와 비밀번호를 입력해주세요.');
@@ -37,12 +33,16 @@ export default function LoginPage() {
         localStorage.setItem('accessToken', response.result.accessToken);
         localStorage.setItem('refreshToken', response.result.refreshToken);
 
-        // 첫 로그인 여부 확인 
+        // 임시비번으로 로그인한 경우 바로 비밀번호 변경 화면으로
+        const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password.trim());
+        if (!hasSpecialChar) {
+          navigate('/my/change-pw');
+          return;
+        }
+
+        // 첫 로그인 여부 확인
         const isFirstLogin = localStorage.getItem('isFirstLogin') === 'true';
-        
-        // signupCompleted와 isFirstLogin 모두 확인
-        // isFirstLogin이 true이거나 signupCompleted가 false이면 예산 설정 페이지로
-        // TODO: signupCompleted 확인 필요
+
         if (isFirstLogin || !response.result.signupCompleted) {
           navigate('/setup');
         } else {
@@ -66,7 +66,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-
       <main className="px-5 pt-35 pb-28">
         <h1 className="text-center text-2xl font-bold text-gray-800">로그인</h1>
         <div className="mt-8 flex flex-col gap-4">
@@ -78,7 +77,7 @@ export default function LoginPage() {
               setError(undefined);
             }}
             grayBg
-            error={error}
+            hasError={!!error}
           />
           <Input
             placeholder="비밀번호"
@@ -89,8 +88,7 @@ export default function LoginPage() {
               setError(undefined);
             }}
             grayBg
-            error={!isPasswordValid ? '영문, 숫자, 특수문자 포함 8~20자' : undefined}
-            helperText={isPasswordValid ? '영문, 숫자, 특수문자 포함 8~20자' : undefined}
+            error={error}
           />
         </div>
 

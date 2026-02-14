@@ -23,6 +23,13 @@ export interface GetAccountStatusRequest {
   day: number;
 }
 
+// 비밀번호 변경 요청
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+}
+
 // --- Response Types ---
 
 import type { ApiResponse } from '../types';
@@ -80,3 +87,6 @@ export interface GetAccountStatusResult {
 
 // 남은 예산 조회 응답
 export interface GetAccountStatusResponse extends ApiResponse<GetAccountStatusResult> {}
+
+// 비밀번호 변경 응답
+export interface ChangePasswordResponse extends ApiResponse<string> {}

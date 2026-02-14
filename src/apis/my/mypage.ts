@@ -11,6 +11,8 @@ import type {
   RegisterInquiryResponse,
   GetAccountStatusRequest,
   GetAccountStatusResponse,
+  ChangePasswordResponse,
+  ChangePasswordRequest,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -96,6 +98,19 @@ export async function getAccountStatus(
   return getWithAuth<GetAccountStatusResponse>(
     `${API_BASE_URL}/api/accounts/status?${queryParams}`,
     '남은 예산 조회 실패',
+    accessToken,
+  );
+}
+
+// 비밀번호 변경 API
+export async function changePassword(
+  data: ChangePasswordRequest,
+  accessToken: string,
+): Promise<ChangePasswordResponse> {
+  return postJsonWithAuth<ChangePasswordResponse>(
+    `${API_BASE_URL}/api/mypage/password`,
+    data,
+    '비밀번호 변경 실패',
     accessToken,
   );
 }
