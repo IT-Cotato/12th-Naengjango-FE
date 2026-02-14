@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DailyBudgetChart from '@/components/report/DailyBudgetChart';
 import ReportTab, { type ReportTabKey } from '@/components/report/ReportTab';
 import ScenarioChart from '@/components/report/ScenarioChart';
@@ -6,13 +6,25 @@ import FreezeEffectCard from '@/components/report/FreezeEffectCard';
 import DailyFreezeSuccessRate from '@/components/report/DailyFreezeSuccessRate';
 import { useReport } from '@/hooks/report/useReport';
 import { useDailyBudgetReport } from '@/hooks/report/useDailyBudgetReport';
+import { getMe } from '@/apis/my/mypage';
 
 const DAY_LABELS = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전', '오늘'];
 
 export default function ReportPage() {
   const [activeTab, setActiveTab] = useState<ReportTabKey>('daily');
+  const [name, setName] = useState<string>('');
   const { data: reportData } = useReport();
   const { data: dailyBudgetData } = useDailyBudgetReport();
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    getMe(accessToken)
+      .then((res) => {
+        if (res.result?.name) setName(res.result.name);
+      })
+      .catch(() => {});
+  }, []);
 
   const dailyChartLabels = useMemo(
     () =>
@@ -84,7 +96,7 @@ export default function ReportPage() {
             <DailyBudgetChart
               labels={dailyChartLabels}
               values={dailyChartValues}
-              userName="냉잔고"
+              userName={name || '...'}
               todayBudgetText={todayBudgetText}
               diffText={diffText}
             />

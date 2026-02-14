@@ -11,6 +11,7 @@ export function useDailyBudgetReport() {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
       setLoading(false);
+      setError('로그인이 필요합니다.');
       return;
     }
     getDailyBudget(accessToken)

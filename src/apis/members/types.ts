@@ -48,13 +48,7 @@ export interface FindPwRequest {
 
 // --- Response Types ---
 
-// 공통 API 응답 타입
-export interface ApiResponse<T = unknown> {
-  isSuccess: boolean;
-  code?: string;
-  message?: string;
-  result?: T;
-}
+import type { ApiResponse } from '../types';
 
 // SMS 인증번호 발송 응답
 export interface SendSmsResponse extends ApiResponse<string> {}

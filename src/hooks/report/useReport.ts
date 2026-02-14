@@ -13,6 +13,7 @@ export function useReport() {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
       setLoading(false);
+      setError('로그인이 필요합니다.');
       return;
     }
     getReport({ period: DEFAULT_PERIOD }, accessToken)

@@ -7,13 +7,7 @@ export interface GetReportRequest {
 
 // --- Response Types ---
 
-// 공통 API 응답 타입
-export interface ApiResponse<T = unknown> {
-  isSuccess: boolean;
-  code?: string;
-  message?: string;
-  result?: T;
-}
+import type { ApiResponse } from '../types';
 
 // 냉동 절약 효과 리포트 (월별,주별 성공 추이)
 export interface SuccessTrendItem {
