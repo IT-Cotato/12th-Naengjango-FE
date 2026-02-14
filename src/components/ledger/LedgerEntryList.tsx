@@ -6,11 +6,6 @@ function formatWon(amount: number) {
   return `${amount.toLocaleString('ko-KR')}원`;
 }
 
-function makeFallbackKey(item: LedgerEntry, idx: number) {
-  // 서버가 id를 안 주거나 빈 값이면, 화면에서만 유니크 key를 만들어줌
-  return `${item.date}-${item.type}-${item.amount}-${item.category}-${item.description}-${idx}`;
-}
-
 export default function LedgerEntryList({
   items,
   emptyText = '내역이 없습니다',
@@ -26,12 +21,12 @@ export default function LedgerEntryList({
 
   return (
     <div className="w-full flex flex-col gap-3">
-      {items.map((item, idx) => {
+      {items.map((item) => {
         const iconSrc = getCategoryIcon(item.type as EntryType, item.category);
 
         return (
           <button
-            key={item.id && item.id.trim() ? item.id : makeFallbackKey(item, idx)}
+            key={item.id}
             type="button"
             onClick={() => onItemClick?.(item)}
             className="
@@ -55,7 +50,7 @@ export default function LedgerEntryList({
               </div>
             </div>
 
-            {/* middle */}
+            {/* middle (굵게 X) */}
             <div className="flex-1 text-[color:var(--color-gray-800)] text-base font-normal leading-6 tracking-tight line-clamp-1">
               {item.description || '(내역 없음)'}
             </div>
