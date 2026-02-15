@@ -81,10 +81,7 @@ export default function MyPage() {
           {budgetDiff !== null && budgetDiff !== 0 && (
             <span className={budgetDiff > 0 ? 'text-main-skyblue' : 'text-red-500'}>
               ({Math.abs(budgetDiff).toLocaleString()}
-              {budgetDiff < 0 && (
-                <span className="inline-block ml-0.5 w-0 h-0 border-l-4 border-r-4 border-b-[6px] border-l-transparent border-r-transparent border-b-red-500" />
-              )}
-              {budgetDiff > 0 && '▲'})
+              {budgetDiff > 0 ? '▲' : '▼'})
             </span>
           )}
         </span>{' '}
