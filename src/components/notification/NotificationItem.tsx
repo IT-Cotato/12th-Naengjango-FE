@@ -1,22 +1,34 @@
 import React from 'react';
 
 export interface NotificationItemProps {
+  id: number;
   logoSrc: string;
   title: string;
   description: string;
   time: string;
+  isRead?: boolean;
 }
 
-const NotificationItem: React.FC<NotificationItemProps> = ({ logoSrc, title, description, time }) => {
+const NotificationItem: React.FC<NotificationItemProps> = ({
+  logoSrc,
+  title,
+  description,
+  time,
+  isRead = false,
+}) => {
   return (
-    <div className="flex items-start gap-4 px-4 py-3 bg-white-600 rounded-[8px]">
+    <div
+      className={`flex items-start gap-4 px-4 py-3 rounded-[8px] ${isRead ? 'bg-white-600' : 'bg-sub-skyblue'}`}
+    >
       <div className="w-full h-full rounded-[12px] flex items-center justify-center">
         <img src={logoSrc} alt="" className="w-13.5 h-13.5 object-contain" />
       </div>
       <div className="flex-1">
         <p className="Medium_15 text-gray-800 truncate">{title}</p>
-        <p className="Medium_15 text-gray-800 mt-1 line-clamp-2">{description}
-        <span className="Regular_12 text-gray-400 mt-1 ml-2">{time}</span></p>
+        <p className="Medium_15 text-gray-800 mt-1 line-clamp-2">
+          {description}
+          <span className="Regular_12 text-gray-400 mt-1 ml-2">{time}</span>
+        </p>
       </div>
     </div>
   );

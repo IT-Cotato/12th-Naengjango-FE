@@ -28,12 +28,13 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     return [...item].sort((a, b) => {
       if (sortOption === '최신순') return b.id - a.id;
       if (sortOption === '가격순') return b.price - a.price;
-      if (sortOption === '임박순') return a.remainingHour - b.remainingHour;
+      if (sortOption === '임박순') return a.remainingSeconds - b.remainingSeconds;
       return 0;
     });
   }, [item, sortOption]);
 
   const [isFailModalOpen, setIsFailModalOpen] = useState(false);
+  const [noFailModalOpen, setNoFailModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [isSnowBall, setIsSnowBall] = useState(false);
@@ -78,6 +79,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         });
 
         const data = await res.json();
+        console.log(data);
         if (!data.isSuccess) return;
 
         // 서버 데이터 → FreezeItem 형태로 변환
@@ -86,9 +88,9 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
             id: i.id,
             title: i.itemName,
             price: i.price,
-            remainingHour: Math.floor(i.remainingSeconds / 3600),
+            remainingSeconds: i.remainingSeconds,
             checked: false,
-            image: images[i.appName as ImageKey] ?? images.ably,
+            image: images[i.appName as ImageKey] ?? images.defaultImg,
             selectedAppId: i.appName,
           };
         });
@@ -96,7 +98,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         // 임박순은 프론트에서 sort
         let finalList = mapped;
         if (sortOption === '임박순') {
-          finalList = [...mapped].sort((a, b) => a.remainingHour - b.remainingHour);
+          finalList = [...mapped].sort((a, b) => a.remainingSeconds - b.remainingSeconds);
         }
 
         setItem(finalList);
@@ -243,10 +245,10 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
           id: freeze.id,
           title: freeze.itemName,
           price: freeze.price,
-          remainingHour: Math.floor(diffSeconds / 3600),
+          remainingSeconds: diffSeconds,
           checked: false,
           selectedAppId: freeze.appName,
-          image: images[freeze.appName as ImageKey] ?? images.ably,
+          image: images[freeze.appName as ImageKey] ?? images.defaultImg,
         });
       }
 
@@ -280,9 +282,11 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
           },
         );
         const data = await res.json();
+        console.log(data);
         if (data.isSuccess && data.result) {
           setMonthRemaining(data.result.monthRemaining);
           setTodayRemaining(data.result.todayRemaining);
+          setTodayBudget(data.result.todayRemaining);
         } else {
           console.error('accounts/status 실패', data.message);
           setMonthRemaining(null);
@@ -309,25 +313,30 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
       }
 
       try {
+        const requestBody = { freezeIds: selectedIds };
+        // console.log('Request body:', requestBody);
+
         const res = await fetch(`${API_BASE_URL}/api/freezes/budget-preview`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ freezeIds: selectedIds }),
+          body: JSON.stringify(requestBody),
         });
 
         const data = await res.json();
-        if (data.isSuccess && data.result) {
-          const { selectedTotalPrice, remainingDaysInMonth } = data.result;
+        console.log('Response data:', data);
 
-          // 오늘 가용 예산 계산
-          const availableToday = Math.max(
-            Math.floor(((monthRemaining ?? 0) - selectedTotalPrice) / remainingDaysInMonth),
-            0,
-          );
-          setTodayBudget(availableToday);
+        if (data.isSuccess && data.result) {
+          const { perDayBudget } = data.result;
+
+          const availableToday = (todayRemaining ?? 0) - perDayBudget;
+          if (availableToday < 0) {
+            setTodayBudget(0);
+          } else {
+            setTodayBudget(availableToday);
+          }
         } else {
           console.error('budget-preview 실패', data.message);
           setTodayBudget(0);
@@ -339,7 +348,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     };
 
     fetchBudgetPreview();
-  }, [item, monthRemaining]);
+  }, [item, todayRemaining]);
 
   //눈덩이 조회
   useEffect(() => {
@@ -409,7 +418,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
                     image={item.image}
                     title={item.title}
                     price={item.price}
-                    remainingHour={item.remainingHour}
+                    remainingSeconds={item.remainingSeconds}
                     checked={item.checked}
                     containerRef={listRef}
                     isFirst={index === 0}
@@ -472,7 +481,17 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
                   onClick={() => {
                     // 선택된 아이템이 하나라도 있을 때만 모달 열기
                     if (item.some((i) => i.checked)) {
-                      setIsFailModalOpen(true);
+                      // 체크된 아이템들의 금액 합계 계산
+                      const checkedTotalPrice = item
+                        .filter((i) => i.checked)
+                        .reduce((sum, i) => sum + i.price, 0);
+
+                      // 합계가 monthRemaining보다 크면 noFailModalOpen, 아니면 isFailModalOpen
+                      if (checkedTotalPrice > (monthRemaining ?? 0)) {
+                        setNoFailModalOpen(true);
+                      } else {
+                        setIsFailModalOpen(true);
+                      }
                     }
                   }}
                 >
@@ -616,6 +635,22 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
           rightText: '계속 냉동',
           onRight: () => {
             handleExtend();
+          },
+        }}
+      />
+
+      <AlertModal
+        isOpen={noFailModalOpen}
+        onClose={() => {
+          setNoFailModalOpen(false);
+        }}
+        title="예산을 초과한 소비입니다"
+        message="냉동 성공 처리하시겠습니까?"
+        twoButtons={{
+          leftText: '취소',
+          rightText: '확인',
+          onRight: () => {
+            handleSuccess();
           },
         }}
       />
