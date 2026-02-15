@@ -6,7 +6,7 @@ type Props = {
   image: string;
   title: string;
   price: number;
-  remainingHour: number;
+  remainingSeconds: number;
   checked: boolean;
   onToggle: () => void;
   onClick: () => void;
@@ -19,7 +19,7 @@ export default function FreezeHistoryItem({
   image,
   title,
   price,
-  remainingHour,
+  remainingSeconds,
   checked,
   onToggle,
   onClick,
@@ -30,6 +30,17 @@ export default function FreezeHistoryItem({
   const itemRef = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(1); // 얼마나 화면에 보이는지
   const shouldApplyEffect = !isFirst && !isLast && ratio < 1;
+
+  const formatRemainingTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}H`;
+    } else {
+      return `${minutes}M`;
+    }
+  };
 
   useEffect(() => {
     if (!itemRef.current || !containerRef.current) return;
@@ -64,8 +75,10 @@ export default function FreezeHistoryItem({
 
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <div className="px-1.5 py-0.5 bg-main-skyblue rounded-lg text-white-800 Medium_12">
-              {remainingHour}H
+            <div
+              className={`px-1.5 py-0.5 rounded-lg text-white-800 Medium_12 ${remainingSeconds === 0 ? 'bg-error' : 'bg-main-skyblue'}`}
+            >
+              {formatRemainingTime(remainingSeconds)}
             </div>
             <div className="SemiBold_14">{title}</div>
           </div>
