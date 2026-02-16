@@ -1,18 +1,27 @@
-import { chevronLeftIcon, chevronRightIcon } from '@/assets';
+import { chevronLeftIcon, chevronRightIcon, blueCircle, redCircle, grayCircle } from '@/assets';
 import { useEffect, useMemo, useState } from 'react';
 
 type Props = {
   selectedDate: Date;
   onChangeSelectedDate: (d: Date) => void;
-
-  // ✅ 추가: rows(5 or 6) 전달
+  onMonthChange?: (year: number, month: number) => void;
   onRowsChange?: (rows: number) => void;
+
+  // { "2026-02-01": 3571, "2026-02-02": 0, ... }
+  dayRemainingMap?: Record<string, number>;
 };
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wen', 'Thr', 'Fri', 'Sat'];
 
 function pad2(n: number) {
   return String(n).padStart(2, '0');
+}
+
+function toKey(d: Date) {
+  const y = d.getFullYear();
+  const m = pad2(d.getMonth() + 1);
+  const day = pad2(d.getDate());
+  return `${y}-${m}-${day}`;
 }
 
 function isSameDay(a: Date, b: Date) {
@@ -50,14 +59,26 @@ export default function LedgerCalendar({
   selectedDate,
   onChangeSelectedDate,
   onRowsChange,
+  dayRemainingMap = {},
+  onMonthChange,
 }: Props) {
-  const [today] = useState(() => new Date());
-
+  // ✅ monthFirst는 selectedDate 기준으로 시작
   const [monthFirst, setMonthFirst] = useState(() => {
-    const d = new Date(today);
+    const d = new Date(selectedDate);
     d.setDate(1);
     return d;
   });
+
+  // ✅ selectedDate가 바뀌었는데 다른 월이면 monthFirst도 따라가게
+  useEffect(() => {
+    const y = selectedDate.getFullYear();
+    const m = selectedDate.getMonth();
+    if (monthFirst.getFullYear() !== y || monthFirst.getMonth() !== m) {
+      setMonthFirst(new Date(y, m, 1));
+    }
+    // monthFirst를 deps에 넣으면 setMonthFirst로 루프 날 수 있어서 조건으로 방지
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate]);
 
   const year = monthFirst.getFullYear();
   const month = monthFirst.getMonth() + 1;
@@ -65,6 +86,11 @@ export default function LedgerCalendar({
 
   const cells = useMemo(() => buildMonthCells(monthFirst), [monthFirst]);
   const rows = useMemo(() => Math.ceil(cells.length / 7), [cells.length]);
+
+  // ✅ 월이 바뀔 때 부모에 알려줌 (deps 깔끔)
+  useEffect(() => {
+    onMonthChange?.(year, month);
+  }, [year, month, onMonthChange]);
 
   // ✅ rows 변경 시 부모에 알려줌
   useEffect(() => {
@@ -78,6 +104,8 @@ export default function LedgerCalendar({
 
   const onSelect = (d: Date) => {
     onChangeSelectedDate(d);
+
+    // ✅ 다른 달 날짜 클릭하면 monthFirst도 이동
     if (d.getFullYear() !== year || d.getMonth() !== monthFirst.getMonth()) {
       setMonthFirst(new Date(d.getFullYear(), d.getMonth(), 1));
     }
@@ -134,8 +162,20 @@ export default function LedgerCalendar({
                 <div key={row} className="h-12 flex items-start">
                   {rowCells.map(({ date, inMonth }, col) => {
                     const isSelected = isSameDay(date, selectedDate);
-                    const isToday = isSameDay(date, today);
-                    const showDot = isToday;
+                    const key = toKey(date);
+
+                    let circleSrc: string | null = null;
+
+                    // ✅ 월 밖: 무조건 gray
+                    if (!inMonth) {
+                      circleSrc = grayCircle;
+                    } else if (Object.prototype.hasOwnProperty.call(dayRemainingMap, key)) {
+                      // ✅ 월 안: 데이터 있으면 blue/red
+                      circleSrc = (dayRemainingMap[key] ?? 0) > 0 ? blueCircle : redCircle;
+                    } else {
+                      // ✅ 월 안인데 데이터 없으면 표시 안 함
+                      circleSrc = null;
+                    }
 
                     return (
                       <button
@@ -162,10 +202,8 @@ export default function LedgerCalendar({
                           {date.getDate()}
                         </div>
 
-                        {showDot ? (
-                          <div className="size-3 relative">
-                            <div className="size-2 absolute left-[1.5px] top-[1.5px] bg-[color:var(--color-main-skyblue)]" />
-                          </div>
+                        {circleSrc ? (
+                          <img src={circleSrc} alt="" className="size-3" draggable={false} />
                         ) : (
                           <div className="size-3" />
                         )}

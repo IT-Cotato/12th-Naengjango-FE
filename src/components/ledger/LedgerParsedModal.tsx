@@ -135,9 +135,13 @@ function ParsedSheet({
   };
 
   const disabled =
-    !Number.isFinite(amount) || amount <= 0 || (category?.trim() || '') === '' || category == null;
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    (category?.trim() || '') === '' ||
+    (description?.trim() || '') === '';
 
   const handleSave = () => {
+    if (description.trim() === '') return;
     onSave({
       type,
       amount,
