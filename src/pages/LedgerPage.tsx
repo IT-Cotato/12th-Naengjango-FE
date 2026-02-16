@@ -305,23 +305,18 @@ export default function LedgerPage() {
   // 삭제
   const handleDeleteEdit = async (uiId: string) => {
     try {
-      // uiId: 'tx-33'
       const target = entries.find((e) => e.id === uiId);
-
-      console.log('[DELETE] uiId=', uiId);
-      console.log('[DELETE] target=', target);
 
       if (!target?.serverId) {
         alert('serverId가 없어 삭제할 수 없어요. (서버 PK 필요)');
         return;
       }
 
-      const serverId = String(target.serverId); // '33'
-      console.log('[DELETE] serverId=', serverId);
+      // ✅ 핵심: "tx-52" 같은 uiId 말고 "52"만
+      const transactionId = String(target.serverId).replace(/^tx-/, '');
 
-      await deleteTransaction(serverId); // 여기만 serverId로!
+      await deleteTransaction(transactionId);
 
-      // 화면에서도 제거 (uiId 기준으로)
       setEntries((prev) => prev.filter((e) => e.id !== uiId));
     } catch (e) {
       console.error(e);
