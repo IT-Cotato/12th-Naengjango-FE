@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import type { ParsedLedgerData } from '@/types/ledger';
-import type { ParseLedgerResponse } from '@/apis/ledger/types';
 
 type Params = {
-  parseLedgerText: (text: string) => Promise<ParseLedgerResponse>;
+  parseLedgerText: (text: string) => Promise<ParsedLedgerData>;
   onCloseFab: () => void;
 };
 
@@ -19,12 +18,10 @@ export default function usePasteModal({ parseLedgerText, onCloseFab }: Params) {
 
   const onPaste = () => {
     onCloseFab();
-
     setPasteText('');
     setPasteError('');
     setParsedData(null);
     setIsParsedOpen(false);
-
     setIsPasteOpen(true);
   };
 
@@ -38,15 +35,11 @@ export default function usePasteModal({ parseLedgerText, onCloseFab }: Params) {
     setIsParsing(true);
 
     try {
-      const parsed: ParseLedgerResponse = await parseLedgerText(text);
-
-      const completed: ParsedLedgerData = {
-        ...parsed,
-        memo: text, // ✅ memo는 여기서만
-      };
+      // ✅ 이미 ParsedLedgerData
+      const parsed = await parseLedgerText(text);
 
       setIsPasteOpen(false);
-      setParsedData(completed);
+      setParsedData(parsed);
       setIsParsedOpen(true);
     } catch (e) {
       const msg = e instanceof Error ? e.message : '분석 실패';
