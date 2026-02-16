@@ -1,5 +1,8 @@
+// src/apis/ledger/parsedLedgerText.ts
 import { api } from '@/lib/api';
 import type { ParsedLedgerData } from '@/types/ledger';
+
+const API_PREFIX = '/api';
 
 type ApiEntryType = '지출' | '수입';
 
@@ -19,21 +22,29 @@ type ApiResponse<T> = {
   result: T;
 };
 
-function toEntryType(t: ApiEntryType): ParsedLedgerData['type'] {
+function toEntryType(t: ApiEntryType | undefined): ParsedLedgerData['type'] {
   return t === '수입' ? 'income' : 'expense';
 }
 
-export async function parseLedgerText(text: string): Promise<ParsedLedgerData> {
-  const res = await api.post<ApiResponse<ApiParsedResult>>('/accounts/parser', { rawText: text });
-
-  const raw = res.data.result;
+function normalizeParsed(
+  resData: ApiResponse<ApiParsedResult>,
+  originalText: string,
+): ParsedLedgerData {
+  const raw = resData.result;
 
   return {
-    type: toEntryType(raw.type),
-    amount: Number(raw.amount ?? 0),
-    description: String(raw.description ?? '').trim(),
-    date: String(raw.date ?? '').trim(),
-    category: String(raw.category ?? '').trim() || '기타',
-    memo: String(raw.memo ?? text ?? ''),
+    type: toEntryType(raw?.type),
+    amount: Number(raw?.amount ?? 0),
+    description: String(raw?.description ?? '').trim(),
+    date: String(raw?.date ?? '').trim(),
+    category: String(raw?.category ?? '').trim(),
+    memo: String(raw?.memo ?? originalText ?? ''),
   };
+}
+
+export async function parseLedgerText(text: string): Promise<ParsedLedgerData> {
+  const res = await api.post<ApiResponse<ApiParsedResult>>(`${API_PREFIX}/accounts/parser`, {
+    rawText: text,
+  });
+  return normalizeParsed(res.data, text);
 }
