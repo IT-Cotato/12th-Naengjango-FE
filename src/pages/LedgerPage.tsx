@@ -153,7 +153,7 @@ export default function LedgerPage() {
 
     devLog('[GET BY DATE] count=', list.length, 'date=', selectedDateLabelAPI);
 
-    setEntries(normalizeEntries(list)); // ✅ 한 번만
+    setEntries(normalizeEntries(list));
   }, [selectedDateLabelAPI]);
 
   useEffect(() => {
@@ -174,10 +174,9 @@ export default function LedgerPage() {
           list = (raw as ApiListResponse).result ?? [];
         }
 
-        // ✅ 민감 데이터 raw 그대로 로깅 금지
         devLog('[GET BY DATE] count=', list.length, 'date=', selectedDateLabelAPI);
 
-        setEntries(normalizeEntries(list)); // ✅ 한 번만
+        setEntries(normalizeEntries(list));
       } catch (e) {
         if (!alive) return;
         const msg = e instanceof Error ? e.message : '내역 조회 실패';
@@ -305,23 +304,18 @@ export default function LedgerPage() {
   // 삭제
   const handleDeleteEdit = async (uiId: string) => {
     try {
-      // uiId: 'tx-33'
       const target = entries.find((e) => e.id === uiId);
-
-      console.log('[DELETE] uiId=', uiId);
-      console.log('[DELETE] target=', target);
 
       if (!target?.serverId) {
         alert('serverId가 없어 삭제할 수 없어요. (서버 PK 필요)');
         return;
       }
 
-      const serverId = String(target.serverId); // '33'
-      console.log('[DELETE] serverId=', serverId);
+      // ✅ 핵심: "tx-52" 같은 uiId 말고 "52"만
+      const transactionId = String(target.serverId).replace(/^tx-/, '');
 
-      await deleteTransaction(serverId); // 여기만 serverId로!
+      await deleteTransaction(transactionId);
 
-      // 화면에서도 제거 (uiId 기준으로)
       setEntries((prev) => prev.filter((e) => e.id !== uiId));
     } catch (e) {
       console.error(e);

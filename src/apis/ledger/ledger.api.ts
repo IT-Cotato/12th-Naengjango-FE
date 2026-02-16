@@ -3,6 +3,8 @@ import { entryTypeToApiType, apiTypeToEntryType } from './mapper';
 import type { LedgerDraft, LedgerEntry } from '@/types/ledger';
 import type { ApiEntryType } from './types';
 
+const API_PREFIX = '/api';
+
 function toApiDate(date: string) {
   return date.replace(/\./g, '-');
 }
