@@ -25,6 +25,8 @@ import {
   deleteTransaction,
 } from '@/apis/ledger';
 
+import { getBudgetStatus } from '@/apis/ledger/status.api';
+
 /* ---------------- utils ---------------- */
 
 const isDev = import.meta.env.DEV;
@@ -128,6 +130,11 @@ export default function LedgerPage() {
   const [isFabOpen, setIsFabOpen] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [budget, setBudget] = useState<{ todayRemaining: number; monthRemaining: number }>({
+    todayRemaining: 0,
+    monthRemaining: 0,
+  });
+  const [budgetLoading, setBudgetLoading] = useState(false);
 
   // UI 표시용
   const selectedDateLabelUI = useMemo(() => formatDateUI(selectedDate), [selectedDate]);
@@ -155,6 +162,34 @@ export default function LedgerPage() {
 
     setEntries(normalizeEntries(list));
   }, [selectedDateLabelAPI]);
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      setBudgetLoading(true);
+      try {
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth() + 1; // 1~12
+        const day = selectedDate.getDate();
+
+        const res = await getBudgetStatus({ year, month, day });
+        if (!alive) return;
+
+        setBudget(res);
+      } catch {
+        if (!alive) return;
+        // 실패해도 UX 깨지지 않게 0 유지 (원하면 토스트로만)
+        setBudget({ todayRemaining: 0, monthRemaining: 0 });
+      } finally {
+        if (alive) setBudgetLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [selectedDate]);
 
   useEffect(() => {
     let alive = true;
@@ -330,7 +365,11 @@ export default function LedgerPage() {
       <div className="h-[54px] w-full shrink-0" />
 
       <div className="w-full">
-        <LedgerHeader />
+        <LedgerHeader
+          todayRemaining={budget.todayRemaining}
+          monthRemaining={budget.monthRemaining}
+          loading={budgetLoading}
+        />
       </div>
 
       <div className="w-full max-w-[320px]">
