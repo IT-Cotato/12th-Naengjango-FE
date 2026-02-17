@@ -2,60 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { close } from '@/assets';
 import FAQModal from '@/components/common/FAQModal';
-
-type FAQItem = {
-  id: string;
-  question: string;
-  answer: string;
-};
-
-const FAQ_DATA: FAQItem[] = [
-  {
-    id: '1',
-    question: '자주 묻는 질문1?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '2',
-    question: '자주 묻는 질문2?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '3',
-    question: '자주 묻는 질문3?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '4',
-    question: '자주 묻는 질문4?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '5',
-    question: '자주 묻는 질문5?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '6',
-    question: '자주 묻는 질문6?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '7',
-    question: '자주 묻는 질문7?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '8',
-    question: '자주 묻는 질문8?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-  {
-    id: '9',
-    question: '자주 묻는 질문9?',
-    answer: '답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다. 답변 내용입니다.',
-  },
-];
+import { FAQ_ITEMS, type FAQItem } from '@/constants/faq';
 
 export default function FAQPage() {
   const navigate = useNavigate();
@@ -82,16 +29,21 @@ export default function FAQPage() {
         </button>
       </header>
       <div className="px-6 pt-8 pb-24">
-        {FAQ_DATA.map((faq) => (
+        {FAQ_ITEMS.map((faq) => (
           <button
             key={faq.id}
             type="button"
             onClick={() => handleQuestionClick(faq)}
             className="w-full h-[70px] flex items-center justify-between border-t border-white-400"
           >
-            <span className="Medium_18 text-gray-800 ">
-              <span className="Medium_20 text-main-skyblue mr-2">Q{faq.id}.</span> {faq.question}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="Medium_20 text-main-skyblue text-left w-10 shrink-0">
+                Q{faq.id}.
+              </span>
+              <span className="Medium_18 text-gray-800 text-left">
+                {faq.question}
+              </span>
+            </div>
             <span className="Medium_20 text-gray-200">A.</span>
           </button>
         ))}

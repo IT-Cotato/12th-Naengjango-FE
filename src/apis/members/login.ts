@@ -1,4 +1,4 @@
-import type { LoginRequest, LoginResponse, LogoutResponse, WithdrawalResponse, } from './types';
+import type { LoginRequest, LoginResponse, LogoutResponse, WithdrawalResponse } from './types';
 import { postJson, postJsonWithAuth } from '../utils/apiClient';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -14,7 +14,7 @@ export async function logout(accessToken: string): Promise<LogoutResponse> {
     `${API_BASE_URL}/auth/logout`,
     {},
     '로그아웃 실패',
-    accessToken
+    accessToken,
   );
 }
 
@@ -24,6 +24,16 @@ export async function withdrawal(accessToken: string): Promise<WithdrawalRespons
     `${API_BASE_URL}/api/mypage/withdrawal`,
     {},
     '탈퇴 실패',
-    accessToken
+    accessToken,
   );
+}
+
+// 구글 로그인 리다이렉트
+// redirectUri: OAuth 성공 후 돌아올 프론트 주소
+export function getGoogleLoginUrl(redirectUri?: string): string {
+  const url = `${API_BASE_URL}/auth/login/google`;
+  if (redirectUri) {
+    return `${url}?redirect_uri=${encodeURIComponent(redirectUri)}`;
+  }
+  return url;
 }

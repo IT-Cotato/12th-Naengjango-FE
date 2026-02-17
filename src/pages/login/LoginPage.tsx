@@ -1,17 +1,59 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { google } from '@/assets';
 import { Link } from 'react-router-dom';
-import { login } from '@/apis/members/login';
+import { login, getGoogleLoginUrl } from '@/apis/members/login';
+import { getMe } from '@/apis/my/mypage';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
+
+  // 구글 OAuth 콜백 처리: /login?accessToken=...&refreshToken=...&signupCompleted=...
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const accessToken = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
+    const signupCompleted = params.get('signupCompleted');
+
+    if (accessToken && refreshToken) {
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      window.history.replaceState({}, '', '/login');
+
+      // signupCompleted가 false면 전화번호 확인 후 /setup 또는 /login/verify-phone으로
+      if (signupCompleted === 'false' || signupCompleted === '0') {
+        // 전화번호 확인
+        getMe(accessToken)
+          .then((response) => {
+            if (response.isSuccess && response.result) {
+              // 전화번호가 없거나 비어있으면 전화번호 인증 페이지로
+              if (!response.result.phoneNumber || response.result.phoneNumber.trim() === '') {
+                navigate('/login/verify-phone');
+              } else {
+                // 전화번호가 있으면 바로 /setup으로
+                navigate('/setup');
+              }
+            } else {
+              // 사용자 정보 조회 실패 시 일단 /setup으로 (백엔드가 전화번호 없으면 에러 처리)
+              navigate('/setup');
+            }
+          })
+          .catch(() => {
+            // 에러 발생 시 일단 /setup으로
+            navigate('/setup');
+          });
+      } else {
+        navigate('/home');
+      }
+    }
+  }, [location.search, navigate]);
 
   const handleLogin = async () => {
     if (!id.trim() || !password.trim()) {
@@ -60,8 +102,9 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    // Google 로그인 (나중에)
-    console.log('Google 로그인');
+    // 현재 접속 주소(로컬이면 localhost, 배포면 배포 주소)를 백엔드에 전달
+    // 백엔드가 이 redirect_uri를 사용해서 OAuth 후 해당 주소로 리다이렉트해야 함
+    window.location.href = getGoogleLoginUrl(window.location.origin);
   };
 
   return (

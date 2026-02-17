@@ -6,8 +6,10 @@ import FreezeEffectCard from '@/components/report/FreezeEffectCard';
 import DailyFreezeSuccessRate from '@/components/report/DailyFreezeSuccessRate';
 import { useReport } from '@/hooks/report/useReport';
 import { useDailyBudgetReport } from '@/hooks/report/useDailyBudgetReport';
+import { useAccountStatus } from '@/hooks/my/useAccountStatus';
 import { getMe } from '@/apis/my/mypage';
 
+const DAY_LABELS_DAILY = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전'];
 const DAY_LABELS = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전', '오늘'];
 
 export default function ReportPage() {
@@ -15,6 +17,7 @@ export default function ReportPage() {
   const [name, setName] = useState<string>('');
   const { data: reportData } = useReport();
   const { data: dailyBudgetData } = useDailyBudgetReport();
+  const { todayRemaining, budgetDiff } = useAccountStatus();
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -29,24 +32,21 @@ export default function ReportPage() {
   const dailyChartLabels = useMemo(
     () =>
       dailyBudgetData?.dailyTrends?.length
-        ? DAY_LABELS.slice(-dailyBudgetData.dailyTrends.length)
+        ? DAY_LABELS_DAILY.slice(-dailyBudgetData.dailyTrends.length)
         : [],
-    [dailyBudgetData?.dailyTrends]
+    [dailyBudgetData?.dailyTrends],
   );
   const dailyChartValues = useMemo(
     () => dailyBudgetData?.dailyTrends?.map((t) => t.amount) ?? [],
-    [dailyBudgetData?.dailyTrends]
+    [dailyBudgetData?.dailyTrends],
   );
-  const todayBudgetText = dailyBudgetData
-    ? `${dailyBudgetData.todayAvailable.toLocaleString()}원`
-    : '';
-  const diffFromYesterday = dailyBudgetData?.diffFromYesterday ?? 0;
+  const todayBudgetText = todayRemaining !== null ? `${todayRemaining.toLocaleString()}원` : '';
   const diffText =
-    diffFromYesterday === 0
-      ? ''
-      : diffFromYesterday > 0
-        ? `${diffFromYesterday.toLocaleString()}▲`
-        : `${Math.abs(diffFromYesterday).toLocaleString()}▼`;
+    budgetDiff !== null && budgetDiff !== 0
+      ? budgetDiff > 0
+        ? `${budgetDiff.toLocaleString()}▲`
+        : `${Math.abs(budgetDiff).toLocaleString()}▼`
+      : '';
 
   const scenarioItems = useMemo(() => {
     if (!dailyBudgetData?.bankruptcyPrediction?.length) return [];
@@ -78,7 +78,7 @@ export default function ReportPage() {
   const freezeSuccessRates = useMemo(() => {
     if (!reportData?.successRateByDay) return {} as Record<string, number>;
     return Object.fromEntries(
-      Object.entries(reportData.successRateByDay).map(([k, v]) => [k, Math.round((v ?? 0) * 100)])
+      Object.entries(reportData.successRateByDay).map(([k, v]) => [k, Math.round((v ?? 0) * 100)]),
     );
   }, [reportData?.successRateByDay]);
 
@@ -87,7 +87,7 @@ export default function ReportPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white pt-19">
       <ReportTab activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="px-4 pt-6 pb-6 space-y-4 flex flex-col items-center">
@@ -99,6 +99,7 @@ export default function ReportPage() {
               userName={name || '...'}
               todayBudgetText={todayBudgetText}
               diffText={diffText}
+              isDiffPositive={budgetDiff === null || budgetDiff >= 0}
             />
             <ScenarioChart
               items={scenarioItems}

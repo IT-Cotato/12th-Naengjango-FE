@@ -15,8 +15,8 @@ const ReportTab: React.FC<ReportTabProps> = ({ activeTab, onChange }) => {
   const inactiveText = 'text-gray-400';
 
   return (
-    <div className="bg-white mt-8">
-      <div className="flex">
+    <div className="bg-white w-full left-0 h-19 z-10 top-0 fixed flex items-end">
+      <div className="flex w-full">
         <button
           type="button"
           className={`flex-1 p-2.5 cursor-pointer flex justify-center items-center ${
