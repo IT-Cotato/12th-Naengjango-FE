@@ -14,7 +14,11 @@ interface ScenarioChartProps {
   dateLabels?: string[];
 }
 
-const ScenarioChart: React.FC<ScenarioChartProps> = ({ items, bankruptDateLabel, dateLabels =['20일', '21일', '22일', '23일', '24일', '25일', '26일', '27일'] }) => {
+const ScenarioChart: React.FC<ScenarioChartProps> = ({
+  items,
+  bankruptDateLabel,
+  dateLabels = [],
+}) => {
 
   const option: EChartsOption = useMemo(
     () => ({

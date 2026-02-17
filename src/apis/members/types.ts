@@ -13,7 +13,7 @@ export interface VerifySmsRequest {
 
 // ID 중복 확인 요청
 export interface CheckIdRequest {
-  loginId: string; 
+  loginId: string;
 }
 
 // 회원가입 요청
@@ -46,26 +46,23 @@ export interface FindPwRequest {
   loginId: string;
 }
 
-// 예산 수정 요청
-export interface UpdateBudgetRequest {
-  budget: number;
+// 약관 동의 요청 (OAuth2 사용자용)
+export interface AgreementRequest {
+  agreements: Array<{
+    agreementId: number;
+    agreed: boolean;
+  }>;
 }
 
-// 고정지출 수정 요청
-export interface UpdateFixedExpendituresRequest {
-  items: Array<{ item: string; amount: number }>;
+// 전화번호 저장 요청 (OAuth2 사용자용)
+export interface UpdatePhoneRequest {
+  phoneNumber: string;
+  verifyCode: string;
 }
-
 
 // --- Response Types ---
 
-// 공통 API 응답 타입
-export interface ApiResponse<T = unknown> {
-  isSuccess: boolean;
-  code?: string;
-  message?: string;
-  result?: T;
-}
+import type { ApiResponse } from '../types';
 
 // SMS 인증번호 발송 응답
 export interface SendSmsResponse extends ApiResponse<string> {}
@@ -108,13 +105,8 @@ export interface LogoutResponse extends ApiResponse<string> {}
 // 탈퇴 응답
 export interface WithdrawalResponse extends ApiResponse<string> {}
 
-// 예산 수정 응답
-export interface UpdateBudgetResponse extends ApiResponse<string> {}
+// 약관 동의 응답 (OAuth2 사용자용)
+export interface AgreementResponse extends ApiResponse<string> {}
 
-// 고정지출 수정 응답 결과
-export interface UpdateFixedExpendituresResult {
-  items: Array<{ item: string; amount: number }>;
-}
-
-// 고정지출 수정 응답
-export interface UpdateFixedExpendituresResponse extends ApiResponse<UpdateFixedExpendituresResult> {}
+// 전화번호 저장 응답 (OAuth2 사용자용)
+export interface UpdatePhoneResponse extends ApiResponse<string> {}

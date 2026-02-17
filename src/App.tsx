@@ -7,6 +7,9 @@ import ReportPage from '@/pages/ReportPage';
 import MyPage from '@/pages/my/MyPage';
 import MemberInfoPage from '@/pages/my/MemberInfoPage';
 import NotificationPage from '@/pages/my/NotificationPage';
+import UserGuidePage from '@/pages/my/UserGuidePage';
+import ServiceTermsPage from '@/pages/my/ServiceTermsPage';
+import PrivacyPolicyPage from '@/pages/my/PrivacyPolicyPage';
 import SignupPage from '@/pages/signup/SignUpPage';
 import AuthLayout from './layouts/AuthLayout';
 import LoginPage from '@/pages/login/LoginPage';
@@ -14,6 +17,7 @@ import SetupPage from '@/pages/login/SetupPage';
 import OnboardingPage from '@/pages/login/OnboardingPage';
 import FindIdPage from './pages/login/find/FindIdPage';
 import FindPwPage from './pages/login/find/FindPwPage';
+import VerifyPhonePage from './pages/login/VerifyPhonePage';
 import ChangePwPage from '@/pages/my/ChangePwPage';
 import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
 import InquiryPage from '@/pages/my/InquiryPage';
@@ -30,12 +34,16 @@ export default function App() {
         <Route path="/my" element={<MyPage />} />
         <Route path="/my/member-info" element={<MemberInfoPage />} />
         <Route path="/my/notifications" element={<NotificationPage />} />
+        <Route path="/my/guide" element={<UserGuidePage />} />
+        <Route path="/my/service-terms" element={<ServiceTermsPage />} />
+        <Route path="/my/privacy" element={<PrivacyPolicyPage />} />
       </Route>
 
       <Route element={<AuthLayout />}>
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/login/verify-phone" element={<VerifyPhonePage />} />
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/find-id" element={<FindIdPage />} />
         <Route path="/find-pw" element={<FindPwPage />} />

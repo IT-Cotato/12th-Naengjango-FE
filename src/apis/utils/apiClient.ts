@@ -1,10 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// 공통 fetch 및 응답 처리 
-async function fetchAndParseResponse<T>(
-  res: Response,
-  defaultErrorMessage: string
-): Promise<T> {
+// 공통 fetch 및 응답 처리
+async function fetchAndParseResponse<T>(res: Response, defaultErrorMessage: string): Promise<T> {
   let responseData: any;
   try {
     const text = await res.text();
@@ -22,7 +19,11 @@ async function fetchAndParseResponse<T>(
 }
 
 // 공통 post json 요청 함수
-export async function postJson<T>(url: string, data: unknown, defaultErrorMessage: string): Promise<T> {
+export async function postJson<T>(
+  url: string,
+  data: unknown,
+  defaultErrorMessage: string,
+): Promise<T> {
   if (!API_BASE_URL) {
     throw new Error('API_BASE_URL 환경 변수가 설정되지 않았습니다.');
   }
@@ -39,25 +40,44 @@ export async function postJson<T>(url: string, data: unknown, defaultErrorMessag
 // 인증이 필요한 공통 fetch 함수
 async function fetchWithAuth<T>(
   url: string,
-  method: 'POST' | 'PATCH',
+  method: 'GET' | 'POST' | 'PATCH',
   data: unknown,
   defaultErrorMessage: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<T> {
   if (!API_BASE_URL) {
     throw new Error('API_BASE_URL 환경 변수가 설정되지 않았습니다.');
   }
 
-  const res = await fetch(url, {
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  if (method !== 'GET') {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const fetchOptions: RequestInit = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(data),
-  });
+    headers,
+  };
+
+  if (method !== 'GET') {
+    fetchOptions.body = JSON.stringify(data);
+  }
+
+  const res = await fetch(url, fetchOptions);
 
   return fetchAndParseResponse<T>(res, defaultErrorMessage);
+}
+
+// 인증이 필요한 GET 요청 함수
+export async function getWithAuth<T>(
+  url: string,
+  defaultErrorMessage: string,
+  accessToken: string,
+): Promise<T> {
+  return fetchWithAuth<T>(url, 'GET', undefined, defaultErrorMessage, accessToken);
 }
 
 // 인증이 필요한 post json 요청 함수
@@ -65,7 +85,7 @@ export async function postJsonWithAuth<T>(
   url: string,
   data: unknown,
   defaultErrorMessage: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<T> {
   return fetchWithAuth<T>(url, 'POST', data, defaultErrorMessage, accessToken);
 }
@@ -75,7 +95,7 @@ export async function patchJsonWithAuth<T>(
   url: string,
   data: unknown,
   defaultErrorMessage: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<T> {
   return fetchWithAuth<T>(url, 'PATCH', data, defaultErrorMessage, accessToken);
 }

@@ -11,8 +11,12 @@ import type {
   FindIdResponse,
   FindPwRequest,
   FindPwResponse,
+  AgreementRequest,
+  AgreementResponse,
+  UpdatePhoneRequest,
+  UpdatePhoneResponse,
 } from './types';
-import { postJson } from '../utils/apiClient';
+import { postJson, postJsonWithAuth, patchJsonWithAuth } from '../utils/apiClient';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -57,4 +61,30 @@ export async function findLoginId(data: FindIdRequest): Promise<FindIdResponse> 
 // 비번 찾기 api
 export async function findLoginPw(data: FindPwRequest): Promise<FindPwResponse> {
   return postJson<FindPwResponse>(`${API_BASE_URL}/auth/find-password`, data, '비번 찾기 실패');
+}
+
+// 약관 동의 api (OAuth2 사용자용)
+export async function agreeToTerms(
+  data: AgreementRequest,
+  accessToken: string,
+): Promise<AgreementResponse> {
+  return postJsonWithAuth<AgreementResponse>(
+    `${API_BASE_URL}/api/members/agreements`,
+    data,
+    '약관 동의 실패',
+    accessToken,
+  );
+}
+
+// 전화번호 저장 api (OAuth2 사용자용)
+export async function updatePhone(
+  data: UpdatePhoneRequest,
+  accessToken: string,
+): Promise<UpdatePhoneResponse> {
+  return patchJsonWithAuth<UpdatePhoneResponse>(
+    `${API_BASE_URL}/api/members/me/phone`,
+    data,
+    '전화번호 저장 실패',
+    accessToken,
+  );
 }

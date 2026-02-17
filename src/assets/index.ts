@@ -1,3 +1,9 @@
+// homepage Icon
+export { default as alertIcon } from './icons/homepage/alerticon.svg';
+export { default as freezeicon } from './icons/homepage/freezeicon.svg';
+export { default as iceledger } from './icons/homepage/iceledger.svg';
+export { default as snowball } from './icons/homepage/snowball.svg';
+
 // image icons
 export { default as back } from './back.svg';
 export { default as close } from './close.svg';
@@ -13,6 +19,7 @@ export { default as blueClose } from './icons/calendar/ic-blueclose.svg';
 export { default as bluePlus } from './icons/calendar/ic-blueplus.svg';
 export { default as blueCircle } from './icons/calendar/ic-bluecircle.svg';
 export { default as redCircle } from './icons/calendar/ic-redcircle.svg';
+export { default as grayCircle } from './icons/calendar/ic-graycircle.svg';
 export { default as chevronLeftIcon } from './icons/calendar/ic-chevron-left.svg';
 export { default as chevronRightIcon } from './icons/calendar/ic-chevron-right.svg';
 export { default as trash } from './icons/ic-trash.svg';
@@ -57,7 +64,7 @@ export { default as pw } from './pw.svg';
 export { default as logout } from './logout.svg';
 export { default as quit } from './quit.svg';
 export { default as snow } from './snow.svg';
-export {default as none} from './none.svg';
-export {default as before_agree} from './before_agree.svg';
-export {default as after_agree} from './after_agree.svg';
-export {default as onboarding} from './onboarding.svg';
+export { default as none } from './none.svg';
+export { default as before_agree } from './before_agree.svg';
+export { default as after_agree } from './after_agree.svg';
+export { default as onboarding } from './onboarding.svg';

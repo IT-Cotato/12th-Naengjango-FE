@@ -1,8 +1,19 @@
 {
   "rewrites": [
+    { "source": "/manifest.webmanifest", "destination": "/manifest.webmanifest" },
+    { "source": "/manifest.json", "destination": "/manifest.webmanifest" },
+    { "source": "/naengjango-icon.png", "destination": "/naengjango-icon.png" },
+    { "source": "/vite.svg", "destination": "/vite.svg" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json" },
+        { "key": "Cache-Control", "value": "public, max-age=0" }
+      ]
     }
   ]
 }

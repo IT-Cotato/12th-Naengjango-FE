@@ -7,10 +7,18 @@ interface Props {
   values: number[]; // 32000, ...
   userName: string;
   todayBudgetText: string; // 13,200원
-  diffText: string; // 700▲
+  diffText: string; // 700▲ or 700▼
+  isDiffPositive?: boolean; // true: 파란색, false: 빨간색
 }
 
-const DailyBudgetChart: React.FC<Props> = ({ labels, values, userName, todayBudgetText, diffText }) => {
+const DailyBudgetChart: React.FC<Props> = ({
+  labels,
+  values,
+  userName,
+  todayBudgetText,
+  diffText,
+  isDiffPositive = true,
+}) => {
   const option: EChartsOption = {
     grid: { left: 0, right: 0, top: 10, bottom: 20, containLabel: true },
     xAxis: {
@@ -67,7 +75,9 @@ const DailyBudgetChart: React.FC<Props> = ({ labels, values, userName, todayBudg
           오늘{' '}
           <span className="text-main-skyblue">
             {todayBudgetText}
-            <span className="ml-1 text-xs text-main-skyblue">{diffText}</span>
+            <span className={`ml-1 text-xs ${isDiffPositive ? 'text-main-skyblue' : 'text-error'}`}>
+              {diffText}
+            </span>
           </span>
         </p>
         <p className="Bold_18 text-gray-800">쓸 수 있어요!</p>
