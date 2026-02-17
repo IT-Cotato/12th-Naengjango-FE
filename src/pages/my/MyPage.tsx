@@ -62,9 +62,9 @@ export default function MyPage() {
   const menuItems = [
     { label: '회원 정보', onClick: () => navigate('/my/member-info') },
     { label: '예산 수정', onClick: () => navigate('/my/change-budget') },
-    { label: '이용 설명서', onClick: () => {} },
-    { label: '서비스 이용 약관', onClick: () => {} },
-    { label: '개인정보 처리 방침', onClick: () => {} },
+    { label: '이용 설명서', onClick: () => navigate('/my/guide') },
+    { label: '서비스 이용 약관', onClick: () => navigate('/my/service-terms') },
+    { label: '개인정보 처리 방침', onClick: () => navigate('/my/privacy') },
     { label: 'FAQ', onClick: () => navigate('/my/faq') },
     { label: '문의하기', onClick: () => navigate('/my/inquiry') },
   ];

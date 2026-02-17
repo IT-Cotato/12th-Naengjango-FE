@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { back, close } from '@/assets';
 import Button from '@/components/common/Button';
 import type { Term } from './TermsAgreementModal';
@@ -58,6 +59,7 @@ const TermsDetailModal: React.FC<TermsDetailModalProps> = ({ isOpen, term, onClo
       >
         <div className="Regular_15 text-gray-800 leading-relaxed prose prose-sm max-w-none">
           <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
             components={{
               h1: ({ children }) => (
                 <h1 className="Bold_20 text-gray-800 mb-4 mt-6 first:mt-0">{children}</h1>
