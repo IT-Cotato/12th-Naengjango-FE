@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
-import { back, close } from '@/assets';
+import { back } from '@/assets';
 import { PRIVACY_POLICY_MD } from '@/constants/docs';
 
 export default function PrivacyPolicyPage() {
@@ -11,9 +11,6 @@ export default function PrivacyPolicyPage() {
       <header className="flex h-18 items-center justify-between px-6 pt-4 shrink-0">
         <button type="button" onClick={() => navigate(-1)}>
           <img src={back} alt="뒤로가기" className="h-6 w-6" />
-        </button>
-        <button type="button" onClick={() => navigate('/my')}>
-          <img src={close} alt="닫기" className="flex h-6 w-6 items-center justify-center" />
         </button>
       </header>
 
