@@ -1,4 +1,9 @@
+import type { LoginResult } from '../members/types';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// 토큰 재발급 중복 요청 방지
+let refreshTokenPromise: Promise<{ accessToken: string; refreshToken: string }> | null = null;
 
 // 공통 fetch 및 응답 처리
 async function fetchAndParseResponse<T>(res: Response, defaultErrorMessage: string): Promise<T> {
@@ -39,7 +44,11 @@ export async function postJson<T>(
 
 // 토큰 재발급
 async function refreshTokens(): Promise<{ accessToken: string; refreshToken: string }> {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  // 이미 재발급 요청이 진행 중이면 기존 Promise 반환
+  if (refreshTokenPromise) {
+    return refreshTokenPromise;
+  }
+
   const refreshToken = localStorage.getItem('refreshToken');
 
   if (!API_BASE_URL) {
@@ -50,36 +59,49 @@ async function refreshTokens(): Promise<{ accessToken: string; refreshToken: str
     throw new Error('로그인이 필요합니다.');
   }
 
-  const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  });
+  // 재발급 Promise 생성 및 저장
+  refreshTokenPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
 
-  let data: any;
-  try {
-    const text = await res.text();
-    data = text ? JSON.parse(text) : {};
-  } catch {
-    throw new Error('토큰 재발급 응답을 파싱할 수 없습니다.');
-  }
+      // fetchAndParseResponse를 사용하여 응답 파싱
+      interface RefreshTokenResponse {
+        isSuccess: boolean;
+        result: LoginResult;
+        message?: string;
+      }
 
-  if (!res.ok || !data.isSuccess || !data.result) {
-    // 재발급 실패 시 저장된 토큰 제거
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    throw new Error(data.message || '로그인이 만료되었습니다. 다시 로그인해주세요.');
-  }
+      const data = await fetchAndParseResponse<RefreshTokenResponse>(res, '토큰 재발급 실패');
 
-  const { accessToken, refreshToken: newRefreshToken } = data.result as {
-    accessToken: string;
-    refreshToken: string;
-  };
+      if (!data.result) {
+        // 재발급 실패 시 저장된 토큰 제거
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        throw new Error('토큰 재발급에 실패했습니다.');
+      }
 
-  localStorage.setItem('accessToken', accessToken);
-  localStorage.setItem('refreshToken', newRefreshToken);
+      const { accessToken, refreshToken: newRefreshToken } = data.result;
 
-  return { accessToken, refreshToken: newRefreshToken };
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
+
+      return { accessToken, refreshToken: newRefreshToken };
+    } catch (error) {
+      // 재발급 실패 시 저장된 토큰 제거
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      throw error;
+    } finally {
+      // Promise 완료 후 null로 초기화
+      refreshTokenPromise = null;
+    }
+  })();
+
+  return refreshTokenPromise;
 }
 
 // 인증이 필요한 공통 fetch 함수
