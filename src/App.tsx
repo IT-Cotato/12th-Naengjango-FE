@@ -23,10 +23,26 @@ import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
 import InquiryPage from '@/pages/my/InquiryPage';
 import FAQPage from '@/pages/my/FAQPage';
 
+function RequireAuth({ children }: { children: JSX.Element }) {
+  const hasToken = !!localStorage.getItem('accessToken');
+
+  if (!hasToken) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 export default function App() {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
+      <Route
+        element={
+          <RequireAuth>
+            <MainLayout />
+          </RequireAuth>
+        }
+      >
         <Route path="/" element={<HomePage />} />
         <Route path="/ledger" element={<LedgerPage />} />
         <Route path="/freeze" element={<FreezePage />} />
