@@ -22,11 +22,28 @@ import ChangePwPage from '@/pages/my/ChangePwPage';
 import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
 import InquiryPage from '@/pages/my/InquiryPage';
 import FAQPage from '@/pages/my/FAQPage';
+import type { ReactNode } from 'react';
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const hasToken = !!localStorage.getItem('accessToken');
+
+  if (!hasToken) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 export default function App() {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
+      <Route
+        element={
+          <RequireAuth>
+            <MainLayout />
+          </RequireAuth>
+        }
+      >
         <Route path="/" element={<HomePage />} />
         <Route path="/ledger" element={<LedgerPage />} />
         <Route path="/freeze" element={<FreezePage />} />
