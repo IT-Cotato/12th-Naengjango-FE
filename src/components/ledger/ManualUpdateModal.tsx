@@ -86,7 +86,7 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
 
   const step1Disabled = amount <= 0;
   const step2Disabled = category.trim() === '';
-  const step3Disabled = false;
+  const step3Disabled = description.trim() === '';
 
   const handleNextStep = () => {
     if (step === 1) {
@@ -102,6 +102,7 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
   };
 
   const handleSaveExpense = () => {
+    if (description.trim() === '') return;
     onSaveExpense({
       date,
       type,
