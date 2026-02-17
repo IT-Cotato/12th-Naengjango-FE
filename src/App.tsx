@@ -22,8 +22,9 @@ import ChangePwPage from '@/pages/my/ChangePwPage';
 import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
 import InquiryPage from '@/pages/my/InquiryPage';
 import FAQPage from '@/pages/my/FAQPage';
+import type { ReactNode } from 'react';
 
-function RequireAuth({ children }: { children: JSX.Element }) {
+function RequireAuth({ children }: { children: ReactNode }) {
   const hasToken = !!localStorage.getItem('accessToken');
 
   if (!hasToken) {
