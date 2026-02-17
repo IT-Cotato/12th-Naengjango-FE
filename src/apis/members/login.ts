@@ -1,4 +1,10 @@
-import type { LoginRequest, LoginResponse, LogoutResponse, WithdrawalResponse } from './types';
+import type {
+  LoginRequest,
+  LoginResponse,
+  LogoutResponse,
+  WithdrawalResponse,
+  RefreshTokenResponse,
+} from './types';
 import { postJson, postJsonWithAuth } from '../utils/apiClient';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -36,4 +42,13 @@ export function getGoogleLoginUrl(redirectUri?: string): string {
     return `${url}?redirect_uri=${encodeURIComponent(redirectUri)}`;
   }
   return url;
+}
+
+// 토큰 재발급 API
+export async function refreshAccessToken(refreshToken: string): Promise<RefreshTokenResponse> {
+  return postJson<RefreshTokenResponse>(
+    `${API_BASE_URL}/auth/refresh`,
+    { refreshToken },
+    '토큰 재발급 실패',
+  );
 }
