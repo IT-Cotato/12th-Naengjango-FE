@@ -11,7 +11,7 @@ type Props = {
   timerKey?: string | number;
   onVerifiedChange?: (verified: boolean) => void;
   onVerifiedCode?: (code: string) => void; // 인증 완료된 코드 전달
-  phoneNumber: string; 
+  phoneNumber: string;
 };
 
 const TOTAL = 5 * 60;
@@ -89,7 +89,7 @@ export default function StepVerify({
         setIsVerified(true);
         setVerifyError(undefined);
         onVerifiedChange?.(true);
-        console.log('인증 완료, 코드 저장:', digits);
+        console.log('인증 완료, 코드 저장');
         onVerifiedCode?.(digits); // 인증 완료된 코드 전달
       } else {
         setIsVerified(false);
@@ -99,7 +99,7 @@ export default function StepVerify({
     } catch (error) {
       setIsVerified(false);
       const errorMessage = error instanceof Error ? error.message : '인증번호 검증에 실패했습니다.';
-      
+
       if (errorMessage.includes('일치하지 않') || errorMessage.includes('불일치')) {
         setVerifyError('인증번호가 일치하지 않습니다');
       } else {

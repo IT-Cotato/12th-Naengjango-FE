@@ -60,10 +60,11 @@ export default function VerifyPhonePage() {
 
   const handleComplete = async () => {
     if (!isVerifyDone || isSubmitting) {
-      if (!verifiedCode) {
-        console.error('인증 완료된 코드가 없습니다.');
-        alert('인증번호를 다시 확인해주세요.');
-      }
+      return;
+    }
+    if (!verifiedCode) {
+      console.error('인증 완료된 코드가 없습니다.');
+      alert('인증번호를 다시 확인해주세요.');
       return;
     }
 
@@ -79,7 +80,7 @@ export default function VerifyPhonePage() {
     try {
       const phoneDigits = phone.replace(/\D/g, '');
 
-      console.log('전화번호 저장 요청:', { phoneNumber: phoneDigits, verifyCode: verifiedCode });
+      console.log('전화번호 저장 요청');
 
       // 백엔드에 전화번호 저장 API 호출 (인증 완료된 verifyCode 사용)
       const response = await updatePhone(
