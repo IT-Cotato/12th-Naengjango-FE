@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SignupHeader from '@/components/signup/SignupHeader';
 import Button from '@/components/common/Button';
-import TermsAgreementModal, { type Term } from '@/components/signup/TermsAgreementModal';
+import TermsAgreementModal from '@/components/signup/TermsAgreementModal';
 import { signup, sendSms } from '@/apis/members/signup';
+import { AGREEMENT_ID_MAP, TERMS } from '@/constants/terms';
 
 import StepName from './step/StepName';
 import StepPhone from './step/StepPhone';
@@ -41,41 +42,6 @@ export default function SignupPage() {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   // 전화번호 인증 에러
   const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
-
-  // 약관 id 매핑 
-  const AGREEMENT_ID_MAP: Record<'terms' | 'privacy' | 'sms', number> = {
-    terms: 1,
-    privacy: 2,
-    sms: 3,
-  } as const;
-
-  // 약관 목록
-  const terms: Term[] = [
-    {
-      id: 'all',
-      label: '약관 전체 동의',
-      required: false,
-      content: '',
-    },
-    {
-      id: 'terms',
-      label: '이용 약관 동의',
-      required: true,
-      content: '이용 약관 동의 설명\n\n여기에 실제 이용 약관 내용이 들어갑니다.',
-    },
-    {
-      id: 'privacy',
-      label: '개인정보 수집 및 이용 동의',
-      required: true,
-      content: '개인정보 수집 및 이용 동의 설명\n\n여기에 실제 개인정보 수집 및 이용 동의 내용이 들어갑니다.',
-    },
-    {
-      id: 'sms',
-      label: 'SMS 알림 허용',
-      required: false,
-      content: 'SMS 알림 허용 설명\n\n여기에 실제 SMS 알림 허용 내용이 들어갑니다.',
-    },
-  ];
 
   const requestSms = async () => {
     const phoneDigits = phone.replace(/\D/g, '');
@@ -341,7 +307,7 @@ export default function SignupPage() {
         isOpen={isTermsModalOpen}
         onClose={() => setIsTermsModalOpen(false)}
         onConfirm={handleTermsConfirm}
-        terms={terms}
+        terms={TERMS}
       />
     </div>
   );

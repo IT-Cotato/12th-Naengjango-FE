@@ -46,6 +46,20 @@ export interface FindPwRequest {
   loginId: string;
 }
 
+// 약관 동의 요청 (OAuth2 사용자용)
+export interface AgreementRequest {
+  agreements: Array<{
+    agreementId: number;
+    agreed: boolean;
+  }>;
+}
+
+// 전화번호 저장 요청 (OAuth2 사용자용)
+export interface UpdatePhoneRequest {
+  phoneNumber: string;
+  verifyCode: string;
+}
+
 // --- Response Types ---
 
 import type { ApiResponse } from '../types';
@@ -90,3 +104,9 @@ export interface LogoutResponse extends ApiResponse<string> {}
 
 // 탈퇴 응답
 export interface WithdrawalResponse extends ApiResponse<string> {}
+
+// 약관 동의 응답 (OAuth2 사용자용)
+export interface AgreementResponse extends ApiResponse<string> {}
+
+// 전화번호 저장 응답 (OAuth2 사용자용)
+export interface UpdatePhoneResponse extends ApiResponse<string> {}

@@ -14,6 +14,7 @@ import SetupPage from '@/pages/login/SetupPage';
 import OnboardingPage from '@/pages/login/OnboardingPage';
 import FindIdPage from './pages/login/find/FindIdPage';
 import FindPwPage from './pages/login/find/FindPwPage';
+import VerifyPhonePage from './pages/login/VerifyPhonePage';
 import ChangePwPage from '@/pages/my/ChangePwPage';
 import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
 import InquiryPage from '@/pages/my/InquiryPage';
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/login/verify-phone" element={<VerifyPhonePage />} />
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/find-id" element={<FindIdPage />} />
         <Route path="/find-pw" element={<FindPwPage />} />

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { back, close } from '@/assets';
 import Button from '@/components/common/Button';
 import type { Term } from './TermsAgreementModal';
@@ -55,8 +56,25 @@ const TermsDetailModal: React.FC<TermsDetailModalProps> = ({ isOpen, term, onClo
         className="flex-1 overflow-y-auto px-5 py-6"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="Regular_15 text-gray-800 whitespace-pre-line leading-relaxed">
-          {term.content || `${term.label} 설명`}
+        <div className="Regular_15 text-gray-800 leading-relaxed prose prose-sm max-w-none">
+          <ReactMarkdown
+            components={{
+              h1: ({ children }) => (
+                <h1 className="Bold_20 text-gray-800 mb-4 mt-6 first:mt-0">{children}</h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="Bold_18 text-gray-800 mb-3 mt-5 first:mt-0">{children}</h2>
+              ),
+              p: ({ children }) => <p className="mb-3">{children}</p>,
+              ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside mb-3 space-y-1">{children}</ol>,
+              li: ({ children }) => <li className="ml-2">{children}</li>,
+              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+              hr: () => <hr className="my-4 border-gray-300" />,
+            }}
+          >
+            {term.content || `${term.label} 설명`}
+          </ReactMarkdown>
         </div>
       </div>
 

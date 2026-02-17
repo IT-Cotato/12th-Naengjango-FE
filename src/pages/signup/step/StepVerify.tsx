@@ -10,6 +10,7 @@ type Props = {
   disabled?: boolean;
   timerKey?: string | number;
   onVerifiedChange?: (verified: boolean) => void;
+  onVerifiedCode?: (code: string) => void; // 인증 완료된 코드 전달
   phoneNumber: string; 
 };
 
@@ -21,6 +22,7 @@ export default function StepVerify({
   disabled,
   timerKey,
   onVerifiedChange,
+  onVerifiedCode,
   phoneNumber,
 }: Props) {
   const digits = value.replace(/\D/g, '');
@@ -36,12 +38,12 @@ export default function StepVerify({
     onVerifiedChange?.(false);
   }, [timerKey, onVerifiedChange]);
 
-  // 입력 바꾸면 인증완료 해제 
+  // 입력 바꾸면 인증완료 해제 (인증 완료 전에만)
   useEffect(() => {
     if (isVerified) return; // 이미 인증 완료되었으면 무시
     setIsVerified(false);
     onVerifiedChange?.(false);
-  }, [digits, onVerifiedChange]);
+  }, [digits, isVerified, onVerifiedChange]);
 
   // 타이머
   useEffect(() => {
@@ -87,6 +89,8 @@ export default function StepVerify({
         setIsVerified(true);
         setVerifyError(undefined);
         onVerifiedChange?.(true);
+        console.log('인증 완료, 코드 저장:', digits);
+        onVerifiedCode?.(digits); // 인증 완료된 코드 전달
       } else {
         setIsVerified(false);
         setVerifyError('인증번호가 일치하지 않습니다');
@@ -120,11 +124,11 @@ export default function StepVerify({
         hidePlaceholderOnFocus={!isExpired}
         value={value}
         onChange={(e) => {
+          // 인증 완료되면 입력 변경 불가
+          if (isVerified) return;
           onChange(e.target.value);
           // 입력 바뀌면 에러 초기화
-          if (!isVerified) {
-            setVerifyError(undefined);
-          }
+          setVerifyError(undefined);
         }}
         disabled={disabled || isVerified}
         error={verifyError}
