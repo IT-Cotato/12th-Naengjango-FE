@@ -40,8 +40,7 @@ export default function ReportPage() {
     () => dailyBudgetData?.dailyTrends?.map((t) => t.amount) ?? [],
     [dailyBudgetData?.dailyTrends],
   );
-  const todayBudgetText =
-    todayRemaining !== null ? `${todayRemaining.toLocaleString()}원` : '';
+  const todayBudgetText = todayRemaining !== null ? `${todayRemaining.toLocaleString()}원` : '';
   const diffText =
     budgetDiff !== null && budgetDiff !== 0
       ? budgetDiff > 0
@@ -88,7 +87,7 @@ export default function ReportPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white pt-19">
       <ReportTab activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="px-4 pt-6 pb-6 space-y-4 flex flex-col items-center">
