@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getIglooStatusData } from '@/apis/home/home';
 import { useLoading } from '@/contexts/LoadingContext';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
@@ -50,6 +51,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [isStreak, setIsStreak] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
   const [todaySnowballs, setTodaySnowballs] = useState(0);
+
   const [freezeFailCount, setFreezeFailCount] = useState(0);
 
   const today = new Date();

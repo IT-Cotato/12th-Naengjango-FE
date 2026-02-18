@@ -91,6 +91,7 @@ const NotificationPage: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');

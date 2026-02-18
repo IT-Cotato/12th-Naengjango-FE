@@ -29,6 +29,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
       <div className="flex-1">
         {/* 🔹 title + 고정 문구(같은 줄) */}
+
         <p className="Medium_15 text-gray-800 truncate">{shortTitle}의 냉동이 종료되었습니다.</p>
 
         {/* 🔹 다음 줄: 설명 + 시간 */}
