@@ -22,7 +22,7 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   // useAccountStatus 훅 사용
-  const { todayRemaining, budgetDiff } = useAccountStatus();
+  const { budgetDiff } = useAccountStatus();
 
   // 상단 날짜 텍스트 생성 (예: "2월 12일(목)")
   const todayTitle = useMemo(() => {
