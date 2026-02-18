@@ -1,6 +1,5 @@
 export interface GetHomeDataResponse {
   result: {
-    diffFromYesterday: number;
     dailyTrends: Array<{
       date: string;
       amount: number;

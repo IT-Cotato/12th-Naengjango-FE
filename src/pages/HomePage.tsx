@@ -15,10 +15,14 @@ import {
 } from '@/apis/home/home';
 import AlertModal from '@/components/common/AlertModal';
 import ImageModal from '@/components/common/ImageModal';
+import { useAccountStatus } from '@/hooks/my/useAccountStatus';
 
 export default function HomePage() {
   const accessToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
+
+  // useAccountStatus 훅 사용
+  const { todayRemaining, budgetDiff } = useAccountStatus();
 
   // 상단 날짜 텍스트 생성 (예: "2월 12일(목)")
   const todayTitle = useMemo(() => {
@@ -78,12 +82,17 @@ export default function HomePage() {
   const handleGoLedger = () => navigate('/ledger');
 
   useEffect(() => {
+    if (budgetDiff !== null) {
+      setDiffAmount(budgetDiff);
+    }
+  }, [budgetDiff]);
+
+  useEffect(() => {
     const loadDifferenceData = async () => {
       try {
         if (!accessToken) return;
 
         const data = await getHomeData(accessToken);
-        setDiffAmount(data.result.diffFromYesterday);
 
         //홈화면 문구 예외처리
         const dailyTrends = data.result.dailyTrends;
@@ -184,6 +193,7 @@ export default function HomePage() {
 
   const isIncrease = diffAmount > 0;
   const formatNumber = (num: number) => num.toLocaleString();
+  const formatAbsoluteNumber = (num: number) => Math.abs(num).toLocaleString();
 
   // 이글루 업그레이드
   const handleUpgrade = async () => {
@@ -343,11 +353,11 @@ export default function HomePage() {
             </span>
             {isIncrease ? (
               <span className="text-[color:var(--color-main-skyblue)] Bold_24 font-['Pretendard']">
-                ({formatNumber(diffAmount)}▲)
+                ({formatAbsoluteNumber(diffAmount)}▲)
               </span>
             ) : (
               <span className="text-[color:var(--color-error)] text-2xl Bold_24 font-['Pretendard']">
-                ({formatNumber(diffAmount)}▼)
+                ({formatAbsoluteNumber(diffAmount)}▼)
               </span>
             )}
             <br />
