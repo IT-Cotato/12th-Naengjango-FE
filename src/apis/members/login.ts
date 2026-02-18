@@ -1,4 +1,9 @@
-import type { LoginRequest, LoginResponse, LogoutResponse, WithdrawalResponse } from './types';
+import type {
+  LoginRequest,
+  LoginResponse,
+  LogoutResponse,
+  WithdrawalResponse,
+} from './types';
 import { postJson, postJsonWithAuth } from '../utils/apiClient';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
