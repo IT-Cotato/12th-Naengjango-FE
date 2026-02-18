@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DailyBudgetChart from '@/components/report/DailyBudgetChart';
 import ReportTab, { type ReportTabKey } from '@/components/report/ReportTab';
 import ScenarioChart from '@/components/report/ScenarioChart';
@@ -8,16 +9,25 @@ import { useReport } from '@/hooks/report/useReport';
 import { useDailyBudgetReport } from '@/hooks/report/useDailyBudgetReport';
 import { useAccountStatus } from '@/hooks/my/useAccountStatus';
 import { getMe } from '@/apis/my/mypage';
+import ErrorPage from '@/pages/ErrorPage';
+
+function isAuthError(message: string | null): boolean {
+  return typeof message === 'string' && message.includes('로그인');
+}
 
 const DAY_LABELS_DAILY = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전'];
 const DAY_LABELS = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', '2일 전', '1일 전', '오늘'];
 
 export default function ReportPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ReportTabKey>('daily');
   const [name, setName] = useState<string>('');
-  const { data: reportData } = useReport();
-  const { data: dailyBudgetData } = useDailyBudgetReport();
+  const { data: reportData, error: reportError } = useReport();
+  const { data: dailyBudgetData, error: dailyBudgetError } = useDailyBudgetReport();
   const { todayRemaining, budgetDiff } = useAccountStatus();
+
+  const hasError = !!(reportError || dailyBudgetError);
+  const isAuthErrorPage = isAuthError(reportError) || isAuthError(dailyBudgetError);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -85,6 +95,16 @@ export default function ReportPage() {
   const freezeDescription = reportData?.bestSavingTime
     ? `${reportData.bestSavingTime.day} ${reportData.bestSavingTime.timeSlot} 냉동 상품 성공률이 가장 높아요!`
     : '';
+
+  if (hasError && isAuthErrorPage) {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    navigate('/login', { replace: true });
+    return null;
+  }
+  if (hasError) {
+    return <ErrorPage />;
+  }
 
   return (
     <div className="min-h-screen bg-white pt-19">
