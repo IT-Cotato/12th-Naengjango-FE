@@ -6,6 +6,8 @@ import NotificationItem, {
 import { none } from '@/assets/index';
 import { back } from '@/assets/index';
 import * as images from '@/assets/images';
+import { useLoading } from '@/contexts/LoadingContext';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
@@ -22,6 +24,7 @@ interface NotificationResponseItem {
 const NotificationPage: React.FC = () => {
   const accessToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
+  const { setLoading } = useLoading();
 
   const [groupedNotifications, setGroupedNotifications] = useState<
     { group: string; items: NotificationItemProps[] }[]
@@ -87,6 +90,7 @@ const NotificationPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');
@@ -101,7 +105,6 @@ const NotificationPage: React.FC = () => {
         });
 
         const data = await res.json();
-        console.log(data);
         if (!data.isSuccess) return;
         const notifications: NotificationResponseItem[] = data.result.content;
 
@@ -109,6 +112,8 @@ const NotificationPage: React.FC = () => {
         setGroupedNotifications(grouped);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();

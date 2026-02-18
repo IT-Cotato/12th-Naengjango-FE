@@ -23,6 +23,8 @@ import ChangeBudgetPage from '@/pages/my/ChangeBudgetPage';
 import InquiryPage from '@/pages/my/InquiryPage';
 import FAQPage from '@/pages/my/FAQPage';
 import type { ReactNode } from 'react';
+import { useLoading } from '@/contexts/LoadingContext';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const hasToken = !!localStorage.getItem('accessToken');
@@ -35,42 +37,48 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  const { isLoading } = useLoading();
   return (
-    <Routes>
-      <Route
-        element={
-          <RequireAuth>
-            <MainLayout />
-          </RequireAuth>
-        }
-      >
-        <Route path="/" element={<HomePage />} />
-        <Route path="/ledger" element={<LedgerPage />} />
-        <Route path="/freeze" element={<FreezePage />} />
-        <Route path="/report" element={<ReportPage />} />
-        <Route path="/my" element={<MyPage />} />
-        <Route path="/my/member-info" element={<MemberInfoPage />} />
-        <Route path="/my/notifications" element={<NotificationPage />} />
-        <Route path="/my/guide" element={<UserGuidePage />} />
-        <Route path="/my/service-terms" element={<ServiceTermsPage />} />
-        <Route path="/my/privacy" element={<PrivacyPolicyPage />} />
-      </Route>
+    <>
+      <Routes>
+        <Route
+          element={
+            <RequireAuth>
+              <MainLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="/" element={<HomePage />} />
+          <Route path="/ledger" element={<LedgerPage />} />
+          <Route path="/freeze" element={<FreezePage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/my" element={<MyPage />} />
+          <Route path="/my/member-info" element={<MemberInfoPage />} />
+          <Route path="/my/notifications" element={<NotificationPage />} />
+          <Route path="/my/guide" element={<UserGuidePage />} />
+          <Route path="/my/service-terms" element={<ServiceTermsPage />} />
+          <Route path="/my/privacy" element={<PrivacyPolicyPage />} />
+        </Route>
 
-      <Route element={<AuthLayout />}>
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/login/verify-phone" element={<VerifyPhonePage />} />
-        <Route path="/setup" element={<SetupPage />} />
-        <Route path="/find-id" element={<FindIdPage />} />
-        <Route path="/find-pw" element={<FindPwPage />} />
-        <Route path="/my/change-pw" element={<ChangePwPage />} />
-        <Route path="/my/change-budget" element={<ChangeBudgetPage />} />
-        <Route path="/my/inquiry" element={<InquiryPage />} />
-        <Route path="/my/faq" element={<FAQPage />} />
-      </Route>
+        <Route element={<AuthLayout />}>
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/verify-phone" element={<VerifyPhonePage />} />
+          <Route path="/setup" element={<SetupPage />} />
+          <Route path="/find-id" element={<FindIdPage />} />
+          <Route path="/find-pw" element={<FindPwPage />} />
+          <Route path="/my/change-pw" element={<ChangePwPage />} />
+          <Route path="/my/change-budget" element={<ChangeBudgetPage />} />
+          <Route path="/my/inquiry" element={<InquiryPage />} />
+          <Route path="/my/faq" element={<FAQPage />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* 전역 로딩 오버레이 */}
+      {isLoading && <LoadingOverlay />}
+    </>
   );
 }
