@@ -3,7 +3,7 @@ export type FreezeItem = {
   image: string;
   title: string;
   price: number;
-  remainingHour: number;
+  remainingSeconds: number;
   checked: boolean;
   selectedAppId: string | null;
 };

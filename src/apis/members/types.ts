@@ -33,6 +33,11 @@ export interface LoginRequest {
   password: string;
 }
 
+// 토큰 재발급 요청
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
 // Id 찾기 요청
 export interface FindIdRequest {
   name: string;
@@ -87,6 +92,9 @@ export interface LoginResult {
 
 // 로그인 응답
 export interface LoginResponse extends ApiResponse<LoginResult> {}
+
+// 토큰 재발급 응답
+export interface RefreshTokenResponse extends ApiResponse<LoginResult> {}
 
 // Id 찾기 응답 결과
 export interface FindIdResult {

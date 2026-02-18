@@ -50,7 +50,7 @@ export default function LoginPage() {
             navigate('/setup');
           });
       } else {
-        navigate('/home');
+        navigate('/');
       }
     }
   }, [location.search, navigate]);
@@ -88,7 +88,7 @@ export default function LoginPage() {
         if (isFirstLogin || !response.result.signupCompleted) {
           navigate('/setup');
         } else {
-          navigate('/home');
+          navigate('/');
         }
       } else {
         throw new Error(response.message || '로그인에 실패했습니다.');

@@ -20,16 +20,24 @@ export default function Freeze() {
     setToggleInputValid(false);
   };
 
+  const sanitizeString = (str: string) => {
+    return (
+      str
+        // 특수문자 제거 (한글/영문/숫자/공백만 허용)
+        .replace(/[^a-zA-Z0-9가-힣 ]/g, '')
+        // 길이 제한 50자로 컷
+        .slice(0, 50)
+    );
+  };
+
   const handleFreeze = async () => {
     if (!selectedAppId || !itemName || !price) return;
 
     const body = {
       appName: selectedAppId, // appName = 선택된 앱 ID
-      itemName: itemName,
+      itemName: sanitizeString(itemName),
       price: price,
     };
-
-    console.log('보내는 body: ', body);
 
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
@@ -45,7 +53,12 @@ export default function Freeze() {
       //credentials: 'include',
       body: JSON.stringify(body),
     });
-    console.log('freeze res:', await res.json());
+
+    const data = await res.json();
+    if (!data.isSuccess) {
+      console.error('Fail API 실패:', data.message);
+      return;
+    }
   };
 
   return (

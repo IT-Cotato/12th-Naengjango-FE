@@ -2,6 +2,7 @@ import { useState } from 'react';
 import InlineInput from './InlineInput';
 import { useEffect } from 'react';
 import AlertModal from '@/components/common/AlertModal';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 type ToggleProps = {
   activeToggle: 'manual' | 'link';
@@ -45,6 +46,9 @@ export default function ToggleCard({
       return 'bg-white-800 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] outline-main-skyblue placeholder:text-gray-800';
     return 'bg-white-400 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] outline-gray-200 placeholder:text-gray-400 ';
   };
+
+  //링크 모달 상태
+  const [linkErrorModal, setLinkErrorModal] = useState(false);
 
   //수동입력 상태
   const [price, setPrice] = useState(0);
@@ -93,6 +97,81 @@ export default function ToggleCard({
       price: 0,
     });
   }, [resetKey]);
+
+  function cleanProductName(name: string): string {
+    return (
+      name
+        // 1. 이모티콘으로 둘러싸인 텍스트 제거 (🧡텍스트🧡)
+        .replace(/[\p{Extended_Pictographic}]+.*?[\p{Extended_Pictographic}]+/gu, '')
+
+        // 2. 대괄호 내용 제거
+        .replace(/\[.*?\]/g, '')
+
+        // 3. 소괄호 내용 제거
+        .replace(/\(.*?\)/g, '')
+
+        // 4. 이모지 단독 제거
+        .replace(/[\p{Extended_Pictographic}]/gu, '')
+
+        // 5. 하이픈 뒤 옵션 제거
+        .replace(/-.*/g, '')
+
+        // 6. 특수문자 정리
+        .replace(/[^\w가-힣 ]+/g, ' ')
+
+        // 7. 다중 공백 → 단일 공백
+        .replace(/\s+/g, ' ')
+
+        // 8. 앞뒤 공백 제거
+        .trim()
+    );
+  }
+
+  const handleLinkFreeze = async () => {
+    if (!value.trim()) return;
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.warn('No access token. User might not be logged in.');
+        return;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/crawl`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ url: value.trim() }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+      const { title, price } = data;
+
+      const clean = cleanProductName(title);
+
+      // title 또는 price가 null → 수동 입력 필요
+      if (!title || !price) {
+        setLinkErrorModal(true); // 🔥 오류 모달 열기
+        return;
+      }
+
+      onInputStateChange({
+        mode: 'link',
+        isValid: true,
+        itemName: clean,
+        price: price,
+      });
+
+      // 냉동하시겠습니까 모달
+      setConfirmModal(true);
+    } catch (e) {
+      console.error(e);
+      setLinkErrorModal(true); // 🔥 오류 모달 열기
+    }
+  };
 
   return (
     <>
@@ -217,7 +296,6 @@ export default function ToggleCard({
             leftText: '취소',
             rightText: '냉동하기',
             onRight: () => {
-              console.log('freeze success!');
               onFreeze();
               setConfirmModal(false);
               setPrice(0);
@@ -234,6 +312,7 @@ export default function ToggleCard({
             <textarea
               data-layer="Frame 15"
               placeholder="URL을 붙여넣으세요(http://...)"
+              value={value}
               onChange={(e) => setValue(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
@@ -250,6 +329,7 @@ export default function ToggleCard({
                 !canFreeze ? 'bg-white-400 text-gray-200 ' : 'bg-main-skyblue text-white-800',
               ].join(' ')}
               disabled={!canFreeze}
+              onClick={handleLinkFreeze}
             >
               <div
                 data-layer="링크 등록"
@@ -260,6 +340,21 @@ export default function ToggleCard({
             </button>
           </div>
         )}
+
+        <AlertModal
+          isOpen={linkErrorModal}
+          onClose={() => setLinkErrorModal(false)}
+          title="링크 등록이 어렵습니다"
+          message="수동으로 등록해주세요"
+          twoButtons={{
+            leftText: '취소',
+            rightText: '수동 입력',
+            onRight: () => {
+              setLinkErrorModal(false);
+              onToggleChange('manual'); // 🔥 수동입력 모드로 이동
+            },
+          }}
+        />
       </div>
     </>
   );
