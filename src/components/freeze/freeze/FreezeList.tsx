@@ -8,6 +8,7 @@ import { PRESET_APPS } from '@/data/presetApps';
 import AppNew from './AppNew';
 import AlertModal from '@/components/common/AlertModal';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { useLoading } from '@/contexts/LoadingContext';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -26,7 +27,7 @@ type FreezeListProps = {
 
 export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: FreezeListProps) {
   const [apps, setApps] = useState<FreezeAppItem[]>([]);
-  //const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const { setLoading } = useLoading();
   const totalItemCount = apps.length + 1;
   const totalPages = Math.max(1, Math.ceil(totalItemCount / ITEMS_PER_PAGE));
 
@@ -57,6 +58,7 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
   useEffect(() => {
     async function fetchFavoriteApps() {
       try {
+        setLoading(true);
         const token = localStorage.getItem('accessToken');
         const res = await fetch(`${API_BASE_URL}/api/favorite-apps`, {
           method: 'GET',
@@ -99,6 +101,8 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
         setApps(mapped);
       } catch (error) {
         console.error('앱 목록 조회 중 에러 발생:', error);
+      } finally {
+        setLoading(false);
       }
     }
 
