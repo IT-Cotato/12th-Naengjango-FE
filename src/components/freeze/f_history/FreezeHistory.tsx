@@ -11,6 +11,8 @@ import * as images from '@/assets/images';
 import UpdateModal from './UpdateModal';
 import type { FreezeItem } from '@/types/FreezeItem';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getIglooStatusData } from '@/apis/home/home';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
@@ -20,6 +22,8 @@ type Props = {
 };
 
 export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
+  const accessToken = localStorage.getItem('accessToken');
+  const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<SortOption>('최신순');
   const [item, setItem] = useState<FreezeItem[]>([]);
 
@@ -28,12 +32,13 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     return [...item].sort((a, b) => {
       if (sortOption === '최신순') return b.id - a.id;
       if (sortOption === '가격순') return b.price - a.price;
-      if (sortOption === '임박순') return a.remainingHour - b.remainingHour;
+      if (sortOption === '임박순') return a.remainingSeconds - b.remainingSeconds;
       return 0;
     });
   }, [item, sortOption]);
 
   const [isFailModalOpen, setIsFailModalOpen] = useState(false);
+  const [noFailModalOpen, setNoFailModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [isSnowBall, setIsSnowBall] = useState(false);
@@ -44,6 +49,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [streakDays, setStreakDays] = useState(0);
   const [todaySnowballs, setTodaySnowballs] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [freezeFailCount, setFreezeFailCount] = useState(0);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -64,7 +70,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');
           return;
@@ -86,9 +91,9 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
             id: i.id,
             title: i.itemName,
             price: i.price,
-            remainingHour: Math.floor(i.remainingSeconds / 3600),
+            remainingSeconds: i.remainingSeconds,
             checked: false,
-            image: images[i.appName as ImageKey] ?? images.ably,
+            image: images[i.appName as ImageKey] ?? images.defaultImg,
             selectedAppId: i.appName,
           };
         });
@@ -96,7 +101,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         // 임박순은 프론트에서 sort
         let finalList = mapped;
         if (sortOption === '임박순') {
-          finalList = [...mapped].sort((a, b) => a.remainingHour - b.remainingHour);
+          finalList = [...mapped].sort((a, b) => a.remainingSeconds - b.remainingSeconds);
         }
 
         setItem(finalList);
@@ -113,7 +118,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   const handleFail = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         console.warn('No access token. User might not be logged in.');
         return;
@@ -140,6 +144,10 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
       // 서버에서 성공 처리 → 리스트에서 제거
       setItem((prev) => prev.filter((i) => !i.checked));
 
+      // 실패 처리 후에만 Igloo 데이터 다시 로드
+      const iglooData = await getIglooStatusData(accessToken);
+      setFreezeFailCount(iglooData.result.freezeFailCount);
+
       // 모달 닫기
       setIsFailModalOpen(false);
     } catch (err) {
@@ -149,7 +157,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   const handleSuccess = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         console.warn('No access token. User might not be logged in.');
         return;
@@ -195,7 +202,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   const handleExtend = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         console.warn('No access token. User might not be logged in.');
         return;
@@ -243,10 +249,10 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
           id: freeze.id,
           title: freeze.itemName,
           price: freeze.price,
-          remainingHour: Math.floor(diffSeconds / 3600),
+          remainingSeconds: diffSeconds,
           checked: false,
           selectedAppId: freeze.appName,
-          image: images[freeze.appName as ImageKey] ?? images.ably,
+          image: images[freeze.appName as ImageKey] ?? images.defaultImg,
         });
       }
 
@@ -267,7 +273,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   //전체 예산, 하루 가용 예산 가져오기
   useEffect(() => {
     const fetchAccountStatus = async () => {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) return;
 
       try {
@@ -283,6 +288,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         if (data.isSuccess && data.result) {
           setMonthRemaining(data.result.monthRemaining);
           setTodayRemaining(data.result.todayRemaining);
+          setTodayBudget(data.result.todayRemaining);
         } else {
           console.error('accounts/status 실패', data.message);
           setMonthRemaining(null);
@@ -299,7 +305,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   //하루 가용 예산 계산
   useEffect(() => {
     const fetchBudgetPreview = async () => {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) return;
 
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
@@ -309,25 +314,29 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
       }
 
       try {
+        const requestBody = { freezeIds: selectedIds };
+        // console.log('Request body:', requestBody);
+
         const res = await fetch(`${API_BASE_URL}/api/freezes/budget-preview`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ freezeIds: selectedIds }),
+          body: JSON.stringify(requestBody),
         });
 
         const data = await res.json();
-        if (data.isSuccess && data.result) {
-          const { selectedTotalPrice, remainingDaysInMonth } = data.result;
 
-          // 오늘 가용 예산 계산
-          const availableToday = Math.max(
-            Math.floor(((monthRemaining ?? 0) - selectedTotalPrice) / remainingDaysInMonth),
-            0,
-          );
-          setTodayBudget(availableToday);
+        if (data.isSuccess && data.result) {
+          const { perDayBudget } = data.result;
+
+          const availableToday = (todayRemaining ?? 0) - perDayBudget;
+          if (availableToday < 0) {
+            setTodayBudget(0);
+          } else {
+            setTodayBudget(availableToday);
+          }
         } else {
           console.error('budget-preview 실패', data.message);
           setTodayBudget(0);
@@ -339,13 +348,12 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     };
 
     fetchBudgetPreview();
-  }, [item, monthRemaining]);
+  }, [item, todayRemaining]);
 
   //눈덩이 조회
   useEffect(() => {
     const handleSnow = async () => {
       try {
-        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');
           return;
@@ -373,12 +381,18 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     handleSnow();
   }, [item]);
 
+  useEffect(() => {
+    if (freezeFailCount === 5) {
+      navigate('/');
+    }
+  }, [freezeFailCount]);
+
   const checkedItems = item.filter((i) => i.checked).map((i) => i.id);
 
   return (
     <>
       <div
-        className="relative left-[28.5px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden
+        className="relative left-[28.5px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] 
           w-[327px] h-[546px]"
       >
         {isLoading ? (
@@ -400,27 +414,28 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
               <div
                 ref={listRef}
                 className="
-                flex flex-col gap-4 max-h-[305px] overflow-y-scroll overflow-x-hidden freeze-scroll
+                flex flex-col gap-4 max-h-[305px] overflow-y-scroll freeze-scroll
               "
               >
                 {sortedItems.map((item, index) => (
-                  <FreezeHistoryItem
-                    key={item.id}
-                    image={item.image}
-                    title={item.title}
-                    price={item.price}
-                    remainingHour={item.remainingHour}
-                    checked={item.checked}
-                    containerRef={listRef}
-                    isFirst={index === 0}
-                    isLast={index === sortedItems.length - 1}
-                    onToggle={() => {
-                      setItem((prev) =>
-                        prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
-                      );
-                    }}
-                    onClick={() => setSelectedItem(item)}
-                  />
+                  <div key={item.id} className="relative overflow-visible">
+                    <FreezeHistoryItem
+                      image={item.image}
+                      title={item.title}
+                      price={item.price}
+                      remainingSeconds={item.remainingSeconds}
+                      checked={item.checked}
+                      containerRef={listRef}
+                      isFirst={index === 0}
+                      isLast={index === sortedItems.length - 1}
+                      onToggle={() => {
+                        setItem((prev) =>
+                          prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
+                        );
+                      }}
+                      onClick={() => setSelectedItem(item)}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -472,7 +487,17 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
                   onClick={() => {
                     // 선택된 아이템이 하나라도 있을 때만 모달 열기
                     if (item.some((i) => i.checked)) {
-                      setIsFailModalOpen(true);
+                      // 체크된 아이템들의 금액 합계 계산
+                      const checkedTotalPrice = item
+                        .filter((i) => i.checked)
+                        .reduce((sum, i) => sum + i.price, 0);
+
+                      // 합계가 monthRemaining보다 크면 noFailModalOpen, 아니면 isFailModalOpen
+                      if (checkedTotalPrice > (monthRemaining ?? 0)) {
+                        setNoFailModalOpen(true);
+                      } else {
+                        setIsFailModalOpen(true);
+                      }
                     }
                   }}
                 >
@@ -616,6 +641,22 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
           rightText: '계속 냉동',
           onRight: () => {
             handleExtend();
+          },
+        }}
+      />
+
+      <AlertModal
+        isOpen={noFailModalOpen}
+        onClose={() => {
+          setNoFailModalOpen(false);
+        }}
+        title="예산을 초과한 소비입니다"
+        message="냉동 성공 처리하시겠습니까?"
+        twoButtons={{
+          leftText: '취소',
+          rightText: '확인',
+          onRight: () => {
+            handleSuccess();
           },
         }}
       />

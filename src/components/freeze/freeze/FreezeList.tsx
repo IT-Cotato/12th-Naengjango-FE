@@ -156,7 +156,6 @@ export default function FreezeList({ selectedAppId, onSelectApp, resetKey }: Fre
       });
 
       const data = await response.json();
-      console.log('Add favorite app response:', data);
 
       if (!data.isSuccess) {
         alert('앱 추가에 실패했습니다.');
