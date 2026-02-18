@@ -1,4 +1,4 @@
-import { getWithAuth, postJsonWithAuth, patchJsonWithAuth } from '../utils/apiClient';
+import { getWithAuth, postJsonWithAuth } from '../utils/apiClient';
 import type {
   GetHomeDataResponse,
   GetBudgetDataResponse,
