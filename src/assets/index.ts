@@ -68,3 +68,4 @@ export { default as none } from './none.svg';
 export { default as before_agree } from './before_agree.svg';
 export { default as after_agree } from './after_agree.svg';
 export { default as onboarding } from './onboarding.svg';
+export { default as errorpage } from './errorpage.svg';
