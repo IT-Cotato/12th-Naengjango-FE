@@ -9,6 +9,7 @@ import { useDailyBudgetReport } from '@/hooks/report/useDailyBudgetReport';
 import { useAccountStatus } from '@/hooks/my/useAccountStatus';
 import { getMe } from '@/apis/my/mypage';
 import { useErrorStore, type ErrorState } from '@/stores/errorStore';
+import { useLoading } from '@/contexts/LoadingContext';
 
 function isAuthError(message: string | null): boolean {
   return typeof message === 'string' && message.includes('로그인');
@@ -20,19 +21,24 @@ const DAY_LABELS = ['7일 전', '6일 전', '5일 전', '4일 전', '3일 전', 
 export default function ReportPage() {
   const [activeTab, setActiveTab] = useState<ReportTabKey>('daily');
   const [name, setName] = useState<string>('');
-  const { data: reportData, error: reportError } = useReport();
-  const { data: dailyBudgetData, error: dailyBudgetError } = useDailyBudgetReport();
+  const { data: reportData, error: reportError, loading: reportLoading } = useReport();
+  const { data: dailyBudgetData, error: dailyBudgetError, loading: dailyBudgetLoading } = useDailyBudgetReport();
   const { todayRemaining, budgetDiff } = useAccountStatus();
-
   const hasError = !!(reportError || dailyBudgetError);
   const isAuthErrorPage = isAuthError(reportError) || isAuthError(dailyBudgetError);
   const setError = useErrorStore((s: ErrorState) => s.setError);
+  const { setLoading } = useLoading();
 
   useEffect(() => {
     if (hasError) {
       setError(isAuthErrorPage ? 'auth' : 'other');
     }
   }, [hasError, isAuthErrorPage, setError]);
+
+  useEffect(() => {
+    const isLoading = reportLoading || dailyBudgetLoading;
+    setLoading(isLoading);
+  }, [reportLoading, dailyBudgetLoading, setLoading]);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
