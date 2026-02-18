@@ -4,13 +4,14 @@ import Toggle from '@/components/my/Toggle';
 import MenuItem from '@/components/my/MenuItem';
 import { getMe } from '@/apis/my/mypage';
 import { useAccountStatus } from '@/hooks/my/useAccountStatus';
-import ErrorPage from '@/pages/ErrorPage';
+import { useErrorStore, type ErrorState } from '@/stores/errorStore';
 
 export default function MyPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState<string>('');
-  const [errorType, setErrorType] = useState<'auth' | 'other' | null>(null);
+  const { setError } = useErrorStore();
+  const errorType = useErrorStore((s: ErrorState) => s.errorType);
   const { todayRemaining, budgetDiff } = useAccountStatus();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [showInquiryComplete, setShowInquiryComplete] = useState(false);
@@ -20,7 +21,7 @@ export default function MyPage() {
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
-      setErrorType('auth');
+      setError('auth');
       return;
     }
     getMe(accessToken)
@@ -31,7 +32,7 @@ export default function MyPage() {
       })
       .catch((e) => {
         const msg = e instanceof Error ? e.message : '';
-        setErrorType(msg.includes('로그인') ? 'auth' : 'other');
+        setError(msg.includes('로그인') ? 'auth' : 'other');
       });
   }, []);
 
@@ -65,15 +66,7 @@ export default function MyPage() {
     }
   }, [showInquiryComplete]);
 
-  if (errorType === 'auth') {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    navigate('/login', { replace: true });
-    return null;
-  }
-  if (errorType === 'other') {
-    return <ErrorPage />;
-  }
+  if (errorType === 'auth' || errorType === 'other') return null;
 
   const menuItems = [
     { label: '회원 정보', onClick: () => navigate('/my/member-info') },
