@@ -6,6 +6,8 @@ import type {
   GetNotificationDataResponse,
   GetIglooStatusDataResponse,
   PostIglooUpgradeResponse,
+  PostIglooDowngradeResponse,
+  PostSnowballLossResponse,
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -67,6 +69,26 @@ export async function postIglooUpgrade(accessToken: string): Promise<PostIglooUp
     `${API_BASE_URL}/api/igloo/upgrade`,
     {},
     '이글루 업그레이드 실패',
+    accessToken,
+  );
+}
+
+// 이글루 다운그레이드 API
+export async function postIglooDowngrade(accessToken: string): Promise<PostIglooDowngradeResponse> {
+  return postJsonWithAuth<PostIglooDowngradeResponse>(
+    `${API_BASE_URL}/api/igloo/downgrade`,
+    {},
+    '이글루 다운그레이드 실패',
+    accessToken,
+  );
+}
+
+// 눈덩이 8개 감소 API
+export async function postSnowballLoss(accessToken: string): Promise<PostSnowballLossResponse> {
+  return postJsonWithAuth<PostSnowballLossResponse>(
+    `${API_BASE_URL}/api/igloo/protect`,
+    {},
+    '눈덩이 8개 감소 실패',
     accessToken,
   );
 }

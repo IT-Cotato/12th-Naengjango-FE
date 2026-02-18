@@ -11,6 +11,8 @@ import * as images from '@/assets/images';
 import UpdateModal from './UpdateModal';
 import type { FreezeItem } from '@/types/FreezeItem';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getIglooStatusData } from '@/apis/home/home';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
@@ -20,6 +22,8 @@ type Props = {
 };
 
 export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
+  const accessToken = localStorage.getItem('accessToken');
+  const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<SortOption>('최신순');
   const [item, setItem] = useState<FreezeItem[]>([]);
 
@@ -45,6 +49,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [streakDays, setStreakDays] = useState(0);
   const [todaySnowballs, setTodaySnowballs] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [freezeFailCount, setFreezeFailCount] = useState(0);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -65,7 +70,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');
           return;
@@ -79,7 +83,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         });
 
         const data = await res.json();
-        console.log(data);
         if (!data.isSuccess) return;
 
         // 서버 데이터 → FreezeItem 형태로 변환
@@ -115,7 +118,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   const handleFail = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         console.warn('No access token. User might not be logged in.');
         return;
@@ -142,6 +144,10 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
       // 서버에서 성공 처리 → 리스트에서 제거
       setItem((prev) => prev.filter((i) => !i.checked));
 
+      // 실패 처리 후에만 Igloo 데이터 다시 로드
+      const iglooData = await getIglooStatusData(accessToken);
+      setFreezeFailCount(iglooData.result.freezeFailCount);
+
       // 모달 닫기
       setIsFailModalOpen(false);
     } catch (err) {
@@ -151,7 +157,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   const handleSuccess = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         console.warn('No access token. User might not be logged in.');
         return;
@@ -197,7 +202,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   const handleExtend = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         console.warn('No access token. User might not be logged in.');
         return;
@@ -269,7 +273,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   //전체 예산, 하루 가용 예산 가져오기
   useEffect(() => {
     const fetchAccountStatus = async () => {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) return;
 
       try {
@@ -282,7 +285,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
           },
         );
         const data = await res.json();
-        console.log(data);
         if (data.isSuccess && data.result) {
           setMonthRemaining(data.result.monthRemaining);
           setTodayRemaining(data.result.todayRemaining);
@@ -303,7 +305,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   //하루 가용 예산 계산
   useEffect(() => {
     const fetchBudgetPreview = async () => {
-      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) return;
 
       const selectedIds = item.filter((i) => i.checked).map((i) => i.id);
@@ -326,7 +327,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         });
 
         const data = await res.json();
-        console.log('Response data:', data);
 
         if (data.isSuccess && data.result) {
           const { perDayBudget } = data.result;
@@ -354,7 +354,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   useEffect(() => {
     const handleSnow = async () => {
       try {
-        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');
           return;
@@ -382,12 +381,18 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
     handleSnow();
   }, [item]);
 
+  useEffect(() => {
+    if (freezeFailCount === 5) {
+      navigate('/');
+    }
+  }, [freezeFailCount]);
+
   const checkedItems = item.filter((i) => i.checked).map((i) => i.id);
 
   return (
     <>
       <div
-        className="relative left-[28.5px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] overflow-hidden
+        className="relative left-[28.5px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] 
           w-[327px] h-[546px]"
       >
         {isLoading ? (
@@ -409,27 +414,28 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
               <div
                 ref={listRef}
                 className="
-                flex flex-col gap-4 max-h-[305px] overflow-y-scroll overflow-x-hidden freeze-scroll
+                flex flex-col gap-4 max-h-[305px] overflow-y-scroll freeze-scroll
               "
               >
                 {sortedItems.map((item, index) => (
-                  <FreezeHistoryItem
-                    key={item.id}
-                    image={item.image}
-                    title={item.title}
-                    price={item.price}
-                    remainingSeconds={item.remainingSeconds}
-                    checked={item.checked}
-                    containerRef={listRef}
-                    isFirst={index === 0}
-                    isLast={index === sortedItems.length - 1}
-                    onToggle={() => {
-                      setItem((prev) =>
-                        prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
-                      );
-                    }}
-                    onClick={() => setSelectedItem(item)}
-                  />
+                  <div key={item.id} className="relative overflow-visible">
+                    <FreezeHistoryItem
+                      image={item.image}
+                      title={item.title}
+                      price={item.price}
+                      remainingSeconds={item.remainingSeconds}
+                      checked={item.checked}
+                      containerRef={listRef}
+                      isFirst={index === 0}
+                      isLast={index === sortedItems.length - 1}
+                      onToggle={() => {
+                        setItem((prev) =>
+                          prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
+                        );
+                      }}
+                      onClick={() => setSelectedItem(item)}
+                    />
+                  </div>
                 ))}
               </div>
             </div>

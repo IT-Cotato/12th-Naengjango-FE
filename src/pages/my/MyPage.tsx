@@ -75,9 +75,7 @@ export default function MyPage() {
       <p className="Medium_16 text-gray-800 pl-6">
         오늘{' '}
         <span className="text-main-skyblue">
-          {todayRemaining !== null
-            ? `${todayRemaining.toLocaleString()}원`
-            : '...원'}
+          {todayRemaining !== null ? `${todayRemaining.toLocaleString()}원` : '...원'}
           {budgetDiff !== null && budgetDiff !== 0 && (
             <span className={budgetDiff > 0 ? 'text-main-skyblue' : 'text-red-500'}>
               ({Math.abs(budgetDiff).toLocaleString()}

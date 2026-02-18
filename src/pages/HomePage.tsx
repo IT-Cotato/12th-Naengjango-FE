@@ -10,8 +10,11 @@ import {
   getNotificationData,
   getIglooStatusData,
   postIglooUpgrade,
+  postIglooDowngrade,
+  postSnowballLoss,
 } from '@/apis/home/home';
 import AlertModal from '@/components/common/AlertModal';
+import ImageModal from '@/components/common/ImageModal';
 
 export default function HomePage() {
   const accessToken = localStorage.getItem('accessToken');
@@ -48,6 +51,10 @@ export default function HomePage() {
   const [freezeFailCount, setFreezeFailCount] = useState(0);
   const [iglooLevel, setIglooLevel] = useState(0);
 
+  //이글루 다운그레이드 & 눈덩이 감소 모달
+  const [higherEightModal, setHigherEightModal] = useState(false);
+  const [lowerEightModal, setLowerEightModal] = useState(false);
+
   // 이미지 소스
   const bgSrc = () => {
     switch (iglooLevel) {
@@ -76,12 +83,23 @@ export default function HomePage() {
         if (!accessToken) return;
 
         const data = await getHomeData(accessToken);
-        console.log(data);
         setDiffAmount(data.result.diffFromYesterday);
 
-        if (data.result.bankruptcyPrediction.length === 8) {
-          setIsBankruptAlert(true);
+        //홈화면 문구 예외처리
+        const dailyTrends = data.result.dailyTrends;
+        if (dailyTrends.length > 0) {
+          // 마지막 아이템 제외한 나머지 아이템들
+          const previousItems = dailyTrends.slice(0, -1);
+          // 이전 아이템들이 모두 amount 0인지 확인
+          const allPreviousZero = previousItems.every((item) => item.amount === 0);
+
+          if (allPreviousZero) {
+            setIsBankruptAlert(false);
+          } else {
+            setIsBankruptAlert(true);
+          }
         }
+
         // 오늘 날짜 구하기
         const today = new Date().toISOString().split('T')[0]; // "2026-02-15" 형태
 
@@ -110,7 +128,6 @@ export default function HomePage() {
         if (!accessToken) return;
 
         const data = await getBudgetData(accessToken);
-        console.log(data);
         setTodayBudget(data.result.todayRemaining);
       } catch (error) {
         console.error(error);
@@ -146,7 +163,6 @@ export default function HomePage() {
         console.error(error);
       }
     };
-
     loadNotificationData();
   }, [accessToken]);
 
@@ -154,7 +170,6 @@ export default function HomePage() {
     const loadIglooStatusData = async () => {
       try {
         if (!accessToken) return;
-
         const data = await getIglooStatusData(accessToken);
         setRequiredSnowball(data.result.requiredSnowballsForNextLevel);
         setFreezeFailCount(data.result.freezeFailCount);
@@ -170,11 +185,10 @@ export default function HomePage() {
   const isIncrease = diffAmount > 0;
   const formatNumber = (num: number) => num.toLocaleString();
 
-  // 업그레이드 메소드로 교체 필요
+  // 이글루 업그레이드
   const handleUpgrade = async () => {
     try {
       if (!accessToken) return;
-
       const data = await postIglooUpgrade(accessToken);
       setIglooLevel(data.result.afterLevel);
       setSnowBallCount(data.result.snowballBalanceAfter);
@@ -191,10 +205,46 @@ export default function HomePage() {
     }
   };
 
+  const handleIglooDownGrade = async () => {
+    try {
+      if (!accessToken) return;
+      const data = await postIglooDowngrade(accessToken);
+      setSnowBallCount(data.result.snowballBalance);
+      setFreezeFailCount(data.result.freezeFailCount);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSnowballLoss = async () => {
+    try {
+      if (!accessToken) return;
+      const data = await postSnowballLoss(accessToken);
+      setSnowBallCount(data.result.snowballBalance);
+      setFreezeFailCount(data.result.freezeFailCount);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //냉동 5회 실패 모달 처리
+  useEffect(() => {
+    if (freezeFailCount === 5) {
+      if (snowballCount >= 8) {
+        setHigherEightModal(true);
+      } else {
+        (async () => {
+          await handleIglooDownGrade();
+          setLowerEightModal(true);
+        })();
+      }
+    }
+  }, [freezeFailCount, iglooLevel, snowballCount]);
+
   return (
     <div className="w-96 h-[812px] relative overflow-hidden -mb-24">
       <img
-        className="w-96 h-[520px] left-0 top-[54px] absolute object-cover block"
+        className="w-96 h-[520px] left-0 top-0 absolute object-cover block"
         src={bgSrc()}
         alt=""
         draggable={false}
@@ -242,8 +292,8 @@ export default function HomePage() {
           onClick={handleGoFreeze}
           className="w-36 pl-3.5 pr-2 pt-3.5 pb-2 left-[27px] top-[56px] absolute bg-[color:var(--color-main-skyblue)] rounded-xl inline-flex flex-col justify-start items-start gap-2.5"
         >
-          <div className="self-stretch flex flex-col justify-end items-end">
-            <div className="self-stretch text-white text-base font-semibold leading-6 tracking-tight font-['Pretendard']">
+          <div className="self-stretch flex flex-col items-end">
+            <div className="self-stretch text-white SemiBold_16 font-['Pretendard'] text-left">
               냉동하러 가기
             </div>
             <img className="size-12 block" src={freezeicon} alt="" draggable={false} />
@@ -257,7 +307,7 @@ export default function HomePage() {
           className="w-36 pl-3.5 pr-2 pt-3.5 pb-2 left-[195px] top-[56px] absolute bg-[color:var(--color-main-skyblue)] rounded-xl inline-flex flex-col justify-start items-start gap-2.5"
         >
           <div className="self-stretch flex flex-col justify-end items-end">
-            <div className="self-stretch text-white text-base font-semibold leading-6 tracking-tight font-['Pretendard']">
+            <div className="self-stretch text-white SemiBold_16 font-['Pretendard'] text-left">
               가계부 작성하기
             </div>
             <img className="size-12 block" src={iceledger} alt="" draggable={false} />
@@ -270,12 +320,12 @@ export default function HomePage() {
             <div className="text-center justify-start text-[color:var(--color-gray-600)] SemiBold_16 font-['Pretendard'] leading-6 tracking-tight">
               최근 7일처럼 소비하면
               <br />
-              {month}월 {date}일 파산 예정이에요....
+              {month}월 {date}일 파산 예정이에요...
             </div>
           </div>
         ) : (
           <div className="w-96 px-2.5 left-0 top-[183px] absolute inline-flex justify-center items-center gap-2.5">
-            <div className="text-center text-[color:var(--color-gray-600)] text-base font-semibold leading-6 tracking-tight font-['Pretendard']">
+            <div className="text-center text-[color:var(--color-gray-600)] SemiBold_16 leading-6 tracking-tight font-['Pretendard']">
               충동 소비를 얼려보세요!
             </div>
           </div>
@@ -286,26 +336,22 @@ export default function HomePage() {
       <div className="w-96 px-6 left-0 top-[115px] absolute inline-flex flex-col justify-start items-start">
         <div className="self-stretch inline-flex justify-start items-start gap-2.5">
           <div className="flex-1">
-            <span className="text-white text-2xl font-bold leading-9 font-['Pretendard']">
-              오늘{' '}
-            </span>
-            <span className="text-[color:var(--color-main-skyblue)] text-2xl font-bold leading-9 font-['Pretendard']">
+            <span className="text-white Bold_24  font-['Pretendard']">오늘 </span>
+            <span className="text-[color:var(--color-main-skyblue)] Bold_24 font-['Pretendard']">
               {formatNumber(todayBudget)}원
             </span>
             {isIncrease ? (
-              <span className="text-[color:var(--color-main-skyblue)] text-2xl font-bold leading-9 font-['Pretendard']">
+              <span className="text-[color:var(--color-main-skyblue)] Bold_24 font-['Pretendard']">
                 ({formatNumber(diffAmount)}▲)
               </span>
             ) : (
-              <span className="text-[color:var(--color-error)] text-2xl font-bold leading-9 font-['Pretendard']">
+              <span className="text-[color:var(--color-error)] text-2xl Bold_24 font-['Pretendard']">
                 ({formatNumber(diffAmount)}▼)
               </span>
             )}
             <br />
 
-            <span className="text-white text-2xl font-bold leading-9 font-['Pretendard']">
-              쓸 수 있어요!
-            </span>
+            <span className="text-white Bold_24 font-['Pretendard']">쓸 수 있어요!</span>
           </div>
         </div>
       </div>
@@ -314,7 +360,7 @@ export default function HomePage() {
       <div className="w-14 pl-1 pr-1.5 left-[297px] top-[124px] absolute bg-white/40 rounded-lg inline-flex flex-col justify-start items-start gap-2.5">
         <div className="self-stretch inline-flex justify-start items-center">
           <img className="size-6 block" src={snowball} alt="" draggable={false} />
-          <div className="flex-1 text-right text-[color:var(--color-gray-400)] text-base font-semibold leading-6 tracking-tight font-['Pretendard']">
+          <div className="flex-1 text-right text-[color:var(--color-gray-400)] SemiBold_16 font-['Pretendard']">
             {snowballCount}
           </div>
         </div>
@@ -360,6 +406,33 @@ export default function HomePage() {
             setDenyUpgrade(false);
           },
         }}
+      />
+
+      <AlertModal
+        isOpen={higherEightModal}
+        onClose={() => {
+          setHigherEightModal(false);
+        }}
+        title="5회 냉동 실패!"
+        message="이글루가 녹을 위기입니다. 눈덩이 8개로 지키시겠습니까?"
+        twoButtons={{
+          leftText: '취소',
+          rightText: '확인',
+          onRight: () => {
+            handleSnowballLoss();
+          },
+        }}
+      />
+
+      <ImageModal
+        isOpen={lowerEightModal}
+        onClose={() => {
+          setLowerEightModal(false);
+        }}
+        title="5회 냉동 실패!"
+        rewardMessage="이글루가 1단계 하락했습니다."
+        currentMessage="눈덩이를 모아 이글루를 지킬 수 있습니다!"
+        confirmText="확인"
       />
     </div>
   );

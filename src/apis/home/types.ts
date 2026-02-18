@@ -1,6 +1,10 @@
 export interface GetHomeDataResponse {
   result: {
     diffFromYesterday: number;
+    dailyTrends: Array<{
+      date: string;
+      amount: number;
+    }>;
     bankruptcyPrediction: Array<{
       baseDate: string;
       expectedDate: string;
@@ -39,5 +43,19 @@ export interface PostIglooUpgradeResponse {
   result: {
     afterLevel: number;
     snowballBalanceAfter: number;
+  };
+}
+
+export interface PostIglooDowngradeResponse {
+  result: {
+    snowballBalance: number;
+    freezeFailCount: number;
+  };
+}
+
+export interface PostSnowballLossResponse {
+  result: {
+    snowballBalance: number;
+    freezeFailCount: number;
   };
 }

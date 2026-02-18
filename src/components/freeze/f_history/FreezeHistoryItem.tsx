@@ -28,73 +28,95 @@ export default function FreezeHistoryItem({
   isLast,
 }: Props) {
   const itemRef = useRef<HTMLDivElement>(null);
-  const [ratio, setRatio] = useState(1); // 얼마나 화면에 보이는지
-  const shouldApplyEffect = !isFirst && !isLast && ratio < 1;
+  const [ratio, setRatio] = useState(1);
 
   const formatRemainingTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
 
-    if (hours > 0) {
-      return `${hours}H`;
-    } else {
-      return `${minutes}M`;
-    }
+    if (hours > 0) return `${hours}H`;
+    return `${minutes}M`;
   };
 
+  // 스크롤 기반 가시영역 계산
   useEffect(() => {
-    if (!itemRef.current || !containerRef.current) return;
+    const container = containerRef.current;
+    const item = itemRef.current;
+    if (!container || !item) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setRatio(entry.intersectionRatio);
-      },
-      {
-        root: containerRef.current,
-        threshold: Array.from({ length: 11 }, (_, i) => i / 10),
-      },
-    );
+    const handleScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
 
-    observer.observe(itemRef.current);
-    return () => observer.disconnect();
-  }, [containerRef]);
+      const visibleTop = Math.max(containerRect.top, itemRect.top);
+      const visibleBottom = Math.min(containerRect.bottom, itemRect.bottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+
+      const ratio = visibleHeight / itemRect.height;
+      setRatio(Math.min(1, Math.max(0, ratio)));
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const MAX_LENGTH = 9;
+  const titleShort = title.length > MAX_LENGTH ? title.slice(0, MAX_LENGTH) + '…' : title;
+
+  const shouldApplyEffect = !isFirst && !isLast && ratio < 1;
 
   return (
-    <div
-      ref={itemRef}
-      onClick={onClick}
-      style={{
-        opacity: shouldApplyEffect ? Math.max(0.8, ratio) : 1,
-        filter: shouldApplyEffect ? `blur(${(1 - ratio) * 3}px)` : 'none',
-        transition: 'opacity 0.2s ease, filter 0.2s ease',
-      }}
-      className="w-full px-4 py-3 bg-sub-skyblue rounded-xl inline-flex justify-between items-start cursor-pointer"
-    >
-      <div className="flex gap-3">
-        <img src={image} className="size-[54px] rounded-lg" />
-
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <div
-              className={`px-1.5 py-0.5 rounded-lg text-white-800 Medium_12 ${remainingSeconds === 0 ? 'bg-error' : 'bg-main-skyblue'}`}
-            >
-              {formatRemainingTime(remainingSeconds)}
-            </div>
-            <div className="SemiBold_14">{title}</div>
-          </div>
-
-          <div className="SemiBold_14">{price.toLocaleString()}원</div>
-        </div>
-      </div>
-
-      <img
-        src={checked ? checkinbox_24 : box_24}
-        className="w-[24px] h-[24px] cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
+    <div className="relative" onClick={onClick}>
+      {/* --- 🔥 Blur Overlay Layer (항상 blur 보이게 하는 핵심) --- */}
+      <div
+        className="absolute inset-0 pointer-events-none rounded-xl z-[1]"
+        style={{
+          filter: shouldApplyEffect ? `blur(${(1 - ratio) * 3}px)` : 'none',
+          opacity: shouldApplyEffect ? 0.7 : 0,
+          transition: 'filter 0.2s ease, opacity 0.2s ease',
         }}
       />
+
+      {/* --- 실제 콘텐츠 (blur 없음 / opacity만 적용) --- */}
+      <div
+        ref={itemRef}
+        style={{
+          opacity: ratio,
+          transition: 'opacity 0.2s ease',
+        }}
+        className={`relative z-[0] w-full px-4 py-3 rounded-xl inline-flex justify-between items-start cursor-pointer ${
+          remainingSeconds === 0 ? 'bg-error/40' : 'bg-sub-skyblue'
+        }`}
+      >
+        <div className="flex gap-3">
+          <img src={image} className="size-[54px] rounded-lg" />
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <div
+                className={`px-1.5 py-0.5 rounded-lg text-white-800 Medium_12 ${
+                  remainingSeconds === 0 ? 'bg-error' : 'bg-main-skyblue'
+                }`}
+              >
+                {formatRemainingTime(remainingSeconds)}
+              </div>
+              <div className="SemiBold_14 truncate">{titleShort}</div>
+            </div>
+
+            <div className="SemiBold_14">{price.toLocaleString()}원</div>
+          </div>
+        </div>
+
+        <img
+          src={checked ? checkinbox_24 : box_24}
+          className="w-[24px] h-[24px] cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle();
+          }}
+        />
+      </div>
     </div>
   );
 }

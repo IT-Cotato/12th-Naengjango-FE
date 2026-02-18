@@ -5,10 +5,12 @@ import NotificationItem, {
 } from '@/components/notification/NotificationItem';
 import { none } from '@/assets/index';
 import { back } from '@/assets/index';
-import ablyLogo from '@/assets/images/ably.svg';
+import * as images from '@/assets/images';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+type ImageKey = keyof typeof images;
 
 interface NotificationResponseItem {
+  appIconKey: string;
   id: number;
   type: string;
   message: string;
@@ -39,6 +41,16 @@ const NotificationPage: React.FC = () => {
     return `${days}일 전`;
   };
 
+  const extractProductName = (message: string) => {
+    const lines = message.split('\n');
+
+    // 두 번째 줄 없으면 예외 처리
+    const secondLine = lines[1] ?? '';
+
+    const match = secondLine.match(/\[(.*?)\]\s*(.*?)\s*\(/);
+    return match ? match[2] : ''; // 상품명만 반환
+  };
+
   const groupNotifications = (notifications: NotificationResponseItem[]) => {
     const now = new Date();
 
@@ -58,9 +70,9 @@ const NotificationPage: React.FC = () => {
 
       const mapped: NotificationItemProps = {
         id: item.id,
-        logoSrc: ablyLogo,
-        title: item.message,
-        description: item.link,
+        logoSrc: images[item.appIconKey as ImageKey] ?? images.defaultImg,
+        title: extractProductName(item.message),
+        description: '냉동을 녹여보세요!',
         time: timeString,
         isRead: item.isRead,
       };
@@ -119,13 +131,6 @@ const NotificationPage: React.FC = () => {
       });
       const data = await res.json();
       if (data.isSuccess) {
-        // 읽음 처리 후 해당 알림의 isRead를 true로 업데이트
-        setGroupedNotifications((prev) =>
-          prev.map((g) => ({
-            ...g,
-            items: g.items.map((item) => (item.id === id ? { ...item, isRead: true } : item)),
-          })),
-        );
         // 그룹에 따라 페이지 이동
         if (group === '오늘' || group === '어제') {
           navigate('/freeze', { state: { activeTab: 'history' } });
