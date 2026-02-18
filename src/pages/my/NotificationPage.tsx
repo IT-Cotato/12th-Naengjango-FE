@@ -42,13 +42,8 @@ const NotificationPage: React.FC = () => {
   };
 
   const extractProductName = (message: string) => {
-    const lines = message.split('\n');
-
-    // 두 번째 줄 없으면 예외 처리
-    const secondLine = lines[1] ?? '';
-
-    const match = secondLine.match(/\[(.*?)\]\s*(.*?)\s*\(/);
-    return match ? match[2] : ''; // 상품명만 반환
+    const match = message.match(/\[(.*?)\]/);
+    return match ? match[1] : ''; // 괄호 안의 내용만 반환
   };
 
   const groupNotifications = (notifications: NotificationResponseItem[]) => {
