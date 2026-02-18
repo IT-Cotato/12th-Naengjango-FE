@@ -6,11 +6,17 @@ import NotificationItem, {
 import { none } from '@/assets/index';
 import { back } from '@/assets/index';
 import * as images from '@/assets/images';
+<<<<<<< HEAD
 import { useLoading } from '@/contexts/LoadingContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
+=======
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+type ImageKey = keyof typeof images;
+
+>>>>>>> main
 interface NotificationResponseItem {
   appIconKey: string;
   id: number;
@@ -105,6 +111,7 @@ const NotificationPage: React.FC = () => {
         });
 
         const data = await res.json();
+
         if (!data.isSuccess) return;
         const notifications: NotificationResponseItem[] = data.result.content;
 

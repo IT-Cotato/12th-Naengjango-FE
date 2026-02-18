@@ -50,6 +50,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [isStreak, setIsStreak] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
   const [todaySnowballs, setTodaySnowballs] = useState(0);
+
   const [freezeFailCount, setFreezeFailCount] = useState(0);
 
   const today = new Date();
