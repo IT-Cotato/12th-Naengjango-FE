@@ -10,7 +10,10 @@ import { useLoading } from '@/contexts/LoadingContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 61fa569 (충돌해결)
 interface NotificationResponseItem {
   appIconKey: string;
   id: number;
