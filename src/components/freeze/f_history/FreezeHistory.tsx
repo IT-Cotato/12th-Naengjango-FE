@@ -13,6 +13,7 @@ import type { FreezeItem } from '@/types/FreezeItem';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getIglooStatusData } from '@/apis/home/home';
+import { useLoading } from '@/contexts/LoadingContext';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type ImageKey = keyof typeof images;
 
@@ -26,6 +27,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<SortOption>('최신순');
   const [item, setItem] = useState<FreezeItem[]>([]);
+  const { setLoading } = useLoading();
 
   const isAllChecked = item.length > 0 && item.every((item) => item.checked);
   const sortedItems = useMemo(() => {
@@ -48,7 +50,6 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
   const [isStreak, setIsStreak] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
   const [todaySnowballs, setTodaySnowballs] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [freezeFailCount, setFreezeFailCount] = useState(0);
 
   const today = new Date();
@@ -68,7 +69,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      setLoading(true);
       try {
         if (!accessToken) {
           console.warn('No access token. User might not be logged in.');
@@ -109,7 +110,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
       } catch (error) {
         console.error(error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -395,12 +396,7 @@ export default function FreezeHistory({ refreshKey, onUpdated }: Props) {
         className="relative left-[28.5px] top-[100px] absolute bg-white-800 rounded-[20px] shadow-[0px_0px_8px_0px_rgba(0,0,0,0.20)] 
           w-[327px] h-[546px]"
       >
-        {isLoading ? (
-          // 1) 로딩 중
-          <div className=" w-[375px] absolute top-[243px] left-[-24px] text-center text-neutral-400 Regular_15">
-            냉동 기록을 불러오는 중...
-          </div>
-        ) : isEmpty ? (
+        {isEmpty ? (
           // 2) 로딩 후 비어있음
           <div className=" w-[375px] absolute top-[243px] left-[-24px] text-center text-neutral-400 Regular_15">
             냉동 기록이 없습니다.

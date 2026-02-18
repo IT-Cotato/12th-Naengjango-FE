@@ -3,6 +3,7 @@ import './index.css';
 import App from './App.tsx';
 import { BrowserRouter } from 'react-router-dom';
 import React from 'react';
+import { LoadingProvider } from '@/contexts/LoadingContext';
 
 // Service Worker 등록
 if ('serviceWorker' in navigator) {
@@ -20,8 +21,10 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <LoadingProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </LoadingProvider>
   </React.StrictMode>,
 );
