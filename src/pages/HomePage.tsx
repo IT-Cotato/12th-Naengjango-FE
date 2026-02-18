@@ -192,6 +192,7 @@ export default function HomePage() {
       const data = await postIglooUpgrade(accessToken);
       setIglooLevel(data.result.afterLevel);
       setSnowBallCount(data.result.snowballBalanceAfter);
+      setIsUpgrade(false);
     } catch (error) {
       console.error(error);
     }
