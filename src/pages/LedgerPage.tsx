@@ -112,22 +112,10 @@ function makeKey(year: number, month: number, day: number) {
   return `${year}-${pad2(month)}-${pad2(day)}`;
 }
 
-/* ---------------- loading overlay ---------------- */
-
-function FullscreenLoading() {
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30">
-      <div className="rounded-xl bg-white px-6 py-4 shadow-lg">
-        <div className="text-sm text-[color:var(--color-gray-700)]">가계부 불러오는 중...</div>
-      </div>
-    </div>
-  );
-}
-
 /* ---------------- page ---------------- */
 
 export default function LedgerPage() {
-  const { isLoading: globalLoading, setLoading } = useLoading();
+  const { setLoading } = useLoading();
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -325,8 +313,6 @@ export default function LedgerPage() {
 
   return (
     <div className="min-h-dvh bg-white flex flex-col items-center px-4 pb-28 overflow-y-auto">
-      {globalLoading && <FullscreenLoading />}
-
       <div className="h-[54px] w-full shrink-0" />
 
       <div className="w-full">
