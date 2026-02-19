@@ -19,7 +19,6 @@ type Props = {
   isCategoryOpen: boolean;
   setIsCategoryOpen: (next: boolean) => void;
 
-  // ✅ 부모에서 관리 (z-index + 백드랍 닫힘 방지용)
   isDeleteOpen: boolean;
   setIsDeleteOpen: (next: boolean) => void;
 };
@@ -86,7 +85,7 @@ export default function LedgerEditModalSheet({
       ...entry,
       type,
       amount,
-      category: normalizeCategory(category),
+      category: normalizeCategory(category || '기타'),
       description: description.trim(),
       memo: memo.trim(),
     });
@@ -94,12 +93,10 @@ export default function LedgerEditModalSheet({
     onClose();
   };
 
-  // ✅ 휴지통: 바로 삭제 X → AlertModal 열기
   const handleTrashClick = () => {
     setIsDeleteOpen(true);
   };
 
-  // ✅ 알럿에서 "삭제" 눌렀을 때만 실행
   const handleConfirmDelete = () => {
     onDelete(entry.id);
     setIsDeleteOpen(false);
@@ -112,6 +109,12 @@ export default function LedgerEditModalSheet({
     setCategory(normalizeCategory(nextCategory));
   };
 
+  // ✅ 여기서만 type 변경 + category를 기타로 동기화
+  const switchType = (nextType: EntryType) => {
+    setType(nextType);
+    setCategory('기타');
+  };
+
   return (
     <>
       <div
@@ -119,7 +122,7 @@ export default function LedgerEditModalSheet({
         className="
         absolute bottom-0 left-1/2 -translate-x-1/2
         w-96 h-[553px]
-        z-[10]   
+        z-[10]
         bg-[color:var(--color-white-800)]
         rounded-tl-[30px] rounded-tr-[30px]
         shadow-[0px_4px_10px_0px_rgba(0,0,0,0.30)]
@@ -128,7 +131,6 @@ export default function LedgerEditModalSheet({
       >
         <div className="w-11 h-1 absolute left-1/2 top-[17px] -translate-x-1/2 bg-[color:var(--color-gray-200)] rounded-xs" />
 
-        {/* title row */}
         <div className="w-96 px-6 absolute left-0 top-[34px] flex items-center justify-center">
           <div className="flex-1 text-center text-[color:var(--color-gray-800)] text-2xl font-bold leading-9">
             내역 수정하기
@@ -145,7 +147,6 @@ export default function LedgerEditModalSheet({
           </button>
         </div>
 
-        {/* category preview */}
         <div className="w-96 px-6 absolute left-0 top-[82px] inline-flex flex-col justify-start items-start">
           <div className="self-stretch h-24 inline-flex justify-center items-center gap-6">
             <div className="w-14 h-24 relative">
@@ -173,7 +174,6 @@ export default function LedgerEditModalSheet({
           </div>
         </div>
 
-        {/* type row */}
         <div className="w-96 h-11 px-6 absolute left-0 top-[181px] inline-flex justify-start items-center gap-3">
           <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
             분류
@@ -182,7 +182,7 @@ export default function LedgerEditModalSheet({
             <button
               type="button"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setType('income')}
+              onClick={() => switchType('income')}
               className={[
                 'w-36 px-4 py-2 rounded-lg flex justify-center items-center gap-2.5',
                 type === 'income'
@@ -196,7 +196,7 @@ export default function LedgerEditModalSheet({
             <button
               type="button"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setType('expense')}
+              onClick={() => switchType('expense')}
               className={[
                 'w-36 px-4 py-2 rounded-lg flex justify-center items-center gap-2.5',
                 type === 'expense'
@@ -209,56 +209,56 @@ export default function LedgerEditModalSheet({
           </div>
         </div>
 
-        {/* amount */}
-        <div className="w-96 px-6 absolute left-0 top-[233px] inline-flex justify-start items-start gap-3">
+        {/* 금액 */}
+        <div className="w-96 px-6 absolute left-0 top-[233px] inline-flex flex-nowrap justify-start items-start gap-3">
           <div className="py-2 flex justify-center items-start gap-2.5">
-            <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
+            <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight whitespace-nowrap shrink-0">
               금액
             </div>
           </div>
 
-          <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
+          <div className="flex-1 min-w-0 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
             <input
               inputMode="numeric"
               value={amountInput}
               onChange={(e) => handleAmountChange(e.target.value)}
-              className="flex-1 self-stretch bg-transparent outline-none text-[color:var(--color-error)] text-base font-medium leading-6 tracking-tight"
+              className="flex-1 min-w-0 self-stretch bg-transparent outline-none text-[color:var(--color-error)] text-base font-medium leading-6 tracking-tight"
               placeholder="0"
             />
           </div>
         </div>
 
-        {/* description */}
-        <div className="w-96 px-6 absolute left-0 top-[285px] inline-flex justify-start items-start gap-3">
+        {/* 내역 */}
+        <div className="w-96 px-6 absolute left-0 top-[285px] inline-flex flex-nowrap justify-start items-start gap-3">
           <div className="py-2 flex justify-center items-start gap-2.5">
-            <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
+            <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight whitespace-nowrap shrink-0">
               내역
             </div>
           </div>
 
-          <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
+          <div className="flex-1 min-w-0 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
             <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="flex-1 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
+              className="flex-1 min-w-0 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
               placeholder="내역을 입력하세요"
             />
           </div>
         </div>
 
-        {/* memo */}
-        <div className="w-96 px-6 absolute left-0 top-[337px] inline-flex justify-start items-start gap-3">
+        {/* 메모 */}
+        <div className="w-96 px-6 absolute left-0 top-[337px] inline-flex flex-nowrap justify-start items-start gap-3">
           <div className="py-2 flex justify-center items-start gap-2.5">
-            <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
+            <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight whitespace-nowrap shrink-0">
               메모
             </div>
           </div>
 
-          <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
+          <div className="flex-1 min-w-0 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
             <input
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
-              className="flex-1 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
+              className="flex-1 min-w-0 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
               placeholder="메모하기"
             />
           </div>
@@ -279,16 +279,15 @@ export default function LedgerEditModalSheet({
         onSave={handleCategorySave}
       />
 
-      {/* ✅ 공용 AlertModal 그대로 사용 */}
       <AlertModal
         isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)} // ✅ 취소(또는 바깥 클릭) → 닫기
+        onClose={() => setIsDeleteOpen(false)}
         title="내역을 삭제하시겠습니까?"
         message="복구할 수 없어요"
         twoButtons={{
           leftText: '취소',
           rightText: '삭제',
-          onRight: handleConfirmDelete, // ✅ 삭제 → 실행
+          onRight: handleConfirmDelete,
         }}
       />
     </>

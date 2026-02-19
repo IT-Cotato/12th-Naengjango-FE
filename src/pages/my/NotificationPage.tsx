@@ -154,6 +154,7 @@ const NotificationPage: React.FC = () => {
         <div className="w-full flex justify-center">
           <h1 className="Bold_24 text-gray-800 ">알림 내역</h1>
         </div>
+        <div className="w-6 h-6"></div>
       </div>
 
       {hasNotifications ? (

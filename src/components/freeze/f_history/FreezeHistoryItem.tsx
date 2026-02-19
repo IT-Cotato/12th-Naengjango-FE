@@ -92,7 +92,7 @@ export default function FreezeHistoryItem({
         <div className="flex gap-3">
           <img src={image} className="size-[54px] rounded-lg" />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col justify-center">
             <div className="flex items-center gap-2">
               <div
                 className={`px-1.5 py-0.5 rounded-lg text-white-800 Medium_12 ${
@@ -110,7 +110,7 @@ export default function FreezeHistoryItem({
 
         <img
           src={checked ? checkinbox_24 : box_24}
-          className="w-[24px] h-[24px] cursor-pointer"
+          className="w-[24px] h-[24px] cursor-pointer right-[8px] top-[12px] absolute"
           onClick={(e) => {
             e.stopPropagation();
             onToggle();
