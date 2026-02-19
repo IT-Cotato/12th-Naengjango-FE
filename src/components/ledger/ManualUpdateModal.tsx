@@ -332,22 +332,22 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
               </div>
             </div>
 
-            {/* ✅ 금액 - 복구 */}
-            <div className="w-96 px-6 left-0 top-[233px] absolute inline-flex justify-start items-start gap-3">
+            {/* ✅ 금액 */}
+            <div className="w-96 px-6 left-0 top-[233px] absolute inline-flex flex-nowrap justify-start items-start gap-3">
               <div className="py-2 flex justify-center items-start gap-2.5">
-                <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
+                <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight whitespace-nowrap shrink-0">
                   금액
                 </div>
               </div>
 
-              <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
+              <div className="flex-1 min-w-0 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
                 <input
                   inputMode="numeric"
                   value={amountInput}
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0"
                   className={[
-                    'flex-1 self-stretch bg-transparent outline-none text-base font-medium leading-6 tracking-tight',
+                    'flex-1 min-w-0 self-stretch bg-transparent outline-none text-base font-medium leading-6 tracking-tight',
                     type === 'income'
                       ? 'text-[color:var(--color-main-skyblue)]'
                       : 'text-[color:var(--color-error)]',
@@ -357,37 +357,37 @@ export default function ManualUpdateModal({ open, date, onClose, onSaveExpense }
             </div>
 
             {/* 내역 */}
-            <div className="w-96 px-6 left-0 top-[285px] absolute inline-flex justify-start items-start gap-3">
+            <div className="w-96 px-6 left-0 top-[285px] absolute inline-flex flex-nowrap justify-start items-start gap-3">
               <div className="py-2 flex justify-center items-start gap-2.5">
-                <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
+                <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight whitespace-nowrap shrink-0">
                   내역
                 </div>
               </div>
 
-              <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
+              <div className="flex-1 min-w-0 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="내역을 입력하세요"
-                  className="flex-1 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
+                  className="flex-1 min-w-0 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
                 />
               </div>
             </div>
 
             {/* 메모 */}
-            <div className="w-96 px-6 left-0 top-[337px] absolute inline-flex justify-start items-start gap-3">
+            <div className="w-96 px-6 left-0 top-[337px] absolute inline-flex flex-nowrap justify-start items-start gap-3">
               <div className="py-2 flex justify-center items-start gap-2.5">
-                <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight">
+                <div className="text-[color:var(--color-gray-600)] text-lg font-semibold leading-7 tracking-tight whitespace-nowrap shrink-0">
                   메모
                 </div>
               </div>
 
-              <div className="flex-1 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
+              <div className="flex-1 min-w-0 px-4 py-2.5 bg-[color:var(--color-white-800)] rounded-[10px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[color:var(--color-gray-400)] flex justify-start items-center gap-2.5">
                 <input
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
                   placeholder="메모하기"
-                  className="flex-1 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
+                  className="flex-1 min-w-0 self-stretch bg-transparent outline-none text-[color:var(--color-gray-600)] text-base font-medium leading-6 tracking-tight"
                 />
               </div>
             </div>
