@@ -17,7 +17,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   isRead = false,
 }) => {
   // 🔹 title이 6글자 이상이면 "6글자 + …"
-  const shortTitle = title.length > 6 ? `${title.slice(0, 6)}...` : title;
+  const shortTitle = title.length > 5 ? `${title.slice(0, 5)}...` : title;
 
   return (
     <div
