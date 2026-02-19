@@ -39,16 +39,13 @@ const DailyBudgetChart: React.FC<Props> = ({
         formatter: (value: number) => `${Math.round(value / 1000)}k`, // 10k, 20k ...
       },
     },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      formatter: '{b}<br/>{c}원',
-    },
+    tooltip: { show: false },
     series: [
       {
         type: 'bar',
         data: values,
         barWidth: 18,
+        label: { show: false },
         itemStyle: {
           borderRadius: [6, 6, 0, 0],
           color: {
@@ -58,9 +55,36 @@ const DailyBudgetChart: React.FC<Props> = ({
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: '#cde4fe' },
+              { offset: 0, color: '#D0E6FF' },
               { offset: 1, color: '#5E97D7' },
             ],
+          },
+        },
+        emphasis: {
+          itemStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: '#034896' },
+                { offset: 1, color: '#8CAFD6' },
+              ],
+            },
+          },
+          label: {
+            show: true,
+            position: 'top',
+            color: '#034896',
+            fontWeight: 'normal',
+            fontSize: 12,
+            formatter: (params: unknown) => {
+              const p = params as { value?: number };
+              const v = p?.value;
+              return typeof v === 'number' ? `${Math.round(v / 1000)}k` : '';
+            },
           },
         },
       },
