@@ -76,7 +76,7 @@ const DailyBudgetChart: React.FC<Props> = ({
           <span className="text-main-skyblue">
             {todayBudgetText}
             <span className={`ml-1 text-xs ${isDiffPositive ? 'text-main-skyblue' : 'text-error'}`}>
-              {diffText}
+              ({diffText})
             </span>
           </span>
         </p>

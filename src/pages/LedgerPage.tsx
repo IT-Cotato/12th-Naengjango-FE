@@ -26,6 +26,7 @@ import {
 } from '@/apis/ledger';
 
 import { getBudgetStatus } from '@/apis/ledger/status.api';
+import { getMe } from '@/apis/my/mypage';
 
 /* ---------------- utils ---------------- */
 
@@ -120,6 +121,9 @@ export default function LedgerPage() {
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
+  // ✅ 달 이동(렌더용) - 다음달 버튼 눌렀을 때 "달만" 바뀌게
+  const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(() => new Date().getMonth() + 1);
   const [budget, setBudget] = useState<{ todayRemaining: number; monthRemaining: number }>({
     todayRemaining: 0,
     monthRemaining: 0,
@@ -140,7 +144,105 @@ export default function LedgerPage() {
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [loadError, setLoadError] = useState('');
 
-  /* ---------------- 데이터 로딩 ---------------- */
+  // ✅ 가입일(createdAt)
+  const [createdAt, setCreatedAt] = useState<Date | null>(null);
+
+  /* ---------------- 가입일(createdAt) 로딩 ---------------- */
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken') ?? '';
+        if (!accessToken) {
+          if (alive) setCreatedAt(null);
+          return;
+        }
+
+        const res = await getMe(accessToken);
+        if (!alive) return;
+
+        const rawCreatedAt = res?.result?.createdAt;
+        if (!rawCreatedAt) {
+          setCreatedAt(null);
+          return;
+        }
+
+        const d = new Date(rawCreatedAt);
+        if (Number.isNaN(d.getTime())) {
+          setCreatedAt(null);
+          return;
+        }
+
+        setCreatedAt(d);
+      } catch {
+        if (!alive) return;
+        setCreatedAt(null);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  /* ---------------- 월 점맵 로딩 ---------------- */
+
+  const refreshMonthMap = useCallback(
+    async (year: number, month: number) => {
+      const lastDay = new Date(year, month, 0).getDate();
+
+      const results = await Promise.all(
+        Array.from({ length: lastDay }, async (_, i) => {
+          const day = i + 1;
+          const key = makeKey(year, month, day);
+          try {
+            const r = await getBudgetStatus({ year, month, day });
+            return [key, Number(r.todayRemaining ?? 0)] as const;
+          } catch {
+            return [key, null] as const;
+          }
+        }),
+      );
+
+      const next: Record<string, number> = {};
+      for (const [k, v] of results) {
+        if (v === null) continue;
+        next[k] = v;
+      }
+
+      setDayRemainingMap(next);
+    },
+    [setDayRemainingMap],
+  );
+
+  /* ---------------- 선택일 데이터 로딩 (내역 + 예산) ---------------- */
+
+  const refreshSelectedDateData = useCallback(async () => {
+    // 1) 거래내역
+    const raw = await getTransactionsByDate(selectedDateLabelAPI);
+
+    let list: ApiTransaction[] = [];
+    if (Array.isArray(raw)) {
+      list = raw as unknown as ApiTransaction[];
+    } else if (raw && typeof raw === 'object' && 'result' in raw) {
+      list = (raw as ApiListResponse).result ?? [];
+    }
+
+    setEntries(normalizeEntries(list));
+
+    // 2) 예산 (선택일 기준)
+    const budgetRes = await getBudgetStatus({
+      year: selectedYear,
+      month: selectedMonth,
+      day: selectedDay,
+    });
+
+    setBudget(budgetRes);
+  }, [selectedDateLabelAPI, selectedYear, selectedMonth, selectedDay]);
+
+  /* ---------------- 최초/선택일 변경 시 로딩 ---------------- */
 
   useEffect(() => {
     let alive = true;
@@ -150,58 +252,10 @@ export default function LedgerPage() {
       setLoadError('');
 
       try {
-        // 1️⃣ 거래내역
-        const raw = await getTransactionsByDate(selectedDateLabelAPI);
+        await refreshSelectedDateData();
 
-        let list: ApiTransaction[] = [];
-        if (Array.isArray(raw)) {
-          list = raw;
-        } else if (raw && typeof raw === 'object' && 'result' in raw) {
-          list = (raw as ApiListResponse).result ?? [];
-        }
-
-        if (!alive) return;
-
-        setEntries(normalizeEntries(list));
-
-        // 2️⃣ 오늘 예산
-        const budgetRes = await getBudgetStatus({
-          year: selectedYear,
-          month: selectedMonth,
-          day: selectedDay,
-        });
-
-        if (!alive) return;
-        setBudget(budgetRes);
-
-        // 3️⃣ 월 점맵
-        const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
-
-        const results = await Promise.all(
-          Array.from({ length: lastDay }, async (_, i) => {
-            const day = i + 1;
-            const key = makeKey(selectedYear, selectedMonth, day);
-            try {
-              const r = await getBudgetStatus({
-                year: selectedYear,
-                month: selectedMonth,
-                day,
-              });
-              return [key, Number(r.todayRemaining ?? 0)] as const;
-            } catch {
-              return [key, null] as const;
-            }
-          }),
-        );
-
-        const next: Record<string, number> = {};
-        for (const [k, v] of results) {
-          if (v === null) continue;
-          next[k] = v;
-        }
-
-        if (!alive) return;
-        setDayRemainingMap(next);
+        // ✅ 점맵은 "현재 보고 있는 달" 기준으로
+        await refreshMonthMap(viewYear, viewMonth);
       } catch (e) {
         if (!alive) return;
         const msg = e instanceof Error ? e.message : '내역 조회 실패';
@@ -215,7 +269,7 @@ export default function LedgerPage() {
     return () => {
       alive = false;
     };
-  }, [selectedDateLabelAPI, selectedYear, selectedMonth, selectedDay, setLoading]);
+  }, [refreshSelectedDateData, refreshMonthMap, viewYear, viewMonth, setLoading]);
 
   /* ---------------- 모달 로직 ---------------- */
 
@@ -240,39 +294,56 @@ export default function LedgerPage() {
     openEdit,
     closeEdit,
   } = useLedgerModals({ onCloseFab, parseLedgerText });
-
-  /* ---------------- 저장/수정/삭제 ---------------- */
+  /* ---------------- 저장/수정/삭제 후 즉시 갱신 ---------------- */
 
   const afterMutationRefresh = useCallback(async () => {
     setLoading(true);
     try {
-      const raw = await getTransactionsByDate(selectedDateLabelAPI);
-      let list: ApiTransaction[] = [];
-      if (Array.isArray(raw)) {
-        list = raw;
-      } else if (raw && typeof raw === 'object' && 'result' in raw) {
-        list = (raw as ApiListResponse).result ?? [];
-      }
-      setEntries(normalizeEntries(list));
+      // ✅ 내역/예산 즉시 갱신
+      await refreshSelectedDateData();
+
+      // ✅ 점맵도 즉시 갱신 (현재 보고 있는 달)
+      await refreshMonthMap(viewYear, viewMonth);
+
+      // ✅ "오늘 남은 예산"이 늦게 반영되는 케이스 대비: 한번 더
+      await refreshSelectedDateData();
     } finally {
       setLoading(false);
     }
-  }, [selectedDateLabelAPI, setLoading]);
+  }, [refreshSelectedDateData, refreshMonthMap, viewYear, viewMonth, setLoading]);
 
-  const handleSaveManual = async (draft: {
+  // ✅ ManualUpdateModal의 onSaveExpense 타입(ExpenseDraft)에 맞추기
+  // memo?: string | undefined 인 걸 LedgerDraft.memo: string으로 강제 변환
+  type ExpenseDraft = {
     date: string;
     type: EntryType;
     amount: number;
     category: string;
     description: string;
     memo?: string;
-  }) => {
-    try {
-      await createTransaction(draft as LedgerDraft);
-      await afterMutationRefresh();
-    } finally {
-      setIsManualOpen(false);
-    }
+  };
+
+  const handleSaveManualExpense = (draft: ExpenseDraft) => {
+    void (async () => {
+      const payload: LedgerDraft = {
+        date: draft.date,
+        type: draft.type,
+        amount: draft.amount,
+        category: draft.category,
+        description: draft.description,
+        memo: draft.memo ?? '', // ✅ string 고정
+      };
+
+      try {
+        await createTransaction(payload);
+        await afterMutationRefresh();
+      } catch (e) {
+        console.error(e);
+        alert(e instanceof Error ? e.message : '저장 실패');
+      } finally {
+        setIsManualOpen(false);
+      }
+    })();
   };
 
   const handleSaveParsed = async (payload: ParsedLedgerData) => {
@@ -292,22 +363,69 @@ export default function LedgerPage() {
   };
 
   const handleSaveEdit = async (next: LedgerEntry) => {
-    if (!next.serverId) return;
-    await updateTransaction(next.serverId, next);
-    await afterMutationRefresh();
-    closeEdit();
+    try {
+      const rawId = next.serverId ?? next.id;
+      const transactionId = String(rawId).replace(/^tx-/, ''); // ✅ tx- 제거
+      if (!transactionId) {
+        alert('serverId(transactionId)가 없어 수정할 수 없어요.');
+        return;
+      }
+
+      await updateTransaction(transactionId, {
+        date: next.date,
+        type: next.type,
+        amount: next.amount,
+        category: next.category,
+        description: next.description,
+        memo: next.memo ?? '',
+      });
+
+      await afterMutationRefresh();
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : '수정 실패');
+    } finally {
+      closeEdit();
+    }
   };
 
   const handleDeleteEdit = async (uiId: string) => {
-    const target = entries.find((e) => e.id === uiId);
-    if (!target?.serverId) return;
+    try {
+      const target = entries.find((e) => e.id === uiId);
+      if (!target?.serverId) {
+        alert('serverId가 없어 삭제할 수 없어요. (서버 PK 필요)');
+        return;
+      }
 
-    const cleanedId = String(target.serverId).replace(/^tx-/, '');
+      const transactionId = String(target.serverId).replace(/^tx-/, '');
+      await deleteTransaction(transactionId);
 
-    await deleteTransaction(cleanedId);
-    await afterMutationRefresh();
-    closeEdit();
+      await afterMutationRefresh();
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : '삭제 실패');
+    } finally {
+      closeEdit();
+    }
   };
+
+  /* ---------------- 캘린더 월 이동: "렌더만" 변경 ---------------- */
+  const handleMonthChange = useCallback(
+    (year: number, month: number) => {
+      setViewYear(year);
+      setViewMonth(month);
+
+      void (async () => {
+        setLoading(true);
+        try {
+          await refreshMonthMap(year, month);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    },
+    [refreshMonthMap, setLoading],
+  );
 
   /* ---------------- render ---------------- */
 
@@ -328,7 +446,9 @@ export default function LedgerPage() {
           <LedgerCalendar
             selectedDate={selectedDate}
             onChangeSelectedDate={setSelectedDate}
+            onMonthChange={handleMonthChange} // ✅ 다음달/이전달 눌러도 렌더만 바뀜
             dayRemainingMap={dayRemainingMap}
+            createdAt={createdAt}
           />
         </div>
 
@@ -358,7 +478,7 @@ export default function LedgerPage() {
         open={isManualOpen}
         date={selectedDateLabelUI}
         onClose={() => setIsManualOpen(false)}
-        onSaveExpense={handleSaveManual}
+        onSaveExpense={handleSaveManualExpense} // ✅ 타입 맞춤(ExpenseDraft)
       />
 
       <LedgerParsedModal
@@ -372,7 +492,7 @@ export default function LedgerPage() {
         open={isEditOpen}
         entry={editEntry}
         onClose={closeEdit}
-        onSave={handleSaveEdit}
+        onSave={handleSaveEdit} // ✅ 누락되면 onSave 에러났던 거 해결
         onDelete={handleDeleteEdit}
       />
 
