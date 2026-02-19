@@ -22,7 +22,11 @@ export default function ReportPage() {
   const [activeTab, setActiveTab] = useState<ReportTabKey>('daily');
   const [name, setName] = useState<string>('');
   const { data: reportData, error: reportError, loading: reportLoading } = useReport();
-  const { data: dailyBudgetData, error: dailyBudgetError, loading: dailyBudgetLoading } = useDailyBudgetReport();
+  const {
+    data: dailyBudgetData,
+    error: dailyBudgetError,
+    loading: dailyBudgetLoading,
+  } = useDailyBudgetReport();
   const { todayRemaining, budgetDiff } = useAccountStatus();
   const hasError = !!(reportError || dailyBudgetError);
   const isAuthErrorPage = isAuthError(reportError) || isAuthError(dailyBudgetError);

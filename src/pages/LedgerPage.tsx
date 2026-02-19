@@ -124,7 +124,6 @@ export default function LedgerPage() {
   // ✅ 달 이동(렌더용) - 다음달 버튼 눌렀을 때 "달만" 바뀌게
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(() => new Date().getMonth() + 1);
-
   const [budget, setBudget] = useState<{ todayRemaining: number; monthRemaining: number }>({
     todayRemaining: 0,
     monthRemaining: 0,
@@ -278,19 +277,14 @@ export default function LedgerPage() {
     isPasteOpen,
     pasteText,
     setPasteText,
-
     isManualOpen,
     setIsManualOpen,
-
     isParsedOpen,
     parsedData,
-
     isEditOpen,
     editEntry,
-
     isParsing,
     pasteError,
-
     onPaste,
     onManual,
     manualKey,
@@ -300,7 +294,6 @@ export default function LedgerPage() {
     openEdit,
     closeEdit,
   } = useLedgerModals({ onCloseFab, parseLedgerText });
-
   /* ---------------- 저장/수정/삭제 후 즉시 갱신 ---------------- */
 
   const afterMutationRefresh = useCallback(async () => {
@@ -354,21 +347,16 @@ export default function LedgerPage() {
   };
 
   const handleSaveParsed = async (payload: ParsedLedgerData) => {
-    const draft: LedgerDraft = {
-      type: payload.type,
-      amount: payload.amount,
-      category: payload.category?.trim() ?? '',
-      description: payload.description?.trim() ?? '',
-      date: normalizeParsedDateToUIDraft(payload.date),
-      memo: payload.memo ?? '',
-    };
-
     try {
-      await createTransaction(draft);
+      await createTransaction({
+        type: payload.type,
+        amount: payload.amount,
+        category: payload.category ?? '',
+        description: payload.description ?? '',
+        date: normalizeParsedDateToUIDraft(payload.date),
+        memo: payload.memo ?? '',
+      });
       await afterMutationRefresh();
-    } catch (e) {
-      console.error(e);
-      alert(e instanceof Error ? e.message : '저장 실패');
     } finally {
       onCloseParsed();
     }
